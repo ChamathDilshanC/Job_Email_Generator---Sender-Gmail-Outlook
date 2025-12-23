@@ -602,3 +602,164 @@ a {
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablet and below (1024px) */
+@media (max-width: 1024px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: relative !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sidebar nav {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    height: auto !important;
+    padding: 0.5rem !important;
+    gap: 0.5rem;
+  }
+
+  .sidebar nav > div:last-child {
+    display: none !important; /* Hide logo and developer credit on mobile */
+  }
+
+  .nav-item {
+    flex-shrink: 0;
+    min-width: auto;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem;
+  }
+
+  .nav-icon {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 1rem !important;
+  }
+
+  .page-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .page-title {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Mobile phones (768px) */
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem !important;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .form-row {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .form-group {
+    width: 100% !important;
+  }
+
+  .btn-group {
+    flex-direction: column !important;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  .email-preview {
+    padding: 1rem !important;
+  }
+
+  .page-title {
+    font-size: 1.5rem !important;
+  }
+
+  .page-description {
+    font-size: 0.875rem !important;
+  }
+
+  /* Hide sidebar navigation items text on very small screens */
+  .nav-item {
+    padding: 0.5rem !important;
+  }
+
+  .nav-item svg {
+    margin-right: 0 !important;
+  }
+}
+
+/* Small mobile phones (480px) */
+@media (max-width: 480px) {
+  html,
+  body {
+    font-size: 13px;
+  }
+
+  .page-title {
+    font-size: 1.25rem !important;
+  }
+
+  .card-title {
+    font-size: 1rem !important;
+  }
+
+  .form-input,
+  .form-select {
+    font-size: 14px !important;
+    padding: 0.625rem !important;
+  }
+
+  .btn {
+    padding: 0.625rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  .sidebar nav {
+    padding: 0.25rem !important;
+  }
+
+  .nav-item {
+    min-width: 60px;
+    padding: 0.5rem 0.25rem !important;
+    font-size: 0;
+  }
+
+  .nav-item svg {
+    margin: 0 auto;
+  }
+
+  /* Stack file upload sections */
+  .file-upload-container {
+    flex-direction: column !important;
+  }
+}

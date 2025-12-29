@@ -1,5 +1,10 @@
 'use client';
 
+import EducationSection from '@/app/components/EducationSection';
+import { useTypewriter } from '@/app/components/TypewriterText';
+import WorkExperienceSection from '@/app/components/WorkExperienceSection';
+import { Education } from '@/app/models/Education';
+import { WorkExperience } from '@/app/models/WorkExperience';
 import {
   fetchSkillsForPosition,
   getPositionSuggestions,
@@ -8,6 +13,13 @@ import { useState } from 'react';
 
 export default function ResumeBuilder() {
   const [activeSection, setActiveSection] = useState('personal');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Work Experience State
+  const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
+
+  // Education State
+  const [educations, setEducations] = useState<Education[]>([]);
 
   // Skills state
   const [position, setPosition] = useState('');
@@ -24,6 +36,21 @@ export default function ResumeBuilder() {
     useState(false);
   const [isLoadingSkills, setIsLoadingSkills] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [selectedCustomSkillIndex, setSelectedCustomSkillIndex] = useState(-1);
+
+  // Typewriter animation for position placeholder
+  const positionPlaceholder = useTypewriter(
+    [
+      'Software Developer',
+      'Data Scientist',
+      'Product Manager',
+      'UX Designer',
+      'DevOps Engineer',
+      'Full Stack Developer',
+    ],
+    120, // typing speed
+    true // loop
+  );
 
   // Handle position input change with autocomplete
   const handlePositionChange = async (value: string) => {
@@ -167,6 +194,7 @@ export default function ResumeBuilder() {
   // Handle custom skill input change with autocomplete
   const handleCustomSkillChange = (value: string) => {
     setCustomSkill(value);
+    setSelectedCustomSkillIndex(-1); // Reset selection when typing
 
     if (value.trim()) {
       // Filter from ALL available skills that aren't already selected
@@ -208,13 +236,43 @@ export default function ResumeBuilder() {
     }
   };
 
-  // Handle Enter key for custom skill
-  const handleCustomSkillKeyPress = (
+  // Handle keyboard navigation for custom skills
+  const handleCustomSkillKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addCustomSkill();
+    if (!showCustomSkillSuggestions || customSkillSuggestions.length === 0) {
+      // If no suggestions, let Enter add the custom skill
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addCustomSkill();
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedCustomSkillIndex(prev =>
+          prev < customSkillSuggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedCustomSkillIndex(prev => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedCustomSkillIndex >= 0) {
+          selectCustomSkill(customSkillSuggestions[selectedCustomSkillIndex]);
+        } else {
+          addCustomSkill();
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowCustomSkillSuggestions(false);
+        setSelectedCustomSkillIndex(-1);
+        break;
     }
   };
 
@@ -224,819 +282,499 @@ export default function ResumeBuilder() {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
-          Template Information
+    <div className="h-full">
+      {/* Sticky Mobile Header */}
+      <div className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+        <button
+          onClick={() => setIsMobileSidebarOpen(true)}
+          className="w-11 h-11 flex items-center justify-center bg-[#3b3be3] text-white rounded-lg hover:bg-[#2929c9] transition-all shadow-md"
+          aria-label="Open menu"
+        >
+          <svg
+            className="w-6 h-6"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <h1 className="text-lg font-bold text-gray-800 truncate">
+          Resume Builder
         </h1>
-        <p className="page-subtitle">
-          Create a professional template to complement your job applications
-        </p>
       </div>
 
-      <div className="resume-builder">
-        <div className="builder-sidebar">
-          <div
-            className={`section-tab ${
-              activeSection === 'personal' ? 'active' : ''
-            }`}
-            onClick={() => setActiveSection('personal')}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            Personal Info
-          </div>
-          <div
-            className={`section-tab ${
-              activeSection === 'experience' ? 'active' : ''
-            }`}
-            onClick={() => setActiveSection('experience')}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-            </svg>
-            Experience
-          </div>
-          <div
-            className={`section-tab ${
-              activeSection === 'education' ? 'active' : ''
-            }`}
-            onClick={() => setActiveSection('education')}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-              <path d="M6 12v5c3 3 9 3 12 0v-5" />
-            </svg>
-            Education
-          </div>
-          <div
-            className={`section-tab ${
-              activeSection === 'skills' ? 'active' : ''
-            }`}
-            onClick={() => setActiveSection('skills')}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-            Skills
-          </div>
+      {/* Main Content */}
+      <div className="p-4 md:p-6 lg:p-8">
+        {/* Desktop Header */}
+        <div className="mb-6 md:mb-8 hidden lg:block">
+          <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
+            Template Information
+          </h1>
+          <p className="text-gray-600 text-sm md:text-base">
+            Create a professional template to complement your job applications
+          </p>
         </div>
 
-        <div className="builder-content">
-          <div className="content-card">
-            <h2 className="section-title">
-              {activeSection === 'personal' && 'Personal Information'}
-              {activeSection === 'experience' && 'Work Experience'}
-              {activeSection === 'education' && 'Education'}
-              {activeSection === 'skills' && 'Skills & Expertise'}
-            </h2>
+        {/* Mobile Sidebar Overlay */}
+        {isMobileSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
 
-            {activeSection === 'personal' && (
-              <div className="form-section">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Full Name</label>
-                    <input type="text" placeholder="John Doe" />
+        {/* Mobile: Stack vertically, Desktop: 3-column grid */}
+        <div className="flex flex-col lg:grid lg:grid-cols-[200px_1fr_300px] gap-4 lg:gap-6 lg:h-[calc(100vh-200px)]">
+          {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
+          <div
+            className={`fixed lg:relative inset-y-0 left-0 w-64 lg:w-auto bg-white lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
+              isMobileSidebarOpen
+                ? 'translate-x-0'
+                : '-translate-x-full lg:translate-x-0'
+            }`}
+          >
+            <div className="h-full flex flex-col gap-2 p-4 lg:p-0 overflow-y-auto">
+              {/* Mobile Close Button */}
+              <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Sections
+                </h2>
+                <button
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-all"
+                  aria-label="Close menu"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              <div
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                  activeSection === 'personal'
+                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                }`}
+                onClick={() => {
+                  setActiveSection('personal');
+                  setIsMobileSidebarOpen(false);
+                }}
+              >
+                <svg
+                  className={`w-[18px] h-[18px] ${
+                    activeSection === 'personal'
+                      ? 'opacity-100 text-[#3b3be3]'
+                      : 'opacity-60'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                Personal Info
+              </div>
+              <div
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                  activeSection === 'experience'
+                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                }`}
+                onClick={() => {
+                  setActiveSection('experience');
+                  setIsMobileSidebarOpen(false);
+                }}
+              >
+                <svg
+                  className={`w-[18px] h-[18px] ${
+                    activeSection === 'experience'
+                      ? 'opacity-100 text-[#3b3be3]'
+                      : 'opacity-60'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+                Experience
+              </div>
+              <div
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                  activeSection === 'education'
+                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                }`}
+                onClick={() => {
+                  setActiveSection('education');
+                  setIsMobileSidebarOpen(false);
+                }}
+              >
+                <svg
+                  className={`w-[18px] h-[18px] ${
+                    activeSection === 'education'
+                      ? 'opacity-100 text-[#3b3be3]'
+                      : 'opacity-60'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                  <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                Education
+              </div>
+              <div
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[150px] lg:min-w-0 flex-shrink-0 ${
+                  activeSection === 'skills'
+                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                }`}
+                onClick={() => {
+                  setActiveSection('skills');
+                  setIsMobileSidebarOpen(false);
+                }}
+              >
+                <svg
+                  className={`w-[18px] h-[18px] ${
+                    activeSection === 'skills'
+                      ? 'opacity-100 text-[#3b3be3]'
+                      : 'opacity-60'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                  <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+                Skills
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="overflow-y-auto max-h-[calc(100vh-300px)] lg:max-h-full">
+            <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 lg:p-8">
+              <h2 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6">
+                {activeSection === 'personal' && 'Personal Information'}
+                {activeSection === 'experience' && 'Work Experience'}
+                {activeSection === 'education' && 'Education'}
+                {activeSection === 'skills' && 'Skills & Expertise'}
+              </h2>
+
+              {activeSection === 'personal' && (
+                <div className="flex flex-col gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="John Doe"
+                        className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="john@example.com"
+                        className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                      />
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input type="email" placeholder="john@example.com" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        placeholder="+1 234 567 8900"
+                        className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="City, Country"
+                        className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Professional Summary
+                    </label>
+                    <textarea
+                      rows={4}
+                      placeholder="Brief overview of your professional background..."
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white resize-none"
+                    />
                   </div>
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Phone</label>
-                    <input type="tel" placeholder="+1 234 567 8900" />
-                  </div>
-                  <div className="form-group">
-                    <label>Location</label>
-                    <input type="text" placeholder="City, Country" />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>Professional Summary</label>
-                  <textarea
-                    rows={4}
-                    placeholder="Brief overview of your professional background..."
-                  />
-                </div>
-              </div>
-            )}
+              )}
 
-            {activeSection === 'experience' && (
-              <div className="form-section">
-                <p className="section-description">
-                  Add your work experience, starting with the most recent
-                  position.
-                </p>
-                <button className="btn btn-primary">+ Add Experience</button>
-              </div>
-            )}
+              {activeSection === 'experience' && (
+                <WorkExperienceSection
+                  experiences={workExperiences}
+                  onUpdate={setWorkExperiences}
+                />
+              )}
 
-            {activeSection === 'education' && (
-              <div className="form-section">
-                <p className="section-description">
-                  Add your educational background and qualifications.
-                </p>
-                <button className="btn btn-primary">+ Add Education</button>
-              </div>
-            )}
+              {activeSection === 'education' && (
+                <EducationSection
+                  educations={educations}
+                  onUpdate={setEducations}
+                />
+              )}
 
-            {activeSection === 'skills' && (
-              <div className="form-section">
-                <p className="section-description">
-                  Enter your target position to get relevant skill suggestions,
-                  or add custom skills.
-                </p>
+              {activeSection === 'skills' && (
+                <div className="flex flex-col gap-5">
+                  <p className="text-gray-600 mb-4">
+                    Enter your target position to get relevant skill
+                    suggestions, or add custom skills.
+                  </p>
 
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <label>Target Position</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Software Developer, Data Scientist"
-                    value={position}
-                    onChange={e => handlePositionChange(e.target.value)}
-                    onKeyDown={handlePositionKeyDown}
-                    onBlur={() => handlePositionBlur()}
-                    onFocus={async () => {
-                      if (position) {
-                        const suggestions = await getPositionSuggestions(
-                          position
-                        );
-                        setPositionSuggestions(suggestions);
-                        setShowPositionSuggestions(suggestions.length > 0);
+                  <div
+                    className="flex flex-col gap-2"
+                    style={{ position: 'relative' }}
+                  >
+                    <label className="text-sm font-medium text-gray-700">
+                      Target Position
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={
+                        positionPlaceholder || 'e.g., Software Developer'
                       }
-                    }}
-                  />
-                  {showPositionSuggestions &&
-                    positionSuggestions.length > 0 && (
-                      <div className="autocomplete-dropdown">
-                        {positionSuggestions.map((suggestion, index) => (
+                      value={position}
+                      onChange={e => handlePositionChange(e.target.value)}
+                      onKeyDown={handlePositionKeyDown}
+                      onBlur={() => handlePositionBlur()}
+                      onFocus={async () => {
+                        if (position) {
+                          const suggestions = await getPositionSuggestions(
+                            position
+                          );
+                          setPositionSuggestions(suggestions);
+                          setShowPositionSuggestions(suggestions.length > 0);
+                        }
+                      }}
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                    />
+                    {showPositionSuggestions &&
+                      positionSuggestions.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
+                          {positionSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 text-gray-700 text-sm last:border-b-0 ${
+                                index === selectedSuggestionIndex
+                                  ? 'bg-blue-50 text-[#3b3be3]'
+                                  : ''
+                              }`}
+                              onMouseEnter={() =>
+                                setSelectedSuggestionIndex(index)
+                              }
+                              onMouseDown={e => {
+                                e.preventDefault(); // Prevent blur
+                                selectPosition(suggestion);
+                              }}
+                            >
+                              {suggestion}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    {isLoadingSkills && (
+                      <div className="text-center py-8">
+                        <div className="w-10 h-10 mx-auto mb-4 border-3 border-gray-200 border-t-[#3b3be3] rounded-full animate-spin"></div>
+                        <p className="text-sm text-[#3b3be3] my-2 text-center font-medium">
+                          Loading skills from API...
+                        </p>
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+                            <div
+                              key={i}
+                              className="h-[38px] bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%] animate-shimmer rounded-lg"
+                            ></div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {suggestedSkills.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-[15px] font-semibold mb-4 text-gray-700">
+                        Suggested Skills (Select up to 50)
+                      </h4>
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
+                        {suggestedSkills.map((skill, index) => (
                           <div
                             key={index}
-                            className={`autocomplete-item ${
-                              index === selectedSuggestionIndex
-                                ? 'selected'
+                            className={`flex items-center justify-between gap-2 py-2.5 px-4 border rounded-lg text-[13px] font-medium cursor-pointer transition-all duration-200 select-none ${
+                              selectedSkills.includes(skill)
+                                ? 'bg-[#3b3be3] text-white border-[#3b3be3]'
+                                : 'bg-[#3b3be3] text-white border-[#3b3be3] hover:bg-[#5c5cff] hover:border-[#5c5cff] hover:-translate-y-0.5'
+                            } ${
+                              selectedSkills.length >= 50 &&
+                              !selectedSkills.includes(skill)
+                                ? 'opacity-50 cursor-not-allowed hover:transform-none hover:border-gray-200 hover:bg-gray-50'
                                 : ''
                             }`}
-                            onMouseEnter={() =>
-                              setSelectedSuggestionIndex(index)
-                            }
-                            onMouseDown={e => {
-                              e.preventDefault(); // Prevent blur
-                              selectPosition(suggestion);
-                            }}
+                            onClick={() => toggleSkill(skill)}
                           >
-                            {suggestion}
+                            {skill}
+                            {selectedSkills.includes(skill) && (
+                              <svg
+                                className="w-3.5 h-3.5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
                           </div>
                         ))}
                       </div>
-                    )}
-                  {isLoadingSkills && (
-                    <div className="skills-loading">
-                      <div className="loading-spinner"></div>
-                      <p className="loading-text">Loading skills from API...</p>
-                      <div className="skills-grid">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-                          <div key={i} className="skill-skeleton"></div>
+                    </div>
+                  )}
+
+                  <div
+                    className="flex flex-col gap-2"
+                    style={{ position: 'relative' }}
+                  >
+                    <label className="text-sm font-medium text-gray-700">
+                      Add Custom Skill
+                    </label>
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        placeholder="Enter a skill and press Enter"
+                        value={customSkill}
+                        onChange={e => handleCustomSkillChange(e.target.value)}
+                        onKeyDown={handleCustomSkillKeyDown}
+                        onBlur={() => {
+                          setTimeout(
+                            () => setShowCustomSkillSuggestions(false),
+                            200
+                          );
+                        }}
+                        onFocus={() => {
+                          if (
+                            customSkill.trim() &&
+                            customSkillSuggestions.length > 0
+                          ) {
+                            setShowCustomSkillSuggestions(true);
+                          }
+                        }}
+                        disabled={selectedSkills.length >= 50}
+                        className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                      <button
+                        className="px-6 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        onClick={addCustomSkill}
+                        disabled={
+                          !customSkill.trim() || selectedSkills.length >= 50
+                        }
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {showCustomSkillSuggestions &&
+                      customSkillSuggestions.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
+                          {customSkillSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 text-gray-700 text-sm last:border-b-0 ${
+                                index === selectedCustomSkillIndex
+                                  ? 'bg-blue-50 text-[#3b3be3]'
+                                  : ''
+                              }`}
+                              onMouseEnter={() =>
+                                setSelectedCustomSkillIndex(index)
+                              }
+                              onMouseDown={e => {
+                                e.preventDefault(); // Prevent blur
+                                selectCustomSkill(suggestion);
+                              }}
+                            >
+                              {suggestion}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+
+                  {selectedSkills.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-[15px] font-semibold mb-4 text-gray-700">
+                        Selected Skills ({selectedSkills.length}/50)
+                      </h4>
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
+                        {selectedSkills.map((skill, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between gap-2 py-2.5 px-4 bg-blue-400 border border-blue-400 rounded-lg text-[13px] font-medium text-white select-none"
+                          >
+                            {skill}
+                            <button
+                              className="bg-transparent border-none p-0 cursor-pointer flex items-center justify-center text-white transition-all duration-200 hover:scale-110"
+                              onClick={() => removeSkill(skill)}
+                            >
+                              <svg
+                                className="w-3.5 h-3.5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          </div>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
-
-                {suggestedSkills.length > 0 && (
-                  <div className="skills-suggestions">
-                    <h4>Suggested Skills (Select up to 50)</h4>
-                    <div className="skills-grid">
-                      {suggestedSkills.map((skill, index) => (
-                        <div
-                          key={index}
-                          className={`skill-chip ${
-                            selectedSkills.includes(skill) ? 'selected' : ''
-                          } ${
-                            selectedSkills.length >= 50 &&
-                            !selectedSkills.includes(skill)
-                              ? 'disabled'
-                              : ''
-                          }`}
-                          onClick={() => toggleSkill(skill)}
-                        >
-                          {skill}
-                          {selectedSkills.includes(skill) && (
-                            <svg
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <label>Add Custom Skill</label>
-                  <div className="custom-skill-input">
-                    <input
-                      type="text"
-                      placeholder="Enter a skill and press Enter"
-                      value={customSkill}
-                      onChange={e => handleCustomSkillChange(e.target.value)}
-                      onKeyPress={handleCustomSkillKeyPress}
-                      onBlur={() => {
-                        setTimeout(
-                          () => setShowCustomSkillSuggestions(false),
-                          200
-                        );
-                      }}
-                      onFocus={() => {
-                        if (
-                          customSkill.trim() &&
-                          customSkillSuggestions.length > 0
-                        ) {
-                          setShowCustomSkillSuggestions(true);
-                        }
-                      }}
-                      disabled={selectedSkills.length >= 50}
-                    />
-                    <button
-                      className="btn btn-secondary"
-                      onClick={addCustomSkill}
-                      disabled={
-                        !customSkill.trim() || selectedSkills.length >= 50
-                      }
-                    >
-                      Add
-                    </button>
-                  </div>
-                  {showCustomSkillSuggestions &&
-                    customSkillSuggestions.length > 0 && (
-                      <div className="autocomplete-dropdown">
-                        {customSkillSuggestions.map((suggestion, index) => (
-                          <div
-                            key={index}
-                            className="autocomplete-item"
-                            onClick={() => selectCustomSkill(suggestion)}
-                          >
-                            {suggestion}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                </div>
-
-                {selectedSkills.length > 0 && (
-                  <div className="selected-skills">
-                    <h4>Selected Skills ({selectedSkills.length}/50)</h4>
-                    <div className="skills-grid">
-                      {selectedSkills.map((skill, index) => (
-                        <div key={index} className="skill-chip-final">
-                          {skill}
-                          <button
-                            className="remove-skill"
-                            onClick={() => removeSkill(skill)}
-                          >
-                            <svg
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .page-container {
-          padding: 2rem;
-          height: 100%;
-        }
-
-        .page-header {
-          margin-bottom: 2rem;
-        }
-
-        .page-title {
-          font-size: 2rem;
-          font-weight: 700;
-          margin-bottom: 0.5rem;
-          background: linear-gradient(135deg, var(--primary), var(--accent));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .page-subtitle {
-          color: var(--text-muted);
-          font-size: 1rem;
-        }
-
-        .resume-builder {
-          display: grid;
-          grid-template-columns: 200px 1fr 300px;
-          gap: 1.5rem;
-          height: calc(100vh - 200px);
-        }
-
-        .builder-sidebar {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .section-tab {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.875rem 1rem;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: #374151;
-        }
-
-        .section-tab svg {
-          width: 18px;
-          height: 18px;
-          opacity: 0.6;
-        }
-
-        .section-tab:hover {
-          border-color: #3b3be3;
-          background: #eff6ff;
-        }
-
-        .section-tab.active {
-          background: #3b3be3;
-          color: #ffffff;
-          border-color: #3b3be3;
-        }
-
-        .section-tab.active svg {
-          opacity: 1;
-          color: #ffffff;
-        }
-
-        .builder-content {
-          overflow-y: auto;
-        }
-
-        .content-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 2rem;
-        }
-
-        .section-title {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin-bottom: 1.5rem;
-        }
-
-        .section-description {
-          color: var(--text-muted);
-          margin-bottom: 1rem;
-        }
-
-        .form-section {
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-        }
-
-        .form-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-        }
-
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .form-group label {
-          font-size: 0.875rem;
-          font-weight: 500;
-          color: var(--text-secondary);
-        }
-
-        .form-group input,
-        .form-group textarea {
-          padding: 0.75rem;
-          border: 1px solid #d1d5db;
-          border-radius: 8px;
-          background: #f9fafb;
-          font-size: 0.875rem;
-          transition: all 0.2s ease;
-          color: #374151;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-          outline: none;
-          border-color: #3b3be3;
-          box-shadow: 0 0 0 3px #eff6ff;
-          background: #ffffff;
-        }
-
-        .preview-panel {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 1.5rem;
-        }
-
-        .preview-panel h3 {
-          font-size: 1rem;
-          font-weight: 600;
-          margin-bottom: 1rem;
-        }
-
-        .resume-preview {
-          background: white;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          aspect-ratio: 8.5 / 11;
-          overflow-y: auto;
-          overflow-x: hidden;
-        }
-
-        .resume-content {
-          padding: 2rem;
-          font-family: 'Georgia', serif;
-        }
-
-        .resume-header {
-          text-align: center;
-          margin-bottom: 1.5rem;
-          padding-bottom: 1rem;
-          border-bottom: 2px solid #3b3be3;
-        }
-
-        .resume-name {
-          font-size: 1.75rem;
-          font-weight: 700;
-          color: #1f2937;
-          margin-bottom: 0.5rem;
-        }
-
-        .resume-contact {
-          font-size: 0.875rem;
-          color: #6b7280;
-        }
-
-        .resume-section {
-          margin-bottom: 1.5rem;
-        }
-
-        .resume-section-title {
-          font-size: 1.125rem;
-          font-weight: 700;
-          color: #3b3be3;
-          margin-bottom: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          border-bottom: 1px solid #e5e7eb;
-          padding-bottom: 0.25rem;
-        }
-
-        .resume-text {
-          font-size: 0.875rem;
-          color: #374151;
-          line-height: 1.6;
-        }
-
-        .resume-text-muted {
-          font-size: 0.8125rem;
-          color: #9ca3af;
-          font-style: italic;
-        }
-
-        .resume-skills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
-
-        .resume-skill-tag {
-          display: inline-block;
-          padding: 0.375rem 0.75rem;
-          background: #eff6ff;
-          color: #3b3be3;
-          border-radius: 4px;
-          font-size: 0.8125rem;
-          font-weight: 500;
-        }
-
-        .preview-placeholder {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100%;
-          color: var(--text-muted);
-        }
-
-        .preview-placeholder svg {
-          width: 48px;
-          height: 48px;
-          margin-bottom: 1rem;
-          opacity: 0.3;
-        }
-
-        .preview-placeholder p {
-          font-size: 0.875rem;
-        }
-
-        .btn {
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          border: none;
-          font-size: 0.875rem;
-        }
-
-        .btn-primary {
-          background: var(--primary);
-          color: white;
-        }
-
-        .btn-primary:hover {
-          background: var(--primary-dark);
-          transform: scale(1.02);
-        }
-
-        .btn-secondary {
-          background: transparent;
-          color: var(--text-secondary);
-          border: 1px solid var(--border);
-          padding: 0.75rem 1rem;
-          border-radius: 8px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 0.875rem;
-        }
-
-        .btn-secondary:hover {
-          background: var(--bg-secondary);
-        }
-
-        .btn-secondary:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .loading-text {
-          font-size: 0.875rem;
-          color: #3b3be3;
-          margin: 0.5rem 0;
-          text-align: center;
-          font-weight: 500;
-        }
-
-        .skills-loading {
-          text-align: center;
-          padding: 2rem 0;
-        }
-
-        .loading-spinner {
-          width: 40px;
-          height: 40px;
-          margin: 0 auto 1rem;
-          border: 3px solid #e5e7eb;
-          border-top-color: #3b3be3;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        .skill-skeleton {
-          height: 38px;
-          background: linear-gradient(
-            90deg,
-            #f0f0f0 25%,
-            #e0e0e0 50%,
-            #f0f0f0 75%
-          );
-          background-size: 200% 100%;
-          animation: shimmer 1.5s infinite;
-          border-radius: 8px;
-        }
-
-        @keyframes shimmer {
-          0% {
-            background-position: 200% 0;
-          }
-          100% {
-            background-position: -200% 0;
-          }
-        }
-
-        .skills-suggestions,
-        .selected-skills {
-          margin-top: 1.5rem;
-        }
-
-        .skills-suggestions h4,
-        .selected-skills h4 {
-          font-size: 0.9375rem;
-          font-weight: 600;
-          margin-bottom: 1rem;
-          color: var(--text-secondary);
-        }
-
-        .skills-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: 0.75rem;
-        }
-
-        .skill-chip {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 0.5rem;
-          padding: 0.625rem 1rem;
-          background: #3b3be3;
-          border: 1px solid #3b3be3;
-          border-radius: 8px;
-          font-size: 0.8125rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          user-select: none;
-          color: #ffffff;
-        }
-
-        .skill-chip:hover {
-          border-color: #5c5cff;
-          background: #5c5cff;
-          transform: translateY(-1px);
-        }
-
-        .skill-chip.selected {
-          background: #3b3be3;
-          color: #ffffff;
-          border-color: #3b3be3;
-        }
-
-        .skill-chip.selected svg {
-          width: 14px;
-          height: 14px;
-          color: #ffffff;
-        }
-
-        .skill-chip.disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .skill-chip.disabled:hover {
-          transform: none;
-          border-color: #e5e7eb;
-          background: #f9fafb;
-        }
-
-        .skill-chip-final {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 0.5rem;
-          padding: 0.625rem 1rem;
-          background: #60a5fa;
-          border: 1px solid #60a5fa;
-          border-radius: 8px;
-          font-size: 0.8125rem;
-          font-weight: 500;
-          color: #ffffff;
-          user-select: none;
-        }
-
-        .skill-chip-final svg {
-          width: 14px;
-          height: 14px;
-          color: #ffffff;
-        }
-
-        .custom-skill-input {
-          display: flex;
-          gap: 0.75rem;
-        }
-
-        .custom-skill-input input {
-          flex: 1;
-        }
-
-        .remove-skill {
-          background: transparent;
-          border: none;
-          padding: 0;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          transition: all 0.2s ease;
-        }
-
-        .remove-skill svg {
-          width: 14px;
-          height: 14px;
-        }
-
-        .remove-skill:hover {
-          transform: scale(1.2);
-        }
-
-        .autocomplete-dropdown {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: #ffffff;
-          border: 1px solid #d1d5db;
-          border-radius: 8px;
-          margin-top: 0.25rem;
-          max-height: 300px;
-          overflow-y: auto;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          z-index: 1000;
-        }
-
-        .autocomplete-item {
-          padding: 0.75rem 1rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          border-bottom: 1px solid #e5e7eb;
-          color: #374151;
-          font-size: 0.875rem;
-        }
-
-        .autocomplete-item:last-child {
-          border-bottom: none;
-        }
-
-        .autocomplete-item:hover,
-        .autocomplete-item.selected {
-          background: #eff6ff;
-          color: #3b3be3;
-        }
-      `}</style>
     </div>
   );
 }

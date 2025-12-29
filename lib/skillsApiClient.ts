@@ -64,7 +64,7 @@ function getFallbackPositionSuggestions(query: string): string[] {
 
 // Get position suggestions from API (with fallback)
 export async function getPositionSuggestions(query: string): Promise<string[]> {
-  if (!query.trim() || query.length < 2) return [];
+  if (!query.trim() || query.length < 1) return [];
 
   try {
     const apiKey = getApiKey();

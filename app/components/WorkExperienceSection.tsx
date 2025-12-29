@@ -27,6 +27,27 @@ export default function WorkExperienceSection({
     setFormData(createEmptyWorkExperience());
   };
 
+  const handleFresher = () => {
+    const fresherExp: WorkExperience = {
+      id: Date.now().toString(),
+      position: 'Intern / Fresh Graduate',
+      company: 'Recent Graduate',
+      location: 'Your City',
+      startDate: new Date().getFullYear().toString(),
+      endDate: new Date().getFullYear().toString(),
+      currentlyWorking: false,
+      description: `• Recent graduate with strong academic foundation and eagerness to contribute
+• Completed internship/academic projects demonstrating practical skills
+• Proficient in modern development tools and technologies
+• Quick learner with excellent problem-solving abilities
+• Strong communication and teamwork skills
+• Passionate about technology and continuous learning
+• Ready to contribute fresh perspectives and innovative ideas`,
+      responsibilities: [],
+    };
+    onUpdate([...experiences, fresherExp]);
+  };
+
   const handleEdit = (exp: WorkExperience) => {
     setEditingExp(exp);
     setFormData(exp);
@@ -99,12 +120,20 @@ export default function WorkExperienceSection({
           <p className="text-gray-600 mb-4 text-sm md:text-base">
             Add your work experience, starting with the most recent position.
           </p>
-          <button
-            onClick={handleAdd}
-            className="w-full md:w-auto px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200 hover:scale-105 text-sm md:text-base"
-          >
-            + Add Experience
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleAdd}
+              className="w-full sm:w-auto px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200 hover:scale-105 text-sm md:text-base"
+            >
+              + Add Experience
+            </button>
+            <button
+              onClick={handleFresher}
+              className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all duration-200 hover:scale-105 text-sm md:text-base"
+            >
+              🎓 I'm a Fresher
+            </button>
+          </div>
 
           {experiences.length > 0 && (
             <div className="mt-6 flex flex-col gap-4">

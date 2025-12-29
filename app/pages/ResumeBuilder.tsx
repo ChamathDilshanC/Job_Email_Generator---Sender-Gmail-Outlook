@@ -5,15 +5,26 @@ import { useTypewriter } from '@/app/components/TypewriterText';
 import WorkExperienceSection from '@/app/components/WorkExperienceSection';
 import { Education } from '@/app/models/Education';
 import { WorkExperience } from '@/app/models/WorkExperience';
+import { AlertDialog } from '@/components/alert-dialog';
+import { autoSaveResumeData, loadResumeData } from '@/lib/resumeDataService';
 import {
   fetchSkillsForPosition,
   getPositionSuggestions,
 } from '@/lib/skillsApiClient';
-import { useState } from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function ResumeBuilder() {
   const [activeSection, setActiveSection] = useState('personal');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Alert dialog state
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    description: '',
+    type: 'info' as 'success' | 'error' | 'info' | 'warning',
+  });
 
   // Work Experience State
   const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
@@ -38,6 +49,60 @@ export default function ResumeBuilder() {
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [selectedCustomSkillIndex, setSelectedCustomSkillIndex] = useState(-1);
 
+  // Personal Info State (for step 1)
+  const [personalInfo, setPersonalInfo] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    location: '',
+    summary: '',
+  });
+
+  // Step completion tracking
+  const [stepsCompleted, setStepsCompleted] = useState({
+    personal: false,
+    experience: false,
+    education: false,
+    skills: false,
+  });
+
+  // Validation functions for each step
+  const validatePersonalInfo = () => {
+    return !!(personalInfo.fullName.trim() && personalInfo.email.trim());
+  };
+
+  const validateExperience = () => {
+    return workExperiences.length > 0;
+  };
+
+  const validateEducation = () => {
+    return educations.length > 0;
+  };
+
+  const validateSkills = () => {
+    return !!(position.trim() && selectedSkills.length > 0);
+  };
+
+  // Check if a section can be accessed
+  const canAccessSection = (section: string) => {
+    switch (section) {
+      case 'personal':
+        return true; // Always accessible
+      case 'experience':
+        return stepsCompleted.personal;
+      case 'education':
+        return stepsCompleted.personal && stepsCompleted.experience;
+      case 'skills':
+        return (
+          stepsCompleted.personal &&
+          stepsCompleted.experience &&
+          stepsCompleted.education
+        );
+      default:
+        return false;
+    }
+  };
+
   // Typewriter animation for position placeholder
   const positionPlaceholder = useTypewriter(
     [
@@ -52,15 +117,34 @@ export default function ResumeBuilder() {
     true // loop
   );
 
-  // Handle position input change with autocomplete
-  const handlePositionChange = async (value: string) => {
+  // Debounce timeout ref for faster autocomplete
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle position input change with debounced autocomplete
+  const handlePositionChange = useCallback((value: string) => {
     setPosition(value);
-    const suggestions = await getPositionSuggestions(value);
-    console.log('Position suggestions for:', value, '→', suggestions);
-    setPositionSuggestions(suggestions);
-    setShowPositionSuggestions(suggestions.length > 0);
-    setSelectedSuggestionIndex(-1); // Reset selection when typing
-  };
+
+    // Clear previous timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    // Show suggestions immediately if value is empty
+    if (!value.trim()) {
+      setPositionSuggestions([]);
+      setShowPositionSuggestions(false);
+      return;
+    }
+
+    // Debounce API call with shorter delay for faster response
+    debounceTimeout.current = setTimeout(async () => {
+      const suggestions = await getPositionSuggestions(value);
+      console.log('Position suggestions for:', value, '→', suggestions);
+      setPositionSuggestions(suggestions);
+      setShowPositionSuggestions(suggestions.length > 0);
+      setSelectedSuggestionIndex(-1);
+    }, 200); // 200ms delay - fast and responsive!
+  }, []);
 
   // Select position from suggestions
   const selectPosition = (selectedPosition: string) => {
@@ -281,6 +365,192 @@ export default function ResumeBuilder() {
     setSelectedSkills(selectedSkills.filter(s => s !== skill));
   };
 
+  // Load resume data from Firebase when user logs in
+  useEffect(() => {
+    const auth = getAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, async user => {
+      if (user) {
+        try {
+          console.log('User logged in, loading resume data...');
+          const data = await loadResumeData();
+
+          console.log('=== FULL DATA FROM MONGODB ===');
+          console.log(JSON.stringify(data, null, 2));
+          console.log('=== END DATA ===');
+
+          if (data) {
+            // Load personal info
+            console.log('Personal Info from DB:', data.personalInfo);
+            if (data.personalInfo) {
+              setPersonalInfo({
+                fullName: data.personalInfo.fullName || '',
+                email: data.personalInfo.email || '',
+                phone: data.personalInfo.phone || '',
+                location: data.personalInfo.location || '',
+                summary: data.personalInfo.summary || '',
+              });
+            }
+
+            // Load work experiences
+            console.log('Work Experiences from DB:', data.workExperiences);
+            if (data.workExperiences) {
+              setWorkExperiences(data.workExperiences);
+            }
+
+            // Load education
+            console.log('Education from DB:', data.education);
+            if (data.education) {
+              setEducations(data.education);
+            }
+
+            // Load skills
+            console.log('Skills from DB:', data.skills);
+            if (data.skills) {
+              setPosition(data.skills.position || '');
+              setSelectedSkills(data.skills.selectedSkills || []);
+            }
+
+            console.log('Resume data loaded successfully!');
+          }
+        } catch (error) {
+          console.error('Error loading resume data:', error);
+        }
+      } else {
+        console.log('User logged out, clearing data...');
+        // Optionally clear data when user logs out
+        setWorkExperiences([]);
+        setEducations([]);
+        setPosition('');
+        setSelectedSkills([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-save resume data when any data changes
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      autoSaveResumeData({
+        personalInfo,
+        workExperiences,
+        education: educations,
+        skills: {
+          position,
+          selectedSkills,
+        },
+      });
+    }
+  }, [personalInfo, workExperiences, educations, position, selectedSkills]);
+
+  // Helper function to show alert dialog
+  const showAlert = (
+    title: string,
+    description: string,
+    type: 'success' | 'error' | 'info' | 'warning' = 'info'
+  ) => {
+    setAlertConfig({ title, description, type });
+    setAlertOpen(true);
+  };
+
+  // Handle Save & Continue for each step
+  const handleSaveStep = () => {
+    let isValid = false;
+
+    switch (activeSection) {
+      case 'personal':
+        isValid = validatePersonalInfo();
+        if (isValid) {
+          setStepsCompleted(prev => ({ ...prev, personal: true }));
+          setActiveSection('experience');
+        }
+        break;
+      case 'experience':
+        isValid = validateExperience();
+        if (isValid) {
+          setStepsCompleted(prev => ({ ...prev, experience: true }));
+          setActiveSection('education');
+        }
+        break;
+      case 'education':
+        isValid = validateEducation();
+        if (isValid) {
+          setStepsCompleted(prev => ({ ...prev, education: true }));
+          setActiveSection('skills');
+        }
+        break;
+      case 'skills':
+        isValid = validateSkills();
+        if (isValid) {
+          setStepsCompleted(prev => ({ ...prev, skills: true }));
+          showAlert(
+            'Resume Completed!',
+            'Your resume data has been saved to Firebase successfully.',
+            'success'
+          );
+        }
+        break;
+    }
+
+    if (!isValid) {
+      showAlert(
+        'Incomplete Information',
+        'Please fill in all required fields before continuing.',
+        'warning'
+      );
+    }
+  };
+
+  // Handle Previous Step
+  const handlePreviousStep = () => {
+    switch (activeSection) {
+      case 'experience':
+        setActiveSection('personal');
+        break;
+      case 'education':
+        setActiveSection('experience');
+        break;
+      case 'skills':
+        setActiveSection('education');
+        break;
+    }
+  };
+
+  // Handle Cancel (reset current section)
+  const handleCancel = () => {
+    if (
+      confirm(
+        'Are you sure you want to cancel? This will clear your current progress in this section.'
+      )
+    ) {
+      switch (activeSection) {
+        case 'personal':
+          setPersonalInfo({
+            fullName: '',
+            email: '',
+            phone: '',
+            location: '',
+            summary: '',
+          });
+          break;
+        case 'experience':
+          // Don't clear, just go back
+          break;
+        case 'education':
+          // Don't clear, just go back
+          break;
+        case 'skills':
+          setPosition('');
+          setSelectedSkills([]);
+          break;
+      }
+    }
+  };
+
   return (
     <div className="h-full">
       {/* Sticky Mobile Header */}
@@ -318,6 +588,146 @@ export default function ResumeBuilder() {
           <p className="text-gray-600 text-sm md:text-base">
             Create a professional template to complement your job applications
           </p>
+        </div>
+
+        {/* Step Progress Indicator */}
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            {/* Step 1: Personal Info */}
+            <div className="flex flex-col items-center flex-1">
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                  stepsCompleted.personal
+                    ? 'bg-green-500 text-white'
+                    : activeSection === 'personal'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    : 'bg-gray-200 text-gray-500'
+                }`}
+              >
+                {stepsCompleted.personal ? '✓' : '1'}
+              </div>
+              <span
+                className={`text-xs md:text-sm mt-2 font-medium ${
+                  activeSection === 'personal'
+                    ? 'text-[#3b3be3]'
+                    : 'text-gray-600'
+                }`}
+              >
+                Personal
+              </span>
+            </div>
+
+            {/* Connector Line 1-2 */}
+            <div
+              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+                stepsCompleted.personal ? 'bg-green-500' : 'bg-gray-200'
+              }`}
+            />
+
+            {/* Step 2: Experience */}
+            <div className="flex flex-col items-center flex-1">
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 relative ${
+                  stepsCompleted.experience
+                    ? 'bg-green-500 text-white'
+                    : activeSection === 'experience'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    : canAccessSection('experience')
+                    ? 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                {stepsCompleted.experience
+                  ? '✓'
+                  : canAccessSection('experience')
+                  ? '2'
+                  : '🔒'}
+              </div>
+              <span
+                className={`text-xs md:text-sm mt-2 font-medium ${
+                  activeSection === 'experience'
+                    ? 'text-[#3b3be3]'
+                    : 'text-gray-600'
+                }`}
+              >
+                Experience
+              </span>
+            </div>
+
+            {/* Connector Line 2-3 */}
+            <div
+              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+                stepsCompleted.experience ? 'bg-green-500' : 'bg-gray-200'
+              }`}
+            />
+
+            {/* Step 3: Education */}
+            <div className="flex flex-col items-center flex-1">
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                  stepsCompleted.education
+                    ? 'bg-green-500 text-white'
+                    : activeSection === 'education'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    : canAccessSection('education')
+                    ? 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                {stepsCompleted.education
+                  ? '✓'
+                  : canAccessSection('education')
+                  ? '3'
+                  : '🔒'}
+              </div>
+              <span
+                className={`text-xs md:text-sm mt-2 font-medium ${
+                  activeSection === 'education'
+                    ? 'text-[#3b3be3]'
+                    : 'text-gray-600'
+                }`}
+              >
+                Education
+              </span>
+            </div>
+
+            {/* Connector Line 3-4 */}
+            <div
+              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+                stepsCompleted.education ? 'bg-green-500' : 'bg-gray-200'
+              }`}
+            />
+
+            {/* Step 4: Skills */}
+            <div className="flex flex-col items-center flex-1">
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                  stepsCompleted.skills
+                    ? 'bg-green-500 text-white'
+                    : activeSection === 'skills'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    : canAccessSection('skills')
+                    ? 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                {stepsCompleted.skills
+                  ? '✓'
+                  : canAccessSection('skills')
+                  ? '4'
+                  : '🔒'}
+              </div>
+              <span
+                className={`text-xs md:text-sm mt-2 font-medium ${
+                  activeSection === 'skills'
+                    ? 'text-[#3b3be3]'
+                    : 'text-gray-600'
+                }`}
+              >
+                Skills
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Mobile Sidebar Overlay */}
@@ -389,14 +799,24 @@ export default function ResumeBuilder() {
                 Personal Info
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'experience'
                     ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
-                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                    : canAccessSection('experience')
+                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
+                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
                 }`}
                 onClick={() => {
-                  setActiveSection('experience');
-                  setIsMobileSidebarOpen(false);
+                  if (canAccessSection('experience')) {
+                    setActiveSection('experience');
+                    setIsMobileSidebarOpen(false);
+                  } else {
+                    showAlert(
+                      'Step Locked',
+                      'Please complete Personal Info first!',
+                      'warning'
+                    );
+                  }
                 }}
               >
                 <svg
@@ -416,14 +836,24 @@ export default function ResumeBuilder() {
                 Experience
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'education'
                     ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
-                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                    : canAccessSection('education')
+                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
+                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
                 }`}
                 onClick={() => {
-                  setActiveSection('education');
-                  setIsMobileSidebarOpen(false);
+                  if (canAccessSection('education')) {
+                    setActiveSection('education');
+                    setIsMobileSidebarOpen(false);
+                  } else {
+                    showAlert(
+                      'Step Locked',
+                      'Please complete previous steps first!',
+                      'warning'
+                    );
+                  }
                 }}
               >
                 <svg
@@ -443,14 +873,24 @@ export default function ResumeBuilder() {
                 Education
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[150px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[150px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'skills'
                     ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
-                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                    : canAccessSection('skills')
+                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
+                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
                 }`}
                 onClick={() => {
-                  setActiveSection('skills');
-                  setIsMobileSidebarOpen(false);
+                  if (canAccessSection('skills')) {
+                    setActiveSection('skills');
+                    setIsMobileSidebarOpen(false);
+                  } else {
+                    showAlert(
+                      'Step Locked',
+                      'Please complete previous steps first!',
+                      'warning'
+                    );
+                  }
                 }}
               >
                 <svg
@@ -492,6 +932,13 @@ export default function ResumeBuilder() {
                       <input
                         type="text"
                         placeholder="John Doe"
+                        value={personalInfo.fullName}
+                        onChange={e =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            fullName: e.target.value,
+                          })
+                        }
                         className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
                       />
                     </div>
@@ -502,6 +949,13 @@ export default function ResumeBuilder() {
                       <input
                         type="email"
                         placeholder="john@example.com"
+                        value={personalInfo.email}
+                        onChange={e =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            email: e.target.value,
+                          })
+                        }
                         className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
                       />
                     </div>
@@ -514,6 +968,13 @@ export default function ResumeBuilder() {
                       <input
                         type="tel"
                         placeholder="+1 234 567 8900"
+                        value={personalInfo.phone}
+                        onChange={e =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            phone: e.target.value,
+                          })
+                        }
                         className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
                       />
                     </div>
@@ -524,6 +985,13 @@ export default function ResumeBuilder() {
                       <input
                         type="text"
                         placeholder="City, Country"
+                        value={personalInfo.location}
+                        onChange={e =>
+                          setPersonalInfo({
+                            ...personalInfo,
+                            location: e.target.value,
+                          })
+                        }
                         className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
                       />
                     </div>
@@ -535,24 +1003,93 @@ export default function ResumeBuilder() {
                     <textarea
                       rows={4}
                       placeholder="Brief overview of your professional background..."
+                      value={personalInfo.summary}
+                      onChange={e =>
+                        setPersonalInfo({
+                          ...personalInfo,
+                          summary: e.target.value,
+                        })
+                      }
                       className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white resize-none"
                     />
+                  </div>
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={handleCancel}
+                      className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveStep}
+                      className="px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200"
+                    >
+                      Save & Continue
+                    </button>
                   </div>
                 </div>
               )}
 
               {activeSection === 'experience' && (
-                <WorkExperienceSection
-                  experiences={workExperiences}
-                  onUpdate={setWorkExperiences}
-                />
+                <div>
+                  <WorkExperienceSection
+                    experiences={workExperiences}
+                    onUpdate={setWorkExperiences}
+                  />
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={handlePreviousStep}
+                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                    >
+                      Previous
+                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleCancel}
+                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveStep}
+                        className="px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200"
+                      >
+                        Save & Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {activeSection === 'education' && (
-                <EducationSection
-                  educations={educations}
-                  onUpdate={setEducations}
-                />
+                <div>
+                  <EducationSection
+                    educations={educations}
+                    onUpdate={setEducations}
+                  />
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={handlePreviousStep}
+                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                    >
+                      Previous
+                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleCancel}
+                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveStep}
+                        className="px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200"
+                      >
+                        Save & Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {activeSection === 'skills' && (
@@ -769,12 +1306,45 @@ export default function ResumeBuilder() {
                       </div>
                     </div>
                   )}
+
+                  {/* Navigation Buttons */}
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={handlePreviousStep}
+                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                    >
+                      Previous
+                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleCancel}
+                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveStep}
+                        className="px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200"
+                      >
+                        Complete Resume
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Alert Dialog */}
+      <AlertDialog
+        open={alertOpen}
+        onOpenChange={setAlertOpen}
+        title={alertConfig.title}
+        description={alertConfig.description}
+        type={alertConfig.type}
+      />
     </div>
   );
 }

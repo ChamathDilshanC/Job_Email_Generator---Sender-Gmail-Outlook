@@ -75,7 +75,8 @@ const SRI_LANKAN_INSTITUTES: University[] = [
   },
 ];
 
-const API_BASE_URL = 'https://universities.hipolabs.com';
+// Use our Next.js API route as a proxy to avoid mixed content issues
+const API_BASE_URL = '/api/universities/search';
 
 export const searchUniversities = async (
   query: string
@@ -94,7 +95,7 @@ export const searchUniversities = async (
 
     // Then search API for Sri Lankan universities
     const sriLankaResponse = await fetch(
-      `${API_BASE_URL}/search?name=${encodeURIComponent(
+      `${API_BASE_URL}?name=${encodeURIComponent(
         query
       )}&country=Sri%20Lanka`
     );
@@ -121,7 +122,7 @@ export const searchUniversities = async (
 
     // Otherwise, get global results and combine
     const globalResponse = await fetch(
-      `${API_BASE_URL}/search?name=${encodeURIComponent(query)}`
+      `${API_BASE_URL}?name=${encodeURIComponent(query)}`
     );
 
     if (!globalResponse.ok) {
@@ -164,7 +165,7 @@ export const searchUniversitiesByCountry = async (
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/search?name=${encodeURIComponent(
+      `${API_BASE_URL}?name=${encodeURIComponent(
         query
       )}&country=${encodeURIComponent(country)}`
     );

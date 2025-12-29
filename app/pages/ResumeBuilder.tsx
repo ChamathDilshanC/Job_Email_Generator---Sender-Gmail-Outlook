@@ -489,7 +489,7 @@ export default function ResumeBuilder() {
           setStepsCompleted(prev => ({ ...prev, skills: true }));
           showAlert(
             'Resume Completed!',
-            'Your resume data has been saved to Firebase successfully.',
+            'Your resume data has been saved successfully.',
             'success'
           );
         }

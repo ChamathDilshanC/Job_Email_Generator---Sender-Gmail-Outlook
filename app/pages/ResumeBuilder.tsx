@@ -4,6 +4,7 @@ import EducationSection from '@/app/components/EducationSection';
 import { useTypewriter } from '@/app/components/TypewriterText';
 import WorkExperienceSection from '@/app/components/WorkExperienceSection';
 import { Education } from '@/app/models/Education';
+import { Project } from '@/app/models/Project';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { AlertDialog } from '@/components/alert-dialog';
 import { autoSaveResumeData, loadResumeData } from '@/lib/resumeDataService';
@@ -16,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PhoneInput from 'react-phone-number-input';
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
+import ProjectSection from '../components/ProjectSection';
 
 export default function ResumeBuilder() {
   const [activeSection, setActiveSection] = useState('personal');
@@ -34,6 +36,9 @@ export default function ResumeBuilder() {
 
   // Education State
   const [educations, setEducations] = useState<Education[]>([]);
+
+  // Projects State
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // Skills state
   const [position, setPosition] = useState('');
@@ -66,6 +71,7 @@ export default function ResumeBuilder() {
     personal: false,
     experience: false,
     education: false,
+    projects: false,
     skills: false,
   });
 
@@ -82,6 +88,10 @@ export default function ResumeBuilder() {
     return educations.length > 0;
   }, [educations.length]);
 
+  const validateProjects = useMemo(() => {
+    return projects.length > 0;
+  }, [projects.length]);
+
   const validateSkills = useMemo(() => {
     return !!(position.trim() && selectedSkills.length > 0);
   }, [position, selectedSkills.length]);
@@ -96,11 +106,18 @@ export default function ResumeBuilder() {
           return stepsCompleted.personal;
         case 'education':
           return stepsCompleted.personal && stepsCompleted.experience;
-        case 'skills':
+        case 'projects':
           return (
             stepsCompleted.personal &&
             stepsCompleted.experience &&
             stepsCompleted.education
+          );
+        case 'skills':
+          return (
+            stepsCompleted.personal &&
+            stepsCompleted.experience &&
+            stepsCompleted.education &&
+            stepsCompleted.projects
           );
         default:
           return false;
@@ -383,6 +400,7 @@ export default function ResumeBuilder() {
   // Load resume data from Firebase when user logs in
   useEffect(() => {
     const auth = getAuth();
+    let hasShownAlert = false; // Flag to prevent showing alert multiple times
 
     const unsubscribe = onAuthStateChanged(auth, async user => {
       if (user) {
@@ -423,6 +441,12 @@ export default function ResumeBuilder() {
               setEducations(data.education);
             }
 
+            // Load projects
+            console.log('Projects from DB:', data.projects);
+            if (data.projects) {
+              setProjects(data.projects);
+            }
+
             // Load skills
             console.log('Skills from DB:', data.skills);
             if (data.skills) {
@@ -437,9 +461,21 @@ export default function ResumeBuilder() {
         }
       } else {
         console.log('User logged out, clearing data...');
+
+        // Show alert only once when user is not signed in
+        if (!hasShownAlert) {
+          hasShownAlert = true;
+          showAlert(
+            'Sign In Required',
+            'Please sign in with Google to save your resume data and access it from any device. Your progress will not be saved without signing in.',
+            'warning'
+          );
+        }
+
         // Optionally clear data when user logs out
         setWorkExperiences([]);
         setEducations([]);
+        setProjects([]);
         setPosition('');
         setSelectedSkills([]);
       }
@@ -479,6 +515,7 @@ export default function ResumeBuilder() {
               personalInfo,
               workExperiences,
               education: educations,
+              projects,
               skills: {
                 position,
                 selectedSkills,
@@ -502,6 +539,7 @@ export default function ResumeBuilder() {
               personalInfo,
               workExperiences,
               education: educations,
+              projects,
               skills: {
                 position,
                 selectedSkills,
@@ -525,6 +563,31 @@ export default function ResumeBuilder() {
               personalInfo,
               workExperiences,
               education: educations,
+              projects,
+              skills: {
+                position,
+                selectedSkills,
+              },
+            });
+          }
+
+          setActiveSection('projects');
+        }
+        break;
+      case 'projects':
+        isValid = validateProjects;
+        if (isValid) {
+          setStepsCompleted(prev => ({ ...prev, projects: true }));
+
+          // Save data when moving forward
+          const auth = getAuth();
+          const user = auth.currentUser;
+          if (user) {
+            await autoSaveResumeData({
+              personalInfo,
+              workExperiences,
+              education: educations,
+              projects,
               skills: {
                 position,
                 selectedSkills,
@@ -548,6 +611,7 @@ export default function ResumeBuilder() {
               personalInfo,
               workExperiences,
               education: educations,
+              projects,
               skills: {
                 position,
                 selectedSkills,
@@ -576,10 +640,12 @@ export default function ResumeBuilder() {
     validatePersonalInfo,
     validateExperience,
     validateEducation,
+    validateProjects,
     validateSkills,
     personalInfo,
     workExperiences,
     educations,
+    projects,
     position,
     selectedSkills,
     showAlert,
@@ -594,8 +660,11 @@ export default function ResumeBuilder() {
       case 'education':
         setActiveSection('experience');
         break;
-      case 'skills':
+      case 'projects':
         setActiveSection('education');
+        break;
+      case 'skills':
+        setActiveSection('projects');
         break;
     }
   }, [activeSection]);
@@ -778,7 +847,44 @@ export default function ResumeBuilder() {
               }`}
             />
 
-            {/* Step 4: Skills */}
+            {/* Step 4: Projects */}
+            <div className="flex flex-col items-center flex-1">
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                  stepsCompleted.projects
+                    ? 'bg-green-500 text-white'
+                    : activeSection === 'projects'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    : canAccessSection('projects')
+                    ? 'bg-gray-200 text-gray-500'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+              >
+                {stepsCompleted.projects
+                  ? '✓'
+                  : canAccessSection('projects')
+                  ? '4'
+                  : '🔒'}
+              </div>
+              <span
+                className={`text-xs md:text-sm mt-2 font-medium ${
+                  activeSection === 'projects'
+                    ? 'text-[#3b3be3]'
+                    : 'text-gray-600'
+                }`}
+              >
+                Projects
+              </span>
+            </div>
+
+            {/* Connector Line 4-5 */}
+            <div
+              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+                stepsCompleted.projects ? 'bg-green-500' : 'bg-gray-200'
+              }`}
+            />
+
+            {/* Step 5: Skills */}
             <div className="flex flex-col items-center flex-1">
               <div
                 className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
@@ -794,7 +900,7 @@ export default function ResumeBuilder() {
                 {stepsCompleted.skills
                   ? '✓'
                   : canAccessSection('skills')
-                  ? '4'
+                  ? '5'
                   : '🔒'}
               </div>
               <span
@@ -953,6 +1059,43 @@ export default function ResumeBuilder() {
                 Education
               </div>
               <div
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                  activeSection === 'projects'
+                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    : canAccessSection('projects')
+                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
+                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                }`}
+                onClick={() => {
+                  if (canAccessSection('projects')) {
+                    setActiveSection('projects');
+                    setIsMobileSidebarOpen(false);
+                  } else {
+                    showAlert(
+                      'Step Locked',
+                      'Please complete previous steps first!',
+                      'warning'
+                    );
+                  }
+                }}
+              >
+                <svg
+                  className={`w-[18px] h-[18px] ${
+                    activeSection === 'projects'
+                      ? 'opacity-100 text-[#3b3be3]'
+                      : 'opacity-60'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                Projects
+              </div>
+              <div
                 className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[150px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'skills'
                     ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
@@ -999,6 +1142,7 @@ export default function ResumeBuilder() {
                 {activeSection === 'personal' && 'Personal Information'}
                 {activeSection === 'experience' && 'Work Experience'}
                 {activeSection === 'education' && 'Education'}
+                {activeSection === 'projects' && 'Projects'}
                 {activeSection === 'skills' && 'Skills & Expertise'}
               </h2>
 
@@ -1303,6 +1447,58 @@ export default function ResumeBuilder() {
                         className="px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200"
                       >
                         Save & Continue
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'projects' && (
+                <div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <svg
+                        className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">
+                          Please enter valid and accurate data
+                        </p>
+                        <p className="text-xs text-blue-700 mt-1">
+                          Your email templates and CV will be created based on
+                          this information.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <ProjectSection projects={projects} onUpdate={setProjects} />
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={handlePreviousStep}
+                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                    >
+                      Previous
+                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <button
+                        onClick={handleCancel}
+                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveStep}
+                        className="px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200"
+                      >
+                        Save &amp; Continue
                       </button>
                     </div>
                   </div>

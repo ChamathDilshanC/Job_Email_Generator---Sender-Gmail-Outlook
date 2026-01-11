@@ -1,4 +1,5 @@
 import { Education } from '@/app/models/Education';
+import { Project } from '@/app/models/Project';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { getAuth } from 'firebase/auth';
 
@@ -14,6 +15,7 @@ export interface ResumeData {
   };
   workExperiences: WorkExperience[];
   education: Education[];
+  projects: Project[];
   skills: {
     position: string;
     selectedSkills: string[];

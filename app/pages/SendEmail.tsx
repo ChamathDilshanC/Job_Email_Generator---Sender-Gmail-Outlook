@@ -3,7 +3,7 @@
 import { AlertDialog } from '@/components/alert-dialog';
 import { FirebaseSignInButton } from '@/components/firebase-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
-import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
 import { generateEmail, type EmailData } from '@/lib/emailTemplate';
 import {
@@ -11,7 +11,7 @@ import {
   sendEmailWithAttachments,
   type GmailAttachment,
 } from '@/lib/gmailClient';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 
 export default function SendEmail() {
   const [formData, setFormData] = useState<EmailData>({
@@ -36,14 +36,28 @@ export default function SendEmail() {
     type: 'success' | 'error' | 'info' | 'warning';
   }>({ open: false, title: '', description: '', type: 'info' });
 
-  // Firebase Auth
+  // Use Auth Context
   const {
     isAuthenticated,
     accessToken,
     userEmail,
     handleSignOut,
     isLoading: authLoading,
-  } = useFirebaseAuth();
+  } = useAuth();
+
+  // Show alert when page loads if user is not signed in
+  useEffect(() => {
+    // Wait for auth to finish loading
+    if (!authLoading && !isAuthenticated) {
+      setAlertDialog({
+        open: true,
+        title: 'Sign In Required',
+        description:
+          'Please sign in with Google to send emails via Gmail and use all features. You can still use Outlook without signing in.',
+        type: 'warning',
+      });
+    }
+  }, [authLoading, isAuthenticated]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

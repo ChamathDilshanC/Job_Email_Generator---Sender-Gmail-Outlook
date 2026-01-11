@@ -27,6 +27,7 @@ export default function SendEmail() {
     coverLetter: File | null;
   }>({ cv: null, coverLetter: null });
   const [isSending, setIsSending] = useState(false);
+  const [requireCoverLetter, setRequireCoverLetter] = useState(false);
 
   // Alert Dialog State
   const [alertDialog, setAlertDialog] = useState<{
@@ -267,6 +268,25 @@ export default function SendEmail() {
 
   const isFormValid =
     formData.companyName && formData.position && formData.recipientEmail;
+
+  // Check if file upload requirements are met
+  const isFileUploadValid = () => {
+    // CV is always required
+    if (!attachments.cv) {
+      return false;
+    }
+
+    // If cover letter is required, check if it's uploaded
+    if (requireCoverLetter && !attachments.coverLetter) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Send button should only be enabled when form is valid AND files are uploaded
+  const canSendEmail = isFormValid && isFileUploadValid();
+
   const generatedEmail = isFormValid ? generateEmail(formData) : null;
 
   return (
@@ -351,30 +371,30 @@ export default function SendEmail() {
                 </span>
               )}
             </button>
-            <button
-              className="btn btn-primary"
-              onClick={handleSubmit}
-              disabled={
-                !isFormValid ||
-                (emailClient === 'gmail' && !isAuthenticated) ||
-                isSending
-              }
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+            {canSendEmail && (
+              <button
+                className="btn btn-primary"
+                onClick={handleSubmit}
+                disabled={
+                  (emailClient === 'gmail' && !isAuthenticated) || isSending
+                }
               >
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-              {isSending
-                ? 'Sending...'
-                : emailClient === 'gmail'
-                ? 'Send via Gmail'
-                : 'Send via Outlook'}
-            </button>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+                {isSending
+                  ? 'Sending...'
+                  : emailClient === 'gmail'
+                  ? 'Send via Gmail'
+                  : 'Send via Outlook'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -493,15 +513,163 @@ export default function SendEmail() {
           </table>
         </div>
 
-        {/* File Upload Sections */}
+        {/* Cover Letter Requirement Toggle */}
         <div
           style={{
             marginTop: '2rem',
+            padding: '0 1rem',
+            paddingBottom: '0.5rem',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '1rem',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              border: '1px solid #e0e0e0',
+            }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                cursor: 'pointer',
+                fontSize: '0.95rem',
+                fontWeight: '500',
+                color: '#333',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={requireCoverLetter}
+                onChange={e => setRequireCoverLetter(e.target.checked)}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  cursor: 'pointer',
+                }}
+              />
+              <span>Require Cover Letter</span>
+            </label>
+            <span
+              style={{
+                fontSize: '0.85rem',
+                color: '#666',
+                fontStyle: 'italic',
+              }}
+            >
+              {requireCoverLetter
+                ? '✓ Cover letter is required'
+                : 'Cover letter is optional'}
+            </span>
+          </div>
+        </div>
+
+        {/* File Upload Sections */}
+        <div
+          style={{
+            marginTop: '1rem',
             padding: '0 1rem',
             paddingBottom: '1rem',
           }}
         >
           <JobFileUpload onFilesChange={setAttachments} />
+
+          {/* Upload Status Indicators */}
+          <div
+            style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#f0f7ff',
+              borderRadius: '6px',
+              border: '1px solid #d0e7ff',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                marginBottom: '0.5rem',
+                color: '#1a5490',
+              }}
+            >
+              Upload Requirements:
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.85rem',
+                }}
+              >
+                {attachments.cv ? (
+                  <span style={{ color: '#22c55e', fontWeight: '600' }}>✓</span>
+                ) : (
+                  <span style={{ color: '#ef4444', fontWeight: '600' }}>✗</span>
+                )}
+                <span style={{ color: attachments.cv ? '#22c55e' : '#ef4444' }}>
+                  CV{' '}
+                  {attachments.cv ? `(${attachments.cv.name})` : '(Required)'}
+                </span>
+              </div>
+              {requireCoverLetter && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  {attachments.coverLetter ? (
+                    <span style={{ color: '#22c55e', fontWeight: '600' }}>
+                      ✓
+                    </span>
+                  ) : (
+                    <span style={{ color: '#ef4444', fontWeight: '600' }}>
+                      ✗
+                    </span>
+                  )}
+                  <span
+                    style={{
+                      color: attachments.coverLetter ? '#22c55e' : '#ef4444',
+                    }}
+                  >
+                    Cover Letter{' '}
+                    {attachments.coverLetter
+                      ? `(${attachments.coverLetter.name})`
+                      : '(Required)'}
+                  </span>
+                </div>
+              )}
+            </div>
+            {!canSendEmail && isFormValid && (
+              <div
+                style={{
+                  marginTop: '0.75rem',
+                  padding: '0.5rem',
+                  backgroundColor: '#fef3c7',
+                  borderRadius: '4px',
+                  fontSize: '0.85rem',
+                  color: '#92400e',
+                }}
+              >
+                ⚠️ Please upload all required files to enable the send button
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Email Preview */}

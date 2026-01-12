@@ -122,9 +122,16 @@ export default function EmailTemplates() {
               >
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="inline-block px-3 py-1 bg-blue-50 text-[#3b3be3] rounded-full text-xs font-semibold">
-                      Template {template.id}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block px-3 py-1 bg-blue-50 text-[#3b3be3] rounded-full text-xs font-semibold">
+                        Template {template.id}
+                      </span>
+                      {template.id === TemplateType.COMPREHENSIVE_PROFILE && (
+                        <span className="inline-block px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-xs font-semibold shadow-md">
+                          ⭐ Recommended for Jobs
+                        </span>
+                      )}
+                    </div>
                     {isSelected && (
                       <div className="flex items-center gap-1 text-[#22c55e]">
                         <svg

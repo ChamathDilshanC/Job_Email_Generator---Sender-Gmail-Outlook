@@ -1,5 +1,6 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 // Firebase configuration using environment variables
 const firebaseConfig = {
@@ -37,4 +38,27 @@ googleProvider.setCustomParameters({
   prompt: 'consent',
 });
 
+// Initialize App Check (only in browser and if app is initialized)
+let appCheck = null;
+if (app && typeof window !== 'undefined') {
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+  if (recaptchaSiteKey) {
+    try {
+      appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+      console.log('✅ App Check initialized successfully');
+    } catch (error) {
+      console.error('❌ App Check initialization failed:', error);
+    }
+  } else {
+    console.warn(
+      '⚠️ NEXT_PUBLIC_RECAPTCHA_SITE_KEY not found in environment variables'
+    );
+  }
+}
+
+export { appCheck };
 export default app;

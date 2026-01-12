@@ -21,8 +21,15 @@ export default function EmailTemplates() {
     bodyHtml: string;
   } | null>(null);
 
-  // Load resume data on component mount
+  // Load resume data and selected template on component mount
   useEffect(() => {
+    // Load selected template from localStorage
+    const savedTemplateId = localStorage.getItem('selectedTemplateId');
+    if (savedTemplateId) {
+      setSelectedTemplateId(parseInt(savedTemplateId) as TemplateType);
+    }
+
+    // Load resume data
     const fetchResumeData = async () => {
       setIsLoadingResume(true);
       try {

@@ -6,6 +6,7 @@ import { FirebaseSignInButton } from '@/components/firebase-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
+import { saveEmailToHistory } from '@/lib/emailHistoryService';
 import { generateEmail, type EmailData } from '@/lib/emailTemplate';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import {
@@ -246,6 +247,25 @@ export default function SendEmail() {
                 .map(a => `• ${a.filename}`)
                 .join('\n')}`
             : '';
+
+        // Save email to history
+        const templateName =
+          TEMPLATE_METADATA.find(t => t.id === selectedTemplate)?.name ||
+          'Custom Template';
+        await saveEmailToHistory({
+          companyName: formData.companyName,
+          position: formData.position,
+          recipientEmail: formData.recipientEmail,
+          templateId: selectedTemplate,
+          templateName,
+          status: 'sent',
+          attachments: {
+            cv: attachments.cv?.name || '',
+            coverLetter: attachments.coverLetter?.name,
+          },
+          emailSubject: subject,
+          emailPreview: body.substring(0, 200) + '...',
+        });
 
         setAlertDialog({
           open: true,
@@ -606,8 +626,15 @@ export default function SendEmail() {
                   )}
                 </td>
                 <td>
-                  <span className="badge">
-                    {resumeData ? 'Available' : 'Requires Resume'}
+                  <span
+                    className="badge"
+                    style={{
+                      backgroundColor: '#fee2e2',
+                      color: '#dc2626',
+                      fontWeight: '600',
+                    }}
+                  >
+                    Check Your Selected Template Correct.
                   </span>
                 </td>
                 <td></td>

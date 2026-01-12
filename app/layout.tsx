@@ -1,25 +1,29 @@
-import type { Metadata } from 'next';
+'use client';
+
+import MobileNotSupported from '@/components/MobileNotSupported';
+import { useMobileDetection } from '@/hooks/useMobileDetection';
 import './globals.css';
 import { Providers } from './providers';
-
-export const metadata: Metadata = {
-  title: 'JobMail - Professional Job Application Emails',
-  description:
-    'Generate professional job application emails with AI-powered assistance. Create personalized, compelling emails for your job applications.',
-  icons: {
-    icon: '/logo.png',
-  },
-};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isMobile = useMobileDetection();
+
   return (
     <html lang="en">
+      <head>
+        <title>JobMail - Professional Job Application Emails</title>
+        <meta
+          name="description"
+          content="Generate professional job application emails with AI-powered assistance. Create personalized, compelling emails for your job applications."
+        />
+        <link rel="icon" href="/logo.png" />
+      </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>{isMobile ? <MobileNotSupported /> : children}</Providers>
       </body>
     </html>
   );

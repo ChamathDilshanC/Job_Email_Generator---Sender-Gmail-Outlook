@@ -7,18 +7,12 @@ import History from './pages/History';
 import Profile from './pages/Profile';
 import ResumeBuilder from './pages/ResumeBuilder';
 import SendEmail from './pages/SendEmail';
-import Settings from './pages/Settings';
 
-type PageType =
-  | 'send-email'
-  | 'templates'
-  | 'resume'
-  | 'history'
-  | 'profile'
-  | 'settings';
+type PageType = 'send-email' | 'templates' | 'resume' | 'history' | 'profile';
 
 export default function Home() {
   const [activePage, setActivePage] = useState<PageType>('send-email');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const renderPage = () => {
     switch (activePage) {
@@ -32,8 +26,6 @@ export default function Home() {
         return <History />;
       case 'profile':
         return <Profile />;
-      case 'settings':
-        return <Settings />;
       default:
         return <SendEmail />;
     }
@@ -41,8 +33,50 @@ export default function Home() {
 
   return (
     <div className="app-layout">
+      {/* Mobile Menu Button */}
+      <button
+        className="mobile-menu-button"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {isMobileMenuOpen ? (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          )}
+        </svg>
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-overlay"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="sidebar animate-slide-in">
+      <aside
+        className={`sidebar animate-slide-in ${
+          isMobileMenuOpen ? 'mobile-open' : ''
+        }`}
+      >
         <div className="sidebar-header">
           <div
             style={{
@@ -75,7 +109,10 @@ export default function Home() {
             className={`nav-item ${
               activePage === 'send-email' ? 'active' : ''
             }`}
-            onClick={() => setActivePage('send-email')}
+            onClick={() => {
+              setActivePage('send-email');
+              setIsMobileMenuOpen(false);
+            }}
           >
             <svg
               className="nav-icon"
@@ -91,7 +128,10 @@ export default function Home() {
           </div>
           <div
             className={`nav-item ${activePage === 'resume' ? 'active' : ''}`}
-            onClick={() => setActivePage('resume')}
+            onClick={() => {
+              setActivePage('resume');
+              setIsMobileMenuOpen(false);
+            }}
           >
             <svg
               className="nav-icon"
@@ -111,7 +151,10 @@ export default function Home() {
 
           <div
             className={`nav-item ${activePage === 'templates' ? 'active' : ''}`}
-            onClick={() => setActivePage('templates')}
+            onClick={() => {
+              setActivePage('templates');
+              setIsMobileMenuOpen(false);
+            }}
           >
             <svg
               className="nav-icon"
@@ -128,7 +171,10 @@ export default function Home() {
 
           <div
             className={`nav-item ${activePage === 'history' ? 'active' : ''}`}
-            onClick={() => setActivePage('history')}
+            onClick={() => {
+              setActivePage('history');
+              setIsMobileMenuOpen(false);
+            }}
           >
             <svg
               className="nav-icon"
@@ -145,7 +191,10 @@ export default function Home() {
 
           <div
             className={`nav-item ${activePage === 'profile' ? 'active' : ''}`}
-            onClick={() => setActivePage('profile')}
+            onClick={() => {
+              setActivePage('profile');
+              setIsMobileMenuOpen(false);
+            }}
           >
             <svg
               className="nav-icon"
@@ -158,23 +207,6 @@ export default function Home() {
               <circle cx="12" cy="7" r="4" />
             </svg>
             Profile
-          </div>
-
-          <div
-            className={`nav-item ${activePage === 'settings' ? 'active' : ''}`}
-            onClick={() => setActivePage('settings')}
-          >
-            <svg
-              className="nav-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            Settings
           </div>
 
           <div

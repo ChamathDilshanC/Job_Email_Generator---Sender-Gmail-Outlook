@@ -1,16 +1,20 @@
 'use client';
 
+import EmailSendingLoader from '@/app/components/EmailSendingLoader';
 import { AlertDialog } from '@/components/alert-dialog';
 import { FirebaseSignInButton } from '@/components/firebase-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
 import { generateEmail, type EmailData } from '@/lib/emailTemplate';
+import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import {
   fileToBase64,
   sendEmailWithAttachments,
   type GmailAttachment,
 } from '@/lib/gmailClient';
+import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
+import { TEMPLATE_METADATA, TemplateType } from '@/lib/templateTypes';
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 
 export default function SendEmail() {
@@ -29,6 +33,13 @@ export default function SendEmail() {
   const [isSending, setIsSending] = useState(false);
   const [requireCoverLetter, setRequireCoverLetter] = useState(false);
 
+  // Template selection and resume data
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>(
+    TemplateType.PROFESSIONAL_INTRO
+  );
+  const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+  const [isLoadingResume, setIsLoadingResume] = useState(false);
+
   // Alert Dialog State
   const [alertDialog, setAlertDialog] = useState<{
     open: boolean;
@@ -45,6 +56,29 @@ export default function SendEmail() {
     handleSignOut,
     isLoading: authLoading,
   } = useAuth();
+
+  // Load resume data and selected template on mount
+  useEffect(() => {
+    const fetchResumeData = async () => {
+      setIsLoadingResume(true);
+      try {
+        const data = await loadResumeData();
+        setResumeData(data);
+      } catch (error) {
+        console.error('Error loading resume data:', error);
+      } finally {
+        setIsLoadingResume(false);
+      }
+    };
+
+    // Load selected template from localStorage
+    const savedTemplateId = localStorage.getItem('selectedTemplateId');
+    if (savedTemplateId) {
+      setSelectedTemplate(parseInt(savedTemplateId) as TemplateType);
+    }
+
+    fetchResumeData();
+  }, []);
 
   // Show alert when page loads if user is not signed in
   useEffect(() => {
@@ -105,7 +139,30 @@ export default function SendEmail() {
     setIsSending(true);
 
     try {
-      const { subject, bodyHtml, body } = generateEmail(formData);
+      // Generate email using selected template and resume data
+      let subject: string, bodyHtml: string, body: string;
+
+      if (resumeData) {
+        const jobDetails = {
+          companyName: formData.companyName,
+          position: formData.position,
+          recipientEmail: formData.recipientEmail,
+        };
+        const generated = generateEmailFromTemplate(
+          selectedTemplate,
+          resumeData,
+          jobDetails
+        );
+        subject = generated.subject;
+        bodyHtml = generated.bodyHtml;
+        body = generated.bodyText;
+      } else {
+        // Fallback to old template if no resume data
+        const generated = generateEmail(formData);
+        subject = generated.subject;
+        bodyHtml = generated.bodyHtml;
+        body = generated.body;
+      }
 
       if (emailClient === 'outlook') {
         // For Outlook, use mailto: link (opens default email client)
@@ -241,7 +298,27 @@ export default function SendEmail() {
   };
 
   const handleCopyEmail = async () => {
-    const { subject, body } = generateEmail(formData);
+    let subject: string, body: string;
+
+    if (resumeData) {
+      const jobDetails = {
+        companyName: formData.companyName,
+        position: formData.position,
+        recipientEmail: formData.recipientEmail,
+      };
+      const generated = generateEmailFromTemplate(
+        selectedTemplate,
+        resumeData,
+        jobDetails
+      );
+      subject = generated.subject;
+      body = generated.bodyText;
+    } else {
+      const generated = generateEmail(formData);
+      subject = generated.subject;
+      body = generated.body;
+    }
+
     const fullEmail = `Subject: ${subject}\n\n${body}`;
 
     const success = await copyToClipboard(fullEmail);
@@ -287,10 +364,22 @@ export default function SendEmail() {
   // Send button should only be enabled when form is valid AND files are uploaded
   const canSendEmail = isFormValid && isFileUploadValid();
 
-  const generatedEmail = isFormValid ? generateEmail(formData) : null;
+  // Generate email preview
+  const generatedEmail = isFormValid
+    ? resumeData
+      ? generateEmailFromTemplate(selectedTemplate, resumeData, {
+          companyName: formData.companyName,
+          position: formData.position,
+          recipientEmail: formData.recipientEmail,
+        })
+      : generateEmail(formData)
+    : null;
 
   return (
     <>
+      {/* Loading Animation */}
+      {isSending && <EmailSendingLoader message="Sending your email..." />}
+
       <div className="page-header animate-fade-in">
         <h1 className="page-title">Services</h1>
         <p className="page-description">
@@ -490,6 +579,41 @@ export default function SendEmail() {
               </tr>
               <tr>
                 <td>
+                  <strong>Email Template</strong>
+                </td>
+                <td>
+                  <select
+                    className="form-select"
+                    value={selectedTemplate}
+                    onChange={e =>
+                      setSelectedTemplate(
+                        parseInt(e.target.value) as TemplateType
+                      )
+                    }
+                    style={{ minWidth: '200px' }}
+                    disabled={!resumeData}
+                  >
+                    {TEMPLATE_METADATA.map(template => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </select>
+                  {!resumeData && (
+                    <p className="text-xs text-yellow-600 mt-1">
+                      Complete Resume Builder to use templates
+                    </p>
+                  )}
+                </td>
+                <td>
+                  <span className="badge">
+                    {resumeData ? 'Available' : 'Requires Resume'}
+                  </span>
+                </td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>
                   <strong>Recipient Email</strong>
                 </td>
                 <td>
@@ -684,7 +808,11 @@ export default function SendEmail() {
               <span className="field-value">{generatedEmail.subject}</span>
             </div>
             <div className="email-body">
-              <pre>{generatedEmail.body}</pre>
+              <pre>
+                {'bodyText' in generatedEmail
+                  ? generatedEmail.bodyText
+                  : generatedEmail.body}
+              </pre>
             </div>
           </div>
         )}

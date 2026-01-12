@@ -1,10 +1,12 @@
 'use client';
 
 import EducationSection from '@/app/components/EducationSection';
+import LinksSection from '@/app/components/LinksSection';
 import { useTypewriter } from '@/app/components/TypewriterText';
 import WorkExperienceSection from '@/app/components/WorkExperienceSection';
 import { Education } from '@/app/models/Education';
 import { Project } from '@/app/models/Project';
+import { SocialLinks, createEmptySocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { AlertDialog } from '@/components/alert-dialog';
 import { autoSaveResumeData, loadResumeData } from '@/lib/resumeDataService';
@@ -65,6 +67,11 @@ export default function ResumeBuilder() {
     location: '',
     summary: '',
   });
+
+  // Social Links State
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>(
+    createEmptySocialLinks()
+  );
 
   // Step completion tracking
   const [stepsCompleted, setStepsCompleted] = useState({
@@ -454,6 +461,12 @@ export default function ResumeBuilder() {
               setSelectedSkills(data.skills.selectedSkills || []);
             }
 
+            // Load social links
+            console.log('Social Links from DB:', data.socialLinks);
+            if (data.socialLinks) {
+              setSocialLinks(data.socialLinks);
+            }
+
             console.log('Resume data loaded successfully!');
           }
         } catch (error) {
@@ -513,6 +526,7 @@ export default function ResumeBuilder() {
           if (user) {
             await autoSaveResumeData({
               personalInfo,
+              socialLinks,
               workExperiences,
               education: educations,
               projects,
@@ -537,6 +551,7 @@ export default function ResumeBuilder() {
           if (user) {
             await autoSaveResumeData({
               personalInfo,
+              socialLinks,
               workExperiences,
               education: educations,
               projects,
@@ -561,6 +576,7 @@ export default function ResumeBuilder() {
           if (user) {
             await autoSaveResumeData({
               personalInfo,
+              socialLinks,
               workExperiences,
               education: educations,
               projects,
@@ -585,6 +601,7 @@ export default function ResumeBuilder() {
           if (user) {
             await autoSaveResumeData({
               personalInfo,
+              socialLinks,
               workExperiences,
               education: educations,
               projects,
@@ -609,6 +626,7 @@ export default function ResumeBuilder() {
           if (user) {
             await autoSaveResumeData({
               personalInfo,
+              socialLinks,
               workExperiences,
               education: educations,
               projects,
@@ -1326,6 +1344,18 @@ export default function ResumeBuilder() {
                       className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white resize-none"
                     />
                   </div>
+
+                  {/* Social Links Section */}
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                      Professional Links
+                    </h3>
+                    <LinksSection
+                      links={socialLinks}
+                      onChange={setSocialLinks}
+                    />
+                  </div>
+
                   <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
                     <button
                       onClick={handleCancel}

@@ -1,5 +1,6 @@
 import { Education } from '@/app/models/Education';
 import { Project } from '@/app/models/Project';
+import { SocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { getAuth } from 'firebase/auth';
 
@@ -13,6 +14,7 @@ export interface ResumeData {
     location?: string;
     summary?: string;
   };
+  socialLinks?: SocialLinks;
   workExperiences: WorkExperience[];
   education: Education[];
   projects: Project[];

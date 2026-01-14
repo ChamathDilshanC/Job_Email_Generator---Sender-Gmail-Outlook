@@ -19,6 +19,15 @@ interface AlertDialogProps {
   description: string;
   type?: 'success' | 'error' | 'info' | 'warning';
   confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+  variant?:
+    | 'default'
+    | 'destructive'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'link';
 }
 
 export function AlertDialog({
@@ -28,6 +37,9 @@ export function AlertDialog({
   description,
   type = 'info',
   confirmText = 'OK',
+  cancelText = 'Cancel',
+  onConfirm,
+  variant = 'default',
 }: AlertDialogProps) {
   const iconConfig = {
     success: {
@@ -72,10 +84,25 @@ export function AlertDialog({
             {description}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="sm:justify-center w-full">
-          <DialogClose asChild>
-            <Button className="w-full btn-primary">{confirmText}</Button>
-          </DialogClose>
+        <DialogFooter className="sm:justify-center w-full gap-2">
+          {onConfirm ? (
+            <>
+              <DialogClose asChild>
+                <Button variant="outline" className="w-full">
+                  {cancelText}
+                </Button>
+              </DialogClose>
+              <Button onClick={onConfirm} variant={variant} className="w-full">
+                {confirmText}
+              </Button>
+            </>
+          ) : (
+            <DialogClose asChild>
+              <Button variant={variant} className="w-full">
+                {confirmText}
+              </Button>
+            </DialogClose>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -491,12 +491,32 @@ export default function ResumeBuilder() {
           );
         }
 
-        // Optionally clear data when user logs out
+        // Clear all data when user logs out
+        setPersonalInfo({
+          fullName: '',
+          email: '',
+          phone: '+94',
+          location: '',
+          summary: '',
+        });
+        setSocialLinks(createEmptySocialLinks());
         setWorkExperiences([]);
         setEducations([]);
         setProjects([]);
         setPosition('');
         setSelectedSkills([]);
+
+        // Reset steps
+        setStepsCompleted({
+          personal: false,
+          experience: false,
+          education: false,
+          projects: false,
+          skills: false,
+        });
+
+        // Reset active section to personal
+        setActiveSection('personal');
       }
     });
 

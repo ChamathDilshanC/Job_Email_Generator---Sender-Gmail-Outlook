@@ -728,7 +728,7 @@ I would welcome the opportunity to discuss how my technical skills, project expe
 Best regards,
 ${fullName}`;
 
-  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; width: 100%;">
+  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; width: 50%; margin: 0 auto;">
 <p><strong style="font-size: 18px;">${fullName}</strong><br>
 ${personalInfo.phone || ''} | ${personalInfo.email || ''}${
     linksText

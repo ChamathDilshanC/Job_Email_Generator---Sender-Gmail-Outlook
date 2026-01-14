@@ -9,6 +9,7 @@ import { Project } from '@/app/models/Project';
 import { SocialLinks, createEmptySocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { AlertDialog } from '@/components/alert-dialog';
+import { Loader } from '@/components/ui/loader';
 import { autoSaveResumeData, loadResumeData } from '@/lib/resumeDataService';
 import {
   fetchSkillsForPosition,
@@ -22,6 +23,7 @@ import 'react-phone-number-input/style.css';
 import ProjectSection from '../components/ProjectSection';
 
 export default function ResumeBuilder() {
+  const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('personal');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -410,6 +412,7 @@ export default function ResumeBuilder() {
     let hasShownAlert = false; // Flag to prevent showing alert multiple times
 
     const unsubscribe = onAuthStateChanged(auth, async user => {
+      setIsLoading(true);
       if (user) {
         try {
           console.log('User logged in, loading resume data...');
@@ -471,9 +474,12 @@ export default function ResumeBuilder() {
           }
         } catch (error) {
           console.error('Error loading resume data:', error);
+        } finally {
+          setIsLoading(false);
         }
       } else {
         console.log('User logged out, clearing data...');
+        setIsLoading(false);
 
         // Show alert only once when user is not signed in
         if (!hasShownAlert) {
@@ -717,6 +723,10 @@ export default function ResumeBuilder() {
       }
     }
   }, [activeSection]);
+
+  if (isLoading) {
+    return <Loader fullScreen text="Loading your resume data..." />;
+  }
 
   return (
     <div className="h-full">

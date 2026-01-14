@@ -242,7 +242,7 @@ export default function History() {
               <div className="mb-4 text-sm text-gray-600">
                 Showing {filteredEmails.length} of {emailHistory.length} emails
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {filteredEmails.map(email => (
                   <EmailHistoryCard
                     key={email.id}

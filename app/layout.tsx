@@ -1,7 +1,5 @@
 'use client';
 
-import MobileNotSupported from '@/components/MobileNotSupported';
-import { useMobileDetection } from '@/hooks/useMobileDetection';
 import './globals.css';
 import { Providers } from './providers';
 
@@ -10,8 +8,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isMobile = useMobileDetection();
-
   return (
     <html lang="en">
       <head>
@@ -23,7 +19,7 @@ export default function RootLayout({
         <link rel="icon" href="/logo.png" />
       </head>
       <body>
-        <Providers>{isMobile ? <MobileNotSupported /> : children}</Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

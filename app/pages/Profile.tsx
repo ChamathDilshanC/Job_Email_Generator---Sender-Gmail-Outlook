@@ -11,7 +11,7 @@ import { loadResumeData } from '@/lib/resumeDataService';
 import { useEffect, useState } from 'react';
 
 export default function Profile() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, handleSignOut } = useAuth();
   const [emailStats, setEmailStats] = useState({
     total: 0,
     sent: 0,
@@ -115,10 +115,17 @@ export default function Profile() {
               </div>
               <h2 className="text-2xl font-bold mb-1">{displayName}</h2>
               <p className="text-sm text-gray-500 mb-2">{email}</p>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium mb-6">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                Connected with Google
-              </div>
+              {user ? (
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium mb-6">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  Connected with Google
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-medium mb-6">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  Not connected
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-[#3b3be3]">
@@ -352,6 +359,55 @@ export default function Profile() {
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Export
+                  </button>
+                </div>
+
+                {/* Sign Out */}
+                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                  <div>
+                    <h3 className="font-medium text-gray-900 mb-1">Sign Out</h3>
+                    <p className="text-sm text-gray-500">
+                      Sign out from your Google account
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setConfirmDialog({
+                        open: true,
+                        title: 'Sign Out',
+                        description:
+                          'Are you sure you want to sign out? All your data is safely saved and you can sign back in anytime.',
+                        type: 'warning',
+                        onConfirm: async () => {
+                          try {
+                            await handleSignOut();
+                            setAlertDialog({
+                              open: true,
+                              title: 'Signed Out',
+                              description:
+                                'You have been successfully signed out.',
+                              type: 'success',
+                            });
+                            // Redirect to home page after a short delay
+                            setTimeout(() => {
+                              window.location.href = '/';
+                            }, 1500);
+                          } catch (error) {
+                            console.error('Error signing out:', error);
+                            setAlertDialog({
+                              open: true,
+                              title: 'Error',
+                              description:
+                                'Failed to sign out. Please try again.',
+                              type: 'error',
+                            });
+                          }
+                        },
+                      });
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-yellow-400 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Sign Out
                   </button>
                 </div>
 

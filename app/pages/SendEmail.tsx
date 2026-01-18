@@ -18,7 +18,13 @@ import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
 import { TEMPLATE_METADATA, TemplateType } from '@/lib/templateTypes';
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 
-export default function SendEmail() {
+type PageType = 'send-email' | 'templates' | 'resume' | 'history' | 'profile';
+
+interface SendEmailProps {
+  onNavigate?: (page: PageType) => void;
+}
+
+export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [formData, setFormData] = useState<EmailData>({
     companyName: '',
     position: '',
@@ -68,9 +74,16 @@ export default function SendEmail() {
     isLoading: authLoading,
   } = useAuth();
 
-  // Load resume data and selected template on mount
+  // Load resume data and selected template on mount and when auth changes
   useEffect(() => {
     const fetchResumeData = async () => {
+      // Only load resume data if user is authenticated
+      if (!isAuthenticated) {
+        setResumeData(null); // Clear resume data when not authenticated
+        setIsLoadingResume(false);
+        return;
+      }
+
       setIsLoadingResume(true);
       try {
         const data = await loadResumeData();
@@ -89,7 +102,7 @@ export default function SendEmail() {
     }
 
     fetchResumeData();
-  }, []);
+  }, [isAuthenticated]); // Added isAuthenticated to dependency array
 
   // Show alert when page loads if user is not signed in
   useEffect(() => {
@@ -421,8 +434,8 @@ export default function SendEmail() {
     return true;
   };
 
-  // Send button should only be enabled when form is valid AND files are uploaded
-  const canSendEmail = isFormValid && isFileUploadValid();
+  // Send button should only be enabled when form is valid AND files are uploaded AND resume data exists
+  const canSendEmail = isFormValid && isFileUploadValid() && !!resumeData;
 
   // Generate email preview
   const generatedEmail = isFormValid
@@ -446,6 +459,81 @@ export default function SendEmail() {
           Create professional job application emails
         </p>
       </div>
+
+      {/* Resume Builder Required Warning */}
+      {!resumeData && !isLoadingResume && (
+        <div
+          className="animate-fade-in"
+          style={{
+            backgroundColor: '#fef2f2',
+            border: '2px solid #ef4444',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ fontSize: '2rem' }}>⚠️</div>
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <h3
+              style={{
+                margin: 0,
+                fontWeight: '600',
+                color: '#dc2626',
+                marginBottom: '0.25rem',
+              }}
+            >
+              Resume Builder Required
+            </h3>
+            <p style={{ margin: 0, color: '#991b1b', fontSize: '0.9rem' }}>
+              You must complete your Resume Builder profile before sending
+              emails. This ensures your application emails are personalized and
+              professional.
+            </p>
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              // Only navigate if user is authenticated
+              if (isAuthenticated && onNavigate) {
+                onNavigate('resume');
+              }
+            }}
+            disabled={!isAuthenticated}
+            style={{
+              whiteSpace: 'nowrap',
+              opacity: !isAuthenticated ? 0.6 : 1,
+              cursor: !isAuthenticated ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+            title={
+              !isAuthenticated
+                ? 'Sign in to access Resume Builder'
+                : 'Go to Resume Builder'
+            }
+          >
+            {!isAuthenticated && (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            )}
+            Go to Resume Builder →
+          </button>
+        </div>
+      )}
 
       <div className="card animate-fade-in">
         <div className="card-header">
@@ -564,8 +652,8 @@ export default function SendEmail() {
               {isSending
                 ? 'Sending...'
                 : emailClient === 'gmail'
-                ? 'Send via Gmail'
-                : 'Send via Outlook'}
+                  ? 'Send via Gmail'
+                  : 'Send via Outlook'}
             </button>
           </div>
         </div>
@@ -683,8 +771,11 @@ export default function SendEmail() {
                     ))}
                   </select>
                   {!resumeData && (
-                    <p className="text-xs text-yellow-600 mt-1">
-                      Complete Resume Builder to use templates
+                    <p
+                      className="text-xs text-red-600 mt-1"
+                      style={{ fontWeight: '500' }}
+                    >
+                      ⚠️ Resume Builder must be completed to send emails
                     </p>
                   )}
                 </td>
@@ -692,12 +783,14 @@ export default function SendEmail() {
                   <span
                     className="badge"
                     style={{
-                      backgroundColor: '#fee2e2',
-                      color: '#dc2626',
+                      backgroundColor: !resumeData ? '#fee2e2' : '#dbeafe',
+                      color: !resumeData ? '#dc2626' : '#1e40af',
                       fontWeight: '600',
                     }}
                   >
-                    Check Your Selected Template Correct.
+                    {!resumeData
+                      ? 'Resume Builder Required ⚠️'
+                      : 'Template Ready ✓'}
                   </span>
                 </td>
                 <td></td>
@@ -874,13 +967,15 @@ export default function SendEmail() {
                 style={{
                   marginTop: '0.75rem',
                   padding: '0.5rem',
-                  backgroundColor: '#fef3c7',
+                  backgroundColor: !resumeData ? '#fef2f2' : '#fef3c7',
                   borderRadius: '4px',
                   fontSize: '0.85rem',
-                  color: '#92400e',
+                  color: !resumeData ? '#dc2626' : '#92400e',
                 }}
               >
-                ⚠️ Please upload all required files to enable the send button
+                {!resumeData
+                  ? '⚠️ Complete Resume Builder to enable email sending'
+                  : '⚠️ Please upload all required files to enable the send button'}
               </div>
             )}
           </div>

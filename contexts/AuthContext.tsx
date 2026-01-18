@@ -1,5 +1,6 @@
 'use client';
 
+import { clearBrowserCache } from '@/lib/clearCache';
 import { auth, googleProvider } from '@/lib/firebase';
 import {
   signOut as firebaseSignOut,
@@ -108,6 +109,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
         }
       } else {
+        // User is not signed in
+        console.log('🔍 No user signed in');
+
         setAuthState({
           isAuthenticated: false,
           accessToken: null,
@@ -115,6 +119,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           user: null,
           isLoading: false,
         });
+
+        // NOTE: We don't clear cache here because it interferes with sign-in
+        // Cache is only cleared on explicit sign-out via handleSignOut
       }
     });
 
@@ -186,12 +193,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       await firebaseSignOut(auth);
-      // Clear the stored OAuth token and timestamp
-      localStorage.removeItem('google_oauth_token');
-      localStorage.removeItem('google_oauth_token_timestamp');
-      console.log('Successfully signed out');
+
+      // Clear all browser cache and storage
+      await clearBrowserCache();
+
+      console.log('✅ Successfully signed out and cleared all cache');
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('❌ Sign out error:', error);
+      // Even if sign out fails, try to clear the cache
+      try {
+        await clearBrowserCache();
+      } catch (cacheError) {
+        console.error('❌ Cache clearing error:', cacheError);
+      }
     }
   };
 

@@ -25,7 +25,14 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .toArray();
 
-    return NextResponse.json({ history });
+    // Transform _id to id for frontend compatibility
+    const transformedHistory = history.map(doc => ({
+      ...doc,
+      id: doc._id.toString(),
+      _id: undefined, // Remove _id from the response
+    }));
+
+    return NextResponse.json({ history: transformedHistory });
   } catch (error) {
     console.error('Error loading email history:', error);
     return NextResponse.json(

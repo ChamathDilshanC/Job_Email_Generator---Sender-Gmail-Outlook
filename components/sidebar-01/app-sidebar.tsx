@@ -57,6 +57,7 @@ export function AppSidebar({
       url: '#',
       icon: Clock,
       isActive: false,
+      isLocked: !isAuthenticated, // Lock when not authenticated
     },
     {
       id: 'profile',

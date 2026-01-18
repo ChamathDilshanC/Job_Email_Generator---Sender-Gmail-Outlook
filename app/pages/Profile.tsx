@@ -422,45 +422,56 @@ export default function Profile() {
                     </p>
                   </div>
                   <button
-                    onClick={async () => {
-                      const confirmation = prompt(
-                        'This action cannot be undone. All your data will be permanently deleted.\n\nType "DELETE" to confirm:'
-                      );
+                    onClick={() => {
+                      setConfirmDialog({
+                        open: true,
+                        title: 'Delete Account',
+                        description:
+                          'This action cannot be undone. All your data will be permanently deleted. Are you sure you want to delete your account?',
+                        type: 'danger',
+                        onConfirm: async () => {
+                          try {
+                            // Delete user's resume data
+                            await fetch(`/api/resume?userId=${user?.uid}`, {
+                              method: 'DELETE',
+                            });
 
-                      if (confirmation === 'DELETE') {
-                        try {
-                          // Delete user's resume data
-                          await fetch(`/api/resume?userId=${user?.uid}`, {
-                            method: 'DELETE',
-                          });
+                            // Delete user's email history
+                            const history = await loadEmailHistory();
+                            await Promise.all(
+                              history.map(email =>
+                                deleteEmailFromHistory(email.id)
+                              )
+                            );
 
-                          // Delete user's email history
-                          const history = await loadEmailHistory();
-                          await Promise.all(
-                            history.map(email =>
-                              deleteEmailFromHistory(email.id)
-                            )
-                          );
+                            // Sign out and clear local data
+                            localStorage.clear();
+                            sessionStorage.clear();
 
-                          // Sign out and clear local data
-                          localStorage.clear();
-                          sessionStorage.clear();
+                            setAlertDialog({
+                              open: true,
+                              title: 'Account Deleted',
+                              description:
+                                'Your account has been deleted. You will be signed out.',
+                              type: 'success',
+                            });
 
-                          alert(
-                            'Your account has been deleted. You will be signed out.'
-                          );
-                          window.location.href = '/';
-                        } catch (error) {
-                          console.error('Error deleting account:', error);
-                          alert(
-                            'Failed to delete account. Please contact support.'
-                          );
-                        }
-                      } else if (confirmation !== null) {
-                        alert(
-                          'Account deletion cancelled. Please type "DELETE" exactly to confirm.'
-                        );
-                      }
+                            // Redirect to home page after a short delay
+                            setTimeout(() => {
+                              window.location.href = '/';
+                            }, 1500);
+                          } catch (error) {
+                            console.error('Error deleting account:', error);
+                            setAlertDialog({
+                              open: true,
+                              title: 'Error',
+                              description:
+                                'Failed to delete account. Please contact support.',
+                              type: 'error',
+                            });
+                          }
+                        },
+                      });
                     }}
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
                   >

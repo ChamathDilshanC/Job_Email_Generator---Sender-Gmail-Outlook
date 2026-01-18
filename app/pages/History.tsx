@@ -3,6 +3,8 @@
 import EmailHistoryCard from '@/app/components/EmailHistoryCard';
 import EmailHistoryModal from '@/app/components/EmailHistoryModal';
 import { EmailHistory } from '@/app/models/EmailHistory';
+import { AlertDialog } from '@/components/alert-dialog';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import {
   deleteEmailFromHistory,
   loadEmailHistory,
@@ -15,6 +17,25 @@ export default function History() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmail, setSelectedEmail] = useState<EmailHistory | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [alertDialog, setAlertDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({ open: false, title: '', description: '', type: 'info' });
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    type: 'danger' | 'warning' | 'info';
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    type: 'warning',
+    onConfirm: () => {},
+  });
 
   // Load email history on mount
   useEffect(() => {
@@ -47,15 +68,44 @@ export default function History() {
   const totalFailed = emailHistory.filter(e => e.status === 'failed').length;
   const uniqueCompanies = new Set(emailHistory.map(e => e.companyName)).size;
 
-  const handleDelete = async (emailId: string) => {
-    if (
-      confirm('Are you sure you want to delete this email from your history?')
-    ) {
-      const success = await deleteEmailFromHistory(emailId);
-      if (success) {
-        setEmailHistory(prev => prev.filter(email => email.id !== emailId));
-      }
-    }
+  const handleDelete = (emailId: string) => {
+    setConfirmDialog({
+      open: true,
+      title: 'Delete Email',
+      description:
+        'Are you sure you want to delete this email from your history? This action cannot be undone.',
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          const success = await deleteEmailFromHistory(emailId);
+          if (success) {
+            setEmailHistory(prev => prev.filter(email => email.id !== emailId));
+            setAlertDialog({
+              open: true,
+              title: 'Email Deleted',
+              description:
+                'The email has been successfully deleted from your history.',
+              type: 'success',
+            });
+          } else {
+            setAlertDialog({
+              open: true,
+              title: 'Error',
+              description: 'Failed to delete email. Please try again.',
+              type: 'error',
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting email:', error);
+          setAlertDialog({
+            open: true,
+            title: 'Error',
+            description: 'An error occurred while deleting the email.',
+            type: 'error',
+          });
+        }
+      },
+    });
   };
 
   const handleViewDetails = (email: EmailHistory) => {
@@ -262,6 +312,27 @@ export default function History() {
         email={selectedEmail}
         isOpen={showModal}
         onClose={closeModal}
+      />
+
+      {/* Alert Dialog */}
+      <AlertDialog
+        open={alertDialog.open}
+        onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
+        title={alertDialog.title}
+        description={alertDialog.description}
+        type={alertDialog.type}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={open => setConfirmDialog({ ...confirmDialog, open })}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        type={confirmDialog.type}
+        onConfirm={confirmDialog.onConfirm}
+        confirmText="Delete"
+        cancelText="Cancel"
       />
     </>
   );

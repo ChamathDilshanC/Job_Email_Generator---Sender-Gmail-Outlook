@@ -90,6 +90,13 @@ export async function getPositionSuggestions(query: string): Promise<string[]> {
       return getFallbackPositionSuggestions(query);
     }
 
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn('Non-JSON response from suggestions API, using fallback');
+      return getFallbackPositionSuggestions(query);
+    }
+
     const data = await response.json();
     console.log('API Response for suggestions:', data);
 
@@ -159,6 +166,13 @@ export async function fetchSkillsForPosition(
 
     if (!response.ok) {
       console.error('Skills API request failed:', response.statusText);
+      return [];
+    }
+
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Non-JSON response from skills API');
       return [];
     }
 

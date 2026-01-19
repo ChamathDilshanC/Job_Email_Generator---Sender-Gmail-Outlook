@@ -84,6 +84,13 @@ export async function searchDegrees(query: string): Promise<string[]> {
       return getFallbackDegrees(query);
     }
 
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn('Non-JSON response from degrees API, using fallback');
+      return getFallbackDegrees(query);
+    }
+
     const data: DegreeApiResponse = await response.json();
     console.log('Degrees API Response:', data);
 
@@ -150,6 +157,13 @@ export async function getAllDegrees(): Promise<string[]> {
       return COMMON_DEGREES;
     }
 
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn('Non-JSON response from degrees API');
+      return COMMON_DEGREES;
+    }
+
     const data = await response.json();
 
     // Handle response formats
@@ -189,6 +203,13 @@ export async function getDegreeCategories(): Promise<string[]> {
     });
 
     if (!response.ok) {
+      return ['Undergraduate', 'Graduate', 'Doctoral', 'Diploma', 'Associate'];
+    }
+
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn('Non-JSON response from degree categories API');
       return ['Undergraduate', 'Graduate', 'Doctoral', 'Diploma', 'Associate'];
     }
 

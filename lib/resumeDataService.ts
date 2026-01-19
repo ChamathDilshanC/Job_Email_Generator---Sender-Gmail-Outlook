@@ -55,6 +55,13 @@ export async function saveResumeData(
       throw new Error('Failed to save resume');
     }
 
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Non-JSON response received from /api/resume');
+      throw new Error('Server returned non-JSON response');
+    }
+
     const data = await response.json();
     console.log('Resume saved successfully:', data);
   } catch (error) {
@@ -80,6 +87,13 @@ export async function loadResumeData(): Promise<ResumeData | null> {
 
     if (!response.ok) {
       throw new Error('Failed to load resume');
+    }
+
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Non-JSON response received from /api/resume');
+      throw new Error('Server returned non-JSON response');
     }
 
     const data = await response.json();

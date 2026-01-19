@@ -92,6 +92,18 @@ export async function sendEmailWithAttachments(
       }),
     });
 
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response received:', text);
+      return {
+        success: false,
+        error: `Server returned non-JSON response (${response.status}). This usually indicates a server configuration issue.`,
+        authError: false,
+      };
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
@@ -104,6 +116,7 @@ export async function sendEmailWithAttachments(
 
     return { success: true };
   } catch (error) {
+    console.error('Error in sendEmailWithAttachments:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

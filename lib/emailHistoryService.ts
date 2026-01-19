@@ -66,6 +66,13 @@ export async function loadEmailHistory(
       throw new Error('Failed to load email history');
     }
 
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Non-JSON response received from /api/email-history');
+      return [];
+    }
+
     const data = await response.json();
     return data.history || [];
   } catch (error) {

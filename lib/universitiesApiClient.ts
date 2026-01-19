@@ -95,14 +95,16 @@ export const searchUniversities = async (
 
     // Then search API for Sri Lankan universities
     const sriLankaResponse = await fetch(
-      `${API_BASE_URL}?name=${encodeURIComponent(
-        query
-      )}&country=Sri%20Lanka`
+      `${API_BASE_URL}?name=${encodeURIComponent(query)}&country=Sri%20Lanka`
     );
 
-    const sriLankaApiResults: University[] = sriLankaResponse.ok
-      ? await sriLankaResponse.json()
-      : [];
+    let sriLankaApiResults: University[] = [];
+    if (sriLankaResponse.ok) {
+      const contentType = sriLankaResponse.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        sriLankaApiResults = await sriLankaResponse.json();
+      }
+    }
 
     // Combine custom institutes with API results (remove duplicates)
     const allSriLankanResults = [
@@ -126,6 +128,13 @@ export const searchUniversities = async (
     );
 
     if (!globalResponse.ok) {
+      return allSriLankanResults.slice(0, 10);
+    }
+
+    // Check if response is JSON before parsing
+    const contentType = globalResponse.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn('Non-JSON response from universities API');
       return allSriLankanResults.slice(0, 10);
     }
 
@@ -172,6 +181,13 @@ export const searchUniversitiesByCountry = async (
 
     if (!response.ok) {
       throw new Error('Failed to fetch universities');
+    }
+
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Non-JSON response from universities API');
+      return [];
     }
 
     const data: University[] = await response.json();

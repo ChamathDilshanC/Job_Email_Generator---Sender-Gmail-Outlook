@@ -884,7 +884,17 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             paddingBottom: '1rem',
           }}
         >
-          <JobFileUpload onFilesChange={setAttachments} />
+          <JobFileUpload
+            onFilesChange={setAttachments}
+            onAlert={(title, description, type) => {
+              setAlertDialog({
+                open: true,
+                title,
+                description,
+                type,
+              });
+            }}
+          />
 
           {/* Upload Status Indicators */}
           <div

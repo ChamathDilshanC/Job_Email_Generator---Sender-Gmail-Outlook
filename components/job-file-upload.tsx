@@ -8,9 +8,17 @@ import { Card } from '@/components/ui/card';
 
 interface FileUploadProps {
   onFilesChange: (files: { cv: File | null; coverLetter: File | null }) => void;
+  onAlert?: (
+    title: string,
+    description: string,
+    type: 'error' | 'warning' | 'info'
+  ) => void;
 }
 
-export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
+export default function JobFileUpload({
+  onFilesChange,
+  onAlert,
+}: FileUploadProps) {
   const [cvState, setCvState] = useState<{
     file: File | null;
   }>({
@@ -35,12 +43,16 @@ export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
   const handleCvFile = (file: File | undefined) => {
     if (!file) return;
 
-    // Check file size (10MB = 10 * 1024 * 1024 bytes)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Check file size (5MB = 5 * 1024 * 1024 bytes)
+    const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      alert(
-        `File too large! "${file.name}" is ${formatFileSize(file.size)}. Maximum size is 10MB. Please compress or reduce the file size before uploading.`
-      );
+      if (onAlert) {
+        onAlert(
+          'File Too Large',
+          `"${file.name}" is ${formatFileSize(file.size)}. Maximum size is 5MB. Please compress or reduce the file size before uploading.`,
+          'error'
+        );
+      }
       return;
     }
 
@@ -48,19 +60,29 @@ export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
       setCvState({ file });
       onFilesChange({ cv: file, coverLetter: clState.file });
     } else {
-      alert('Please upload a PDF, DOC, or DOCX file.');
+      if (onAlert) {
+        onAlert(
+          'Invalid File Type',
+          'Please upload a PDF, DOC, or DOCX file.',
+          'error'
+        );
+      }
     }
   };
 
   const handleClFile = (file: File | undefined) => {
     if (!file) return;
 
-    // Check file size (10MB = 10 * 1024 * 1024 bytes)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Check file size (5MB = 5 * 1024 * 1024 bytes)
+    const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      alert(
-        `File too large! "${file.name}" is ${formatFileSize(file.size)}. Maximum size is 10MB. Please compress or reduce the file size before uploading.`
-      );
+      if (onAlert) {
+        onAlert(
+          'File Too Large',
+          `"${file.name}" is ${formatFileSize(file.size)}. Maximum size is 5MB. Please compress or reduce the file size before uploading.`,
+          'error'
+        );
+      }
       return;
     }
 
@@ -68,7 +90,13 @@ export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
       setClState({ file });
       onFilesChange({ cv: cvState.file, coverLetter: file });
     } else {
-      alert('Please upload a PDF, DOC, or DOCX file.');
+      if (onAlert) {
+        onAlert(
+          'Invalid File Type',
+          'Please upload a PDF, DOC, or DOCX file.',
+          'error'
+        );
+      }
     }
   };
 
@@ -172,7 +200,7 @@ export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
 
         <p className="mt-2 text-xs leading-5 text-muted-foreground sm:flex sm:items-center sm:justify-between">
           <span>Accepted file types: PDF, DOC or DOCX files.</span>
-          <span className="pl-1 sm:pl-0">Max. size: 10MB</span>
+          <span className="pl-1 sm:pl-0">Max. size: 5MB</span>
         </p>
 
         {cvFile && (
@@ -261,7 +289,7 @@ export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
 
         <p className="mt-2 text-xs leading-5 text-muted-foreground sm:flex sm:items-center sm:justify-between">
           <span>Accepted file types: PDF, DOC or DOCX files.</span>
-          <span className="pl-1 sm:pl-0">Max. size: 10MB</span>
+          <span className="pl-1 sm:pl-0">Max. size: 5MB</span>
         </p>
 
         {clFile && (

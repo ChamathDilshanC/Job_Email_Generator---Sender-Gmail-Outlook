@@ -35,6 +35,15 @@ export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
   const handleCvFile = (file: File | undefined) => {
     if (!file) return;
 
+    // Check file size (10MB = 10 * 1024 * 1024 bytes)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert(
+        `File too large! "${file.name}" is ${formatFileSize(file.size)}. Maximum size is 10MB. Please compress or reduce the file size before uploading.`
+      );
+      return;
+    }
+
     if (validFileTypes.includes(file.type)) {
       setCvState({ file });
       onFilesChange({ cv: file, coverLetter: clState.file });
@@ -45,6 +54,15 @@ export default function JobFileUpload({ onFilesChange }: FileUploadProps) {
 
   const handleClFile = (file: File | undefined) => {
     if (!file) return;
+
+    // Check file size (10MB = 10 * 1024 * 1024 bytes)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert(
+        `File too large! "${file.name}" is ${formatFileSize(file.size)}. Maximum size is 10MB. Please compress or reduce the file size before uploading.`
+      );
+      return;
+    }
 
     if (validFileTypes.includes(file.type)) {
       setClState({ file });

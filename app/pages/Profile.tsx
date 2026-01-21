@@ -2,6 +2,7 @@
 
 import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { FirebaseSignInButton } from '@/components/firebase-sign-in';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
@@ -53,6 +54,8 @@ export default function Profile() {
         } finally {
           setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
 
@@ -63,6 +66,85 @@ export default function Profile() {
   const displayName = user?.displayName || 'User';
   const email = user?.email || '';
   const photoURL = user?.photoURL || '';
+
+  // Show sign in required state if not authenticated
+  if (!isAuthenticated && !isLoading) {
+    return (
+      <div className="p-4 md:p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
+            Profile
+          </h1>
+          <p className="text-gray-500">
+            Manage your personal information and preferences
+          </p>
+        </div>
+
+        <div
+          className="animate-fade-in"
+          style={{
+            backgroundColor: '#fef2f2',
+            border: '2px solid #ef4444',
+            borderRadius: '8px',
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1.5rem',
+            textAlign: 'center',
+            maxWidth: '600px',
+            margin: '0 auto',
+            marginTop: '2rem',
+          }}
+        >
+          <div style={{ fontSize: '3rem' }}>⚠️</div>
+          <div>
+            <h3
+              style={{
+                margin: 0,
+                fontWeight: '600',
+                color: '#dc2626',
+                marginBottom: '0.5rem',
+                fontSize: '1.25rem',
+              }}
+            >
+              Sign In Required
+            </h3>
+            <p style={{ margin: 0, color: '#991b1b', fontSize: '1rem' }}>
+              Please sign in with Google to manage your profile, view email
+              statistics, and access your account settings.
+            </p>
+          </div>
+
+          <FirebaseSignInButton
+            onSuccess={() => {
+              // Page will automatically update due to auth state change
+              console.log('Signed in successfully');
+            }}
+            onError={(error: string) => {
+              console.error('Sign in failed:', error);
+              setAlertDialog({
+                open: true,
+                title: 'Sign In Failed',
+                description: error,
+                type: 'error',
+              });
+            }}
+          />
+        </div>
+
+        {/* Alert Dialog */}
+        <AlertDialog
+          open={alertDialog.open}
+          onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
+          title={alertDialog.title}
+          description={alertDialog.description}
+          type={alertDialog.type}
+        />
+      </div>
+    );
+  }
 
   return (
     <>

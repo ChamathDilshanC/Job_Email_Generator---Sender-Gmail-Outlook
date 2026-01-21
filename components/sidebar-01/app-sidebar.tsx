@@ -65,6 +65,7 @@ export function AppSidebar({
       url: '#',
       icon: User,
       isActive: false,
+      isLocked: !isAuthenticated, // Lock when not authenticated
     },
   ];
 

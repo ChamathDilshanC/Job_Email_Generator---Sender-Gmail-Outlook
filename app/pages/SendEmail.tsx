@@ -497,16 +497,26 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           <button
             className="btn btn-primary"
             onClick={() => {
+              if (!isAuthenticated) {
+                setAlertDialog({
+                  open: true,
+                  title: 'Sign In Required',
+                  description:
+                    'Please sign in with your Google account to access the Resume Builder.',
+                  type: 'warning',
+                });
+                return;
+              }
+
               // Only navigate if user is authenticated
               if (isAuthenticated && onNavigate) {
                 onNavigate('resume');
               }
             }}
-            disabled={!isAuthenticated}
             style={{
               whiteSpace: 'nowrap',
-              opacity: !isAuthenticated ? 0.6 : 1,
-              cursor: !isAuthenticated ? 'not-allowed' : 'pointer',
+              opacity: !isAuthenticated ? 0.8 : 1,
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',

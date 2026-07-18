@@ -25,13 +25,13 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="bg-neutral-950 px-6 pb-10 pt-6 text-neutral-400">
+    <footer className="px-6 pb-10 pt-6 text-neutral-400 sm:px-10 lg:px-16">
       <motion.div
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
         viewport={viewportOnce}
-        className="mx-auto max-w-6xl border-t border-neutral-800 pt-12"
+        className="w-full border-t border-neutral-800 pt-12"
       >
         <div className="flex flex-col justify-between gap-10 sm:flex-row">
           <div className="max-w-xs">

@@ -11,7 +11,7 @@ interface CTABandProps {
 
 export function CTABand({ onGetStarted, isSigningIn }: CTABandProps) {
   return (
-    <section className="bg-neutral-950 px-6 pb-20 pt-24 text-center">
+    <section className="px-6 pb-20 pt-24 text-center">
       <motion.div
         variants={staggerContainer(0.12)}
         initial="hidden"

@@ -9,9 +9,9 @@ module.exports = {
   theme: {
   	extend: {
   		fontFamily: {
-  			sans: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
-  			mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
-  			heading: ['Space Grotesk', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+  			sans: ['Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+  			// Landing-page headings only - see app/globals.css for the @font-face.
+  			heading: ['Brace', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
   		},
   		colors: {
   			border: 'hsl(var(--border))',

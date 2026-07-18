@@ -67,7 +67,7 @@ export function FeatureGrid() {
             variants={fadeInUp}
             className="mt-3 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl"
           >
-            Built to get you the interview
+            Built to land the interview
           </motion.h2>
           <motion.p
             variants={fadeInUp}

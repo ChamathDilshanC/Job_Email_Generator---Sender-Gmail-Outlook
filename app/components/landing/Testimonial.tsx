@@ -16,8 +16,8 @@ export function Testimonial() {
       >
         <p className="font-heading text-2xl font-medium italic leading-snug text-foreground md:text-3xl">
           &ldquo;I built JobMail after sending the same tired template for
-          the hundredth time. Now every email is tailored to the role in
-          seconds — and it actually sounds like me.&rdquo;
+          the hundredth time. Now each email is tailored to the role in
+          seconds — and it sounds just like me.&rdquo;
         </p>
         <div className="mt-7 flex items-center justify-center gap-3">
           <NextImage

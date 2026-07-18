@@ -28,7 +28,7 @@ export function TemplatesShowcase() {
             variants={fadeInUp}
             className="mt-3 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl"
           >
-            A template for every moment
+            A template for each moment
           </motion.h2>
           <motion.p
             variants={fadeInUp}

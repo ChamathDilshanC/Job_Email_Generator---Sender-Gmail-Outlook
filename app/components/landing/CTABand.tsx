@@ -23,7 +23,7 @@ export function CTABand({ onGetStarted, isSigningIn }: CTABandProps) {
           variants={fadeInUp}
           className="font-heading text-4xl font-semibold tracking-tight text-white md:text-5xl"
         >
-          Send your next application in minutes.
+          Send this application in minutes.
         </motion.h2>
         <motion.p variants={fadeInUp} className="mt-4 text-neutral-400">
           Sign in with Google to connect Gmail and start generating

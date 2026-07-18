@@ -37,7 +37,7 @@ export function Hero({ onGetStarted, isSigningIn }: HeroProps) {
         >
           Job emails that
           <br />
-          actually get replies.
+          get real replies.
         </motion.h1>
 
         <motion.p

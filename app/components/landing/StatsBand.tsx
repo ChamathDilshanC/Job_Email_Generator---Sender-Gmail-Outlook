@@ -28,7 +28,7 @@ export function StatsBand() {
             How it works
           </p>
           <h2 className="mt-3 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
-            Fill in your resume once. Apply everywhere.
+            One resume. Countless applications.
           </h2>
         </motion.div>
 

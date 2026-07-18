@@ -5,6 +5,7 @@ import EmailHistoryModal from '@/app/components/EmailHistoryModal';
 import { EmailHistory } from '@/app/models/EmailHistory';
 import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
   loadEmailHistory,
@@ -12,6 +13,7 @@ import {
 import { useEffect, useState } from 'react';
 
 export default function History() {
+  const { user } = useAuth();
   const [emailHistory, setEmailHistory] = useState<EmailHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,7 +44,7 @@ export default function History() {
     const fetchHistory = async () => {
       setIsLoading(true);
       try {
-        const history = await loadEmailHistory();
+        const history = await loadEmailHistory(user?.uid);
         setEmailHistory(history);
       } catch (error) {
         console.error('Error loading email history:', error);
@@ -52,7 +54,7 @@ export default function History() {
     };
 
     fetchHistory();
-  }, []);
+  }, [user?.uid]);
 
   // Filter emails based on search query
   const filteredEmails = emailHistory.filter(

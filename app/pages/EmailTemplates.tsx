@@ -1,12 +1,14 @@
 'use client';
 
 import { AlertDialog } from '@/components/alert-dialog';
+import { useAuth } from '@/contexts/AuthContext';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
 import { TEMPLATE_METADATA, TemplateType } from '@/lib/templateTypes';
 import { useEffect, useState } from 'react';
 
 export default function EmailTemplates() {
+  const { user } = useAuth();
   const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateType>(
     TemplateType.PROFESSIONAL_INTRO
   );
@@ -40,7 +42,7 @@ export default function EmailTemplates() {
     const fetchResumeData = async () => {
       setIsLoadingResume(true);
       try {
-        const data = await loadResumeData();
+        const data = await loadResumeData(user?.uid);
         setResumeData(data);
       } catch (error) {
         console.error('Error loading resume data:', error);
@@ -50,7 +52,7 @@ export default function EmailTemplates() {
     };
 
     fetchResumeData();
-  }, []);
+  }, [user?.uid]);
 
   const handleSelectTemplate = (templateId: TemplateType) => {
     setSelectedTemplateId(templateId);

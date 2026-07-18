@@ -2,7 +2,7 @@
 
 import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
-import { FirebaseSignInButton } from '@/components/firebase-sign-in';
+import { GoogleSignInButton } from '@/components/google-sign-in';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
@@ -43,7 +43,7 @@ export default function Profile() {
     const fetchStats = async () => {
       if (isAuthenticated) {
         try {
-          const history = await loadEmailHistory();
+          const history = await loadEmailHistory(user?.uid);
           setEmailStats({
             total: history.length,
             sent: history.filter(e => e.status === 'sent').length,
@@ -60,7 +60,7 @@ export default function Profile() {
     };
 
     fetchStats();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.uid]);
 
   // Get user info from Google account
   const displayName = user?.displayName || 'User';
@@ -117,7 +117,7 @@ export default function Profile() {
             </p>
           </div>
 
-          <FirebaseSignInButton
+          <GoogleSignInButton
             onSuccess={() => {
               // Page will automatically update due to auth state change
               console.log('Signed in successfully');
@@ -391,8 +391,10 @@ export default function Profile() {
                     onClick={async () => {
                       try {
                         // Gather all user data
-                        const resumeData = await loadResumeData();
-                        const emailHistory = await loadEmailHistory();
+                        const resumeData = await loadResumeData(user?.uid);
+                        const emailHistory = await loadEmailHistory(
+                          user?.uid
+                        );
 
                         const exportData = {
                           user: {
@@ -519,7 +521,9 @@ export default function Profile() {
                             });
 
                             // Delete user's email history
-                            const history = await loadEmailHistory();
+                            const history = await loadEmailHistory(
+                              user?.uid
+                            );
                             await Promise.all(
                               history.map(email =>
                                 deleteEmailFromHistory(email.id)

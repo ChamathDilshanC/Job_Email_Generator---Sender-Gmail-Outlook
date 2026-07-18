@@ -2,7 +2,6 @@ import { Education } from '@/app/models/Education';
 import { Project } from '@/app/models/Project';
 import { SocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
-import { getAuth } from 'firebase/auth';
 
 // Resume data interface
 export interface ResumeData {
@@ -30,12 +29,10 @@ export interface ResumeData {
  * Save resume data to MongoDB via API
  */
 export async function saveResumeData(
+  userId: string | undefined | null,
   resumeData: Omit<ResumeData, 'userId' | 'lastUpdated' | 'createdAt'>
 ): Promise<void> {
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
+  if (!userId) {
     throw new Error('No user logged in');
   }
 
@@ -46,7 +43,7 @@ export async function saveResumeData(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        userId: user.uid,
+        userId,
         resumeData,
       }),
     });
@@ -73,17 +70,16 @@ export async function saveResumeData(
 /**
  * Load resume data from MongoDB via API
  */
-export async function loadResumeData(): Promise<ResumeData | null> {
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
+export async function loadResumeData(
+  userId: string | undefined | null
+): Promise<ResumeData | null> {
+  if (!userId) {
     console.log('No user logged in, cannot load resume data');
     return null;
   }
 
   try {
-    const response = await fetch(`/api/resume?userId=${user.uid}`);
+    const response = await fetch(`/api/resume?userId=${userId}`);
 
     if (!response.ok) {
       throw new Error('Failed to load resume');
@@ -117,6 +113,7 @@ export async function loadResumeData(): Promise<ResumeData | null> {
 let saveTimeout: NodeJS.Timeout | null = null;
 
 export function autoSaveResumeData(
+  userId: string | undefined | null,
   resumeData: Omit<ResumeData, 'userId' | 'lastUpdated' | 'createdAt'>,
   delay: number = 2000 // 2 seconds delay
 ): void {
@@ -127,7 +124,7 @@ export function autoSaveResumeData(
 
   // Set new timeout
   saveTimeout = setTimeout(() => {
-    saveResumeData(resumeData)
+    saveResumeData(userId, resumeData)
       .then(() => console.log('Auto-saved resume data'))
       .catch(err => console.error('Auto-save failed:', err));
   }, delay);

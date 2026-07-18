@@ -10,12 +10,12 @@ import { SocialLinks, createEmptySocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { AlertDialog } from '@/components/alert-dialog';
 import { Loader } from '@/components/ui/loader';
+import { useAuth } from '@/contexts/AuthContext';
 import { autoSaveResumeData, loadResumeData } from '@/lib/resumeDataService';
 import {
   fetchSkillsForPosition,
   getPositionSuggestions,
 } from '@/lib/skillsApiClient';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PhoneInput from 'react-phone-number-input';
 import en from 'react-phone-number-input/locale/en';
@@ -23,6 +23,7 @@ import 'react-phone-number-input/style.css';
 import ProjectSection from '../components/ProjectSection';
 
 export default function ResumeBuilder() {
+  const { user, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('personal');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -406,17 +407,20 @@ export default function ResumeBuilder() {
     setSelectedSkills(prev => prev.filter(s => s !== skill));
   }, []);
 
-  // Load resume data from Firebase when user logs in
+  // Load resume data from MongoDB when user logs in
   useEffect(() => {
-    const auth = getAuth();
+    // Wait until the auth session has been resolved (restored from
+    // localStorage or not) before deciding whether to show the sign-in alert
+    if (authLoading) return;
+
     let hasShownAlert = false; // Flag to prevent showing alert multiple times
 
-    const unsubscribe = onAuthStateChanged(auth, async user => {
+    const syncResumeData = async () => {
       setIsLoading(true);
       if (user) {
         try {
           console.log('User logged in, loading resume data...');
-          const data = await loadResumeData();
+          const data = await loadResumeData(user.uid);
 
           console.log('=== FULL DATA FROM MONGODB ===');
           console.log(JSON.stringify(data, null, 2));
@@ -518,10 +522,10 @@ export default function ResumeBuilder() {
         // Reset active section to personal
         setActiveSection('personal');
       }
-    });
+    };
 
-    return () => unsubscribe();
-  }, []);
+    syncResumeData();
+  }, [user, authLoading]);
 
   // Helper function to show alert dialog
   const showAlert = useCallback(
@@ -547,10 +551,8 @@ export default function ResumeBuilder() {
           setStepsCompleted(prev => ({ ...prev, personal: true }));
 
           // Save data when moving forward
-          const auth = getAuth();
-          const user = auth.currentUser;
           if (user) {
-            await autoSaveResumeData({
+            await autoSaveResumeData(user.uid, {
               personalInfo,
               socialLinks,
               workExperiences,
@@ -572,10 +574,8 @@ export default function ResumeBuilder() {
           setStepsCompleted(prev => ({ ...prev, experience: true }));
 
           // Save data when moving forward
-          const auth = getAuth();
-          const user = auth.currentUser;
           if (user) {
-            await autoSaveResumeData({
+            await autoSaveResumeData(user.uid, {
               personalInfo,
               socialLinks,
               workExperiences,
@@ -597,10 +597,8 @@ export default function ResumeBuilder() {
           setStepsCompleted(prev => ({ ...prev, education: true }));
 
           // Save data when moving forward
-          const auth = getAuth();
-          const user = auth.currentUser;
           if (user) {
-            await autoSaveResumeData({
+            await autoSaveResumeData(user.uid, {
               personalInfo,
               socialLinks,
               workExperiences,
@@ -622,10 +620,8 @@ export default function ResumeBuilder() {
           setStepsCompleted(prev => ({ ...prev, projects: true }));
 
           // Save data when moving forward
-          const auth = getAuth();
-          const user = auth.currentUser;
           if (user) {
-            await autoSaveResumeData({
+            await autoSaveResumeData(user.uid, {
               personalInfo,
               socialLinks,
               workExperiences,
@@ -646,11 +642,9 @@ export default function ResumeBuilder() {
         if (isValid) {
           setStepsCompleted(prev => ({ ...prev, skills: true }));
 
-          // Save resume data to Firebase/MongoDB when skills section is completed
-          const auth = getAuth();
-          const user = auth.currentUser;
+          // Save resume data to MongoDB when skills section is completed
           if (user) {
-            await autoSaveResumeData({
+            await autoSaveResumeData(user.uid, {
               personalInfo,
               socialLinks,
               workExperiences,
@@ -693,6 +687,7 @@ export default function ResumeBuilder() {
     position,
     selectedSkills,
     showAlert,
+    user,
   ]);
 
   // Handle Previous Step

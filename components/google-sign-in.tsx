@@ -1,82 +1,35 @@
 'use client';
 
-import { useGoogleLogin } from '@react-oauth/google';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 
-interface GoogleSignInProps {
-  onSuccess: (accessToken: string, email: string) => void;
-  onError?: () => void;
+interface GoogleSignInButtonProps {
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
 }
 
-export function GoogleSignInButton({ onSuccess, onError }: GoogleSignInProps) {
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+export function GoogleSignInButton({
+  onSuccess,
+  onError,
+}: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { handleSignIn } = useAuth();
 
-  const login = useGoogleLogin({
-    onSuccess: async tokenResponse => {
-      try {
-        setIsLoading(true);
-        // Get user info using the access token
-        const userInfoResponse = await fetch(
-          'https://www.googleapis.com/oauth2/v3/userinfo',
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResponse.access_token}`,
-            },
-          }
-        );
-        const userInfo = await userInfoResponse.json();
+  const handleClick = async () => {
+    setIsLoading(true);
+    const result = await handleSignIn();
+    setIsLoading(false);
 
-        onSuccess(tokenResponse.access_token, userInfo.email);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Failed to get user info:', error);
-        setIsLoading(false);
-        onError?.();
-      }
-    },
-    onError: () => {
-      console.error('Login Failed');
-      setIsLoading(false);
-      onError?.();
-    },
-    scope:
-      'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
-  });
-
-  // Show fallback if no client ID is configured
-  if (!clientId) {
-    return (
-      <button
-        className="btn btn-secondary"
-        onClick={() => {
-          alert(
-            'Google OAuth is not configured.\n\n' +
-              'Please follow the setup guide in GMAIL_SETUP.md to:\n' +
-              '1. Create a Google Cloud Project\n' +
-              '2. Get OAuth credentials\n' +
-              '3. Add them to .env.local\n' +
-              '4. Restart the dev server'
-          );
-        }}
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          style={{ width: '20px', height: '20px', marginRight: '8px' }}
-        >
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-        </svg>
-        Setup Google Sign-In
-      </button>
-    );
-  }
+    if (result.success) {
+      onSuccess?.();
+    } else {
+      onError?.(result.error || 'Sign in failed');
+    }
+  };
 
   return (
     <button
-      onClick={() => login()}
+      onClick={handleClick}
       className="btn btn-primary"
       disabled={isLoading}
       style={{
@@ -113,63 +66,4 @@ export function GoogleSignInButton({ onSuccess, onError }: GoogleSignInProps) {
       {isLoading ? 'Signing in...' : 'Sign in with Google'}
     </button>
   );
-}
-
-interface GoogleAuthState {
-  isAuthenticated: boolean;
-  accessToken: string | null;
-  userEmail: string | null;
-}
-
-export function useGoogleAuth() {
-  const [authState, setAuthState] = useState<GoogleAuthState>({
-    isAuthenticated: false,
-    accessToken: null,
-    userEmail: null,
-  });
-
-  const handleSignIn = (accessToken: string, email: string) => {
-    setAuthState({
-      isAuthenticated: true,
-      accessToken,
-      userEmail: email,
-    });
-
-    // Store in localStorage for persistence
-    localStorage.setItem('gmail_access_token', accessToken);
-    localStorage.setItem('gmail_user_email', email);
-
-    console.log('Successfully signed in:', email);
-  };
-
-  const handleSignOut = () => {
-    setAuthState({
-      isAuthenticated: false,
-      accessToken: null,
-      userEmail: null,
-    });
-    localStorage.removeItem('gmail_access_token');
-    localStorage.removeItem('gmail_user_email');
-  };
-
-  // Check for existing session on mount
-  const checkExistingSession = () => {
-    const token = localStorage.getItem('gmail_access_token');
-    const email = localStorage.getItem('gmail_user_email');
-
-    if (token && email) {
-      setAuthState({
-        isAuthenticated: true,
-        accessToken: token,
-        userEmail: email,
-      });
-    }
-  };
-
-  return {
-    ...authState,
-    handleSignIn,
-    handleSignOut,
-    checkExistingSession,
-  };
 }

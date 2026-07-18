@@ -164,8 +164,8 @@ export default function PrivacyPolicy() {
             </p>
             <ul className="list-disc list-inside space-y-2 ml-4 text-gray-700">
               <li>
-                <strong>Firebase Authentication:</strong> For secure user
-                authentication and account management
+                <strong>Google OAuth:</strong> For secure user authentication
+                and account management
               </li>
               <li>
                 <strong>Google Gmail API:</strong> To send emails on your behalf

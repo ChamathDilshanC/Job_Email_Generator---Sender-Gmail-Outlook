@@ -1,45 +1,220 @@
-# JobMail - Professional Job Application Email Generator
+# JobMail — Professional Job Application Email Generator
 
-A modern, feature-rich Next.js application for creating and sending professional job application emails with Google authentication, resume builder integration, and seamless Gmail/Outlook support.
+A modern, feature-rich Next.js application for creating and sending professional job application emails, with direct Google OAuth sign-in, a resume builder backed by MongoDB, and seamless Gmail/Outlook sending.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
-![Firebase](https://img.shields.io/badge/Firebase-Authentication-orange?style=for-the-badge&logo=firebase)
+![Azure](https://img.shields.io/badge/Azure-Cosmos%20DB-0089D6?style=for-the-badge&logo=microsoftazure)
+![Google](https://img.shields.io/badge/Google-OAuth%202.0-4285F4?style=for-the-badge&logo=google)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Key Features](#-key-features)
+- [Technology Stack](#️-technology-stack)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [Environment Variables](#-environment-variables)
+- [Usage Guide](#-usage-guide)
+- [Security Features](#-security-features)
+- [Deployment](#-deployment)
+- [Recent Updates](#-recent-updates)
+- [Author](#-author)
+
+## 🔭 Overview
+
+JobMail lets a job seeker fill in their profile once (Resume Builder), then generate and send tailored job-application emails through their own Gmail account — with attachments — in a couple of clicks. Everything runs on a small, provider-agnostic stack: **Next.js** for the app, **direct Google OAuth** for sign-in and Gmail permission, and **MongoDB** (Azure Cosmos DB for MongoDB) for storing resumes and send history.
+
+## 🏗 Architecture
+
+### System overview
+
+```mermaid
+graph TB
+    subgraph Browser["Browser — Next.js Client Components"]
+        UI["Sidebar + Pages\n(SendEmail, ResumeBuilder, Templates, History, Profile)"]
+        AuthCtx["AuthContext\n(contexts/AuthContext.tsx)"]
+    end
+
+    subgraph Server["Next.js Server — hosted on Azure App Service"]
+        R1["/api/resume"]
+        R2["/api/email-history"]
+        R3["/api/send-email"]
+        R4["/api/universities/search"]
+    end
+
+    subgraph AzureCloud["Microsoft Azure"]
+        Cosmos[("Azure Cosmos DB\nfor MongoDB")]
+    end
+
+    subgraph GoogleCloud["Google"]
+        OAuth["Google OAuth 2.0"]
+        Gmail["Gmail API"]
+    end
+
+    Skills["Job Portal Skills API\n(external)"]
+    Uni["Hipolabs Universities API\n(external)"]
+
+    UI -- "sign in / access token" --> AuthCtx
+    AuthCtx -- "useGoogleLogin()" --> OAuth
+    UI -- "save / load resume" --> R1
+    UI -- "save / load / delete history" --> R2
+    UI -- "send email + attachments" --> R3
+    UI -- "search universities" --> R4
+    UI -- "skills lookup" --> Skills
+
+    R1 --> Cosmos
+    R2 --> Cosmos
+    R3 -- "send on user's behalf" --> Gmail
+    R4 --> Uni
+```
+
+### Sign-in and data flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant B as Browser (AuthContext)
+    participant G as Google OAuth
+    participant API as Next.js API Routes
+    participant DB as Azure Cosmos DB
+
+    U->>B: Click "Sign in with Google"
+    B->>G: useGoogleLogin() popup — scope: gmail.send, userinfo.email
+    G-->>B: access_token (~1 hour expiry)
+    B->>G: GET /oauth2/v3/userinfo
+    G-->>B: { sub, email, name, picture }
+    B->>B: Store token + user in localStorage (user.uid = Google "sub")
+
+    U->>B: Complete Resume Builder
+    B->>API: POST /api/resume { userId, resumeData }
+    API->>DB: upsert into "resumes" collection
+    DB-->>API: ok
+    API-->>B: success
+
+    U->>B: Click "Send via Gmail"
+    B->>API: POST /api/send-email { accessToken, to, subject, body }
+    API->>G: gmail.users.messages.send (OAuth2Client)
+    G-->>API: messageId
+    API-->>B: success
+    B->>API: POST /api/email-history { userId, ... }
+    API->>DB: insert into "email_history" collection
+```
+
+### Data model (MongoDB)
+
+```mermaid
+erDiagram
+    RESUMES {
+        string userId PK
+        object personalInfo
+        object socialLinks
+        array  workExperiences
+        array  education
+        array  projects
+        object skills
+        date   createdAt
+        date   lastUpdated
+    }
+    EMAIL_HISTORY {
+        ObjectId _id PK
+        string userId FK
+        string companyName
+        string position
+        string recipientEmail
+        string status
+        date   sentDate
+    }
+    RESUMES ||--o{ EMAIL_HISTORY : "userId"
+```
+
+**Why this shape:** authentication is deliberately decoupled from storage. `AuthContext` only ever produces a `userId` (Google's stable `sub` claim) and an access token; every API route treats that `userId` as an opaque string. That's what made it possible to swap Firebase Auth for direct Google OAuth without touching the database layer at all.
 
 ## ✨ Key Features
 
 ### 🔐 Authentication & Security
 
-- **Google Authentication** - Secure sign-in with Firebase Authentication
-- **Protected Routes** - Locked tabs and features for unauthenticated users
-- **Auto Cache Clearing** - Privacy-focused cache management on sign-out
-- **Session Management** - Persistent login with secure token handling
+- **Direct Google OAuth 2.0** — sign-in via `@react-oauth/google`, no third-party auth provider in the loop
+- **Gmail-scoped access token** — requested once at sign-in, used to send mail as the user via the Gmail API
+- **Protected Routes** — locked tabs and features for unauthenticated users
+- **Auto Cache Clearing** — privacy-focused cache management on sign-out
 
 ### 📧 Email Management
 
-- **Multiple Email Templates** - Professional, Creative, Formal, and Technical templates
-- **Real-Time Preview** - See your email as you compose it
-- **Gmail API Integration** - Send emails directly with attachments
-- **Outlook Support** - mailto: integration for Outlook users
-- **Email History** - Track all sent applications
-- **Copy to Clipboard** - Quick copy functionality
+- **Multiple Email Templates** — Professional, Creative, Formal, and Technical templates
+- **Real-Time Preview** — see your email as you compose it
+- **Gmail API Integration** — send emails directly, with attachments
+- **Outlook Support** — `mailto:` integration for Outlook users
+- **Email History** — track all sent applications
+- **Copy to Clipboard** — quick copy functionality
 
 ### 👤 Resume Builder
 
-- **Personal Information Management** - Store and manage your professional details
-- **Multiple Experience Entries** - Add unlimited work experiences
-- **Education Tracking** - Record your academic background
-- **Skills Management** - Organize technical and soft skills
-- **Auto-Fill Integration** - Automatically populate email templates
+- **Personal Information Management** — store and manage your professional details
+- **Multiple Experience Entries** — add unlimited work experiences
+- **Education Tracking** — record your academic background
+- **Skills Management** — organize technical and soft skills, with API-backed suggestions
+- **Auto-Fill Integration** — automatically populate email templates
 
 ### 🎨 Modern UI/UX
 
-- **Responsive Design** - Works on desktop, tablet, and mobile
-- **Dark Theme** - Modern, professional appearance
-- **Sidebar Navigation** - Easy access to all features
-- **Lock Icons** - Clear visual indicators for protected features
-- **Confirmation Dialogs** - Prevent accidental actions
+- **Responsive Design** — works on desktop, tablet, and mobile
+- **Sidebar Navigation** — easy access to all features
+- **Lock Icons** — clear visual indicators for protected features
+- **Confirmation Dialogs** — prevent accidental actions
+
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js 14 (App Router), TypeScript, React |
+| Styling | Tailwind CSS, Shadcn/ui components |
+| Authentication | Direct Google OAuth 2.0 (`@react-oauth/google`) |
+| Database | MongoDB driver → Azure Cosmos DB for MongoDB |
+| Email sending | Gmail API (`googleapis`), `mailto:` for Outlook |
+| Hosting | Azure App Service / Azure Static Web Apps |
+| Icons | Lucide React |
+| State management | React Context API |
+
+## 📁 Project Structure
+
+```
+Job_Email_Generator/
+├── app/
+│   ├── api/
+│   │   ├── resume/route.ts            # Resume CRUD (MongoDB)
+│   │   ├── email-history/route.ts     # Email history CRUD (MongoDB)
+│   │   ├── send-email/route.ts        # Gmail API send
+│   │   └── universities/search/route.ts
+│   ├── pages/
+│   │   ├── SendEmail.tsx              # Email composition page
+│   │   ├── ResumeBuilder.tsx          # Personal info management
+│   │   ├── EmailTemplates.tsx         # Template selection
+│   │   ├── History.tsx                # Email history
+│   │   └── Profile.tsx                # User profile & settings
+│   ├── globals.css                    # Global styles
+│   ├── layout.tsx                     # Root layout
+│   ├── providers.tsx                  # GoogleAuthProvider + AuthProvider
+│   └── page.tsx                       # Main app container (sidebar shell)
+├── components/
+│   ├── sidebar-01/                    # Navigation sidebar
+│   ├── ui/                            # UI components
+│   ├── alert-dialog.tsx               # Alert system
+│   ├── google-sign-in.tsx             # Sign-in button
+│   └── google-auth-provider.tsx       # GoogleOAuthProvider wrapper
+├── contexts/
+│   └── AuthContext.tsx                # Auth state (Google OAuth, session persistence)
+└── lib/
+    ├── emailTemplate.ts               # Email generation
+    ├── emailTemplateGenerator.ts      # Template engine
+    ├── gmailClient.ts                 # Gmail API client helpers
+    ├── resumeDataService.ts           # Resume data API client (MongoDB)
+    ├── emailHistoryService.ts         # History API client (MongoDB)
+    ├── mongodb.ts                     # MongoDB client singleton
+    └── clearCache.ts                  # Cache utilities
+```
 
 ## 🚀 Quick Start
 
@@ -47,8 +222,8 @@ A modern, feature-rich Next.js application for creating and sending professional
 
 - Node.js 18+ installed
 - npm or yarn package manager
-- Firebase project (for authentication)
-- Google Cloud Console project (for Gmail API)
+- A Google Cloud Console project (OAuth client for sign-in + Gmail API enabled)
+- A MongoDB-compatible database — Azure Cosmos DB for MongoDB (free tier) recommended
 
 ### Installation
 
@@ -67,17 +242,11 @@ npm install
 
 3. **Set up environment variables:**
 
-Create a `.env.local` file with your Firebase and Google API credentials:
-
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
+```bash
+cp .env.local.example .env.local
 ```
+
+Fill in the values — see [Environment Variables](#-environment-variables) below.
 
 4. **Start the development server:**
 
@@ -87,33 +256,32 @@ npm run dev
 
 5. **Open [http://localhost:3000](http://localhost:3000)**
 
+## 🔑 Environment Variables
+
+Defined in `.env.local.example`; copy to `.env.local` (and `.env.production.local` for a production build) and fill in real values. Both files are gitignored.
+
+| Variable | Used for | Where to get it |
+| --- | --- | --- |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google sign-in popup (client-side) | [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials) |
+| `GOOGLE_CLIENT_SECRET` | Reserved for a future server-side token exchange; not required by the current implicit OAuth flow | Same as above |
+| `MONGODB_URI` | Resume + email history storage | Azure Portal → Azure Cosmos DB for MongoDB → Connection Strings |
+| `NEXT_PUBLIC_SKILLS_API_KEY` | Skills autosuggest in Resume Builder | Job Portal Skills API |
+| `NEXT_PUBLIC_SKILLS_API_BASE_URL` | Skills API base URL | Job Portal Skills API |
+
 ## 📖 Usage Guide
 
 ### First Time Setup
 
-1. **Sign In with Google** - Click the "Sign in with Google" button in the header
-2. **Complete Resume Builder** - Navigate to "Your Information" and fill in your details
-3. **Create Email Template** - Go to "Send Email" and compose your first application
+1. **Sign In with Google** — click "Sign in with Google" in the header
+2. **Complete Resume Builder** — go to "Your Information" and fill in your details
+3. **Create an Email** — go to "Send Email" and compose your first application
 
 ### Sending an Email
 
-1. **Fill Application Details:**
-   - Company Name
-   - Position/Role
-   - Recipient Email
-   - Select Email Template
-
-2. **Upload Files:**
-   - CV (Required)
-   - Cover Letter (Optional)
-
-3. **Choose Email Client:**
-   - Gmail (with direct API sending)
-   - Outlook (opens default mail client)
-
-4. **Send or Copy:**
-   - Click "Send via Gmail" for direct sending
-   - Use "Copy Email" for manual sending
+1. **Fill Application Details:** Company Name, Position/Role, Recipient Email, Email Template
+2. **Upload Files:** CV (required), Cover Letter (optional)
+3. **Choose Email Client:** Gmail (direct API sending) or Outlook (opens default mail client)
+4. **Send or Copy:** "Send via Gmail" for direct sending, "Copy Email" for manual sending
 
 ### Managing Your Profile
 
@@ -127,102 +295,37 @@ npm run dev
 
 ### Authentication Guards
 
-- **Locked Navigation** - "Your Information" tab shows lock icon when signed out
-- **Disabled Buttons** - Resume Builder button locked until authenticated
-- **Tooltip Guidance** - "Sign in to access" messages on locked features
-- **Visual Feedback** - Reduced opacity and cursor changes for locked elements
+- **Locked Navigation** — "Your Information" tab shows a lock icon when signed out
+- **Disabled Buttons** — Resume Builder button locked until authenticated
+- **Tooltip Guidance** — "Sign in to access" messages on locked features
+- **Visual Feedback** — reduced opacity and cursor changes for locked elements
 
 ### Privacy Controls
 
-- **Secure Sign Out** - Clears all browser cache and session data
-- **Cache Management** - Clear cache option in Profile settings
-- **Data Export** - Download all your data before deletion
-- **Account Deletion** - Complete data removal with confirmation
-
-## 📁 Project Structure
-
-```
-Job_Email_Generator/
-├── app/
-│   ├── pages/
-│   │   ├── SendEmail.tsx       # Email composition page
-│   │   ├── ResumeBuilder.tsx   # Personal info management
-│   │   ├── EmailTemplates.tsx  # Template selection
-│   │   ├── History.tsx         # Email history
-│   │   └── Profile.tsx         # User profile & settings
-│   ├── globals.css             # Global styles
-│   ├── layout.tsx              # Root layout
-│   └── page.tsx                # Main app container
-├── components/
-│   ├── sidebar-01/             # Navigation sidebar
-│   ├── ui/                     # UI components
-│   ├── alert-dialog.tsx        # Alert system
-│   └── firebase-sign-in.tsx    # Auth button
-├── contexts/
-│   └── AuthContext.tsx         # Authentication state
-├── lib/
-│   ├── emailTemplate.ts        # Email generation
-│   ├── emailTemplateGenerator.ts # Template engine
-│   ├── gmailClient.ts          # Gmail API
-│   ├── resumeDataService.ts    # Resume data API
-│   ├── emailHistoryService.ts  # History management
-│   └── clearCache.ts           # Cache utilities
-└── firebase.ts                 # Firebase config
-```
-
-## 🎨 Customization
-
-### Email Templates
-
-Edit templates in `lib/emailTemplateGenerator.ts`:
-
-```typescript
-export function generateEmailFromTemplate(
-  templateType: TemplateType,
-  resumeData: ResumeData,
-  jobDetails: JobDetails
-): EmailResult {
-  // Customize your templates here
-}
-```
-
-### Styling
-
-Global styles are in `app/globals.css`:
-
-- CSS variables for theming
-- Color scheme customization
-- Responsive breakpoints
-
-## 🛠️ Technology Stack
-
-- **Frontend:** Next.js 14 (App Router), TypeScript, React
-- **Styling:** Tailwind CSS, Shadcn/ui components
-- **Authentication:** Firebase Authentication
-- **APIs:** Gmail API, Google OAuth 2.0
-- **Icons:** Lucide React
-- **State Management:** React Context API
+- **Secure Sign Out** — clears all browser cache and session data
+- **Cache Management** — clear cache option in Profile settings
+- **Data Export** — download all your data before deletion
+- **Account Deletion** — complete data removal with confirmation
 
 ## 🚢 Deployment
 
-### Vercel (Recommended)
+### Azure App Service (recommended)
 
 1. Push your code to GitHub
-2. Import project in Vercel
-3. Add environment variables
-4. Deploy
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+2. Create an **Azure App Service** (Linux, Node 18+) or **Azure Static Web Apps** resource — both have a free tier
+3. Connect it to your GitHub repo (Deployment Center) for CI/CD on every push
+4. Add the variables from `.env.local` under **Configuration → Application settings**
+5. Deploy
 
 ### Other Platforms
 
-- **Netlify** - Static site deployment
-- **AWS Amplify** - Full-stack hosting
-- **Custom VPS** - Node.js hosting
+- **Vercel** — zero-config Next.js hosting
+- **Netlify** — static site deployment
+- **Custom VPS** — Node.js hosting
 
 ## 📝 Recent Updates
 
-- ✅ Added Google Authentication with Firebase
+- ✅ Migrated authentication off Firebase to direct Google OAuth; moved hosting/DB to Azure
 - ✅ Implemented locked tabs for unauthenticated users
 - ✅ Added Sign Out button in Profile settings
 - ✅ Auto cache clearing on sign-out
@@ -230,7 +333,6 @@ Global styles are in `app/globals.css`:
 - ✅ Resume data auto-reload on authentication change
 - ✅ Lock icons on protected features
 - ✅ Confirmation dialogs for critical actions
-- ✅ Improved horizontal padding in main view
 
 ## 🤝 Contributing
 
@@ -242,7 +344,7 @@ Contributions are welcome! Feel free to:
 
 ## 📄 License
 
-MIT License - Free to use for personal and commercial projects
+MIT License — free to use for personal and commercial projects
 
 ## 👨‍💻 Author
 
@@ -254,10 +356,9 @@ MIT License - Free to use for personal and commercial projects
 
 ## 🙏 Acknowledgments
 
-- Firebase for authentication services
-- Google for Gmail API
+- Google for OAuth & Gmail API
+- Microsoft Azure for hosting & Cosmos DB
 - Shadcn/ui for beautiful components
-- Vercel for hosting platform
 
 ---
 

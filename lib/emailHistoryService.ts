@@ -1,16 +1,13 @@
 import { EmailHistory } from '@/app/models/EmailHistory';
-import { getAuth } from 'firebase/auth';
 
 /**
  * Save sent email to history
  */
 export async function saveEmailToHistory(
+  userId: string | undefined | null,
   emailData: Omit<EmailHistory, 'id' | 'userId' | 'sentDate'>
 ): Promise<boolean> {
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
+  if (!userId) {
     console.log('No user logged in, cannot save email history');
     return false;
   }
@@ -18,7 +15,7 @@ export async function saveEmailToHistory(
   try {
     const historyEntry = {
       ...emailData,
-      userId: user.uid,
+      userId,
       sentDate: new Date().toISOString(),
     };
 
@@ -46,20 +43,18 @@ export async function saveEmailToHistory(
  * Load email history for current user
  */
 export async function loadEmailHistory(
+  userId: string | undefined | null,
   limit: number = 50,
   offset: number = 0
 ): Promise<EmailHistory[]> {
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
+  if (!userId) {
     console.log('No user logged in, cannot load email history');
     return [];
   }
 
   try {
     const response = await fetch(
-      `/api/email-history?userId=${user.uid}&limit=${limit}&offset=${offset}`
+      `/api/email-history?userId=${userId}&limit=${limit}&offset=${offset}`
     );
 
     if (!response.ok) {
@@ -87,14 +82,6 @@ export async function loadEmailHistory(
 export async function deleteEmailFromHistory(
   emailId: string
 ): Promise<boolean> {
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  if (!user) {
-    console.log('No user logged in, cannot delete email history');
-    return false;
-  }
-
   try {
     const response = await fetch(`/api/email-history?emailId=${emailId}`, {
       method: 'DELETE',

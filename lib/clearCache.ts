@@ -78,13 +78,8 @@ export function clearAuthData() {
     // Clear Google OAuth tokens
     localStorage.removeItem('google_oauth_token');
     localStorage.removeItem('google_oauth_token_timestamp');
-
-    // Clear Gmail tokens (if using @react-oauth/google)
-    localStorage.removeItem('gmail_access_token');
-    localStorage.removeItem('gmail_user_email');
-
-    // Clear any Firebase-related tokens
-    localStorage.removeItem('firebase:authUser');
+    localStorage.removeItem('google_oauth_token_expires_in');
+    localStorage.removeItem('google_oauth_user');
 
     console.log('✅ Authentication data cleared');
     return true;

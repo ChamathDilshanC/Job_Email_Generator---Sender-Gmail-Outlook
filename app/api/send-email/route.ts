@@ -20,12 +20,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create OAuth2 client
-    // Note: With Firebase, we receive an ID token, but we need to use it differently
-    // Firebase handles the OAuth flow, so we just need to set the access token
+    // Create OAuth2 client and set the user's Google access token
+    // (obtained client-side via @react-oauth/google, scoped to gmail.send)
     const oauth2Client = new google.auth.OAuth2();
 
-    // Set credentials with the Firebase user's access token
     oauth2Client.setCredentials({
       access_token: accessToken,
     });

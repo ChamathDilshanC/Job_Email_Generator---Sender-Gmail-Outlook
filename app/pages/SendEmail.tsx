@@ -2,7 +2,7 @@
 
 import EmailSendingLoader from '@/app/components/EmailSendingLoader';
 import { AlertDialog } from '@/components/alert-dialog';
-import { FirebaseSignInButton } from '@/components/firebase-sign-in';
+import { GoogleSignInButton } from '@/components/google-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
@@ -70,6 +70,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     isAuthenticated,
     accessToken,
     userEmail,
+    user,
     handleSignOut,
     isLoading: authLoading,
   } = useAuth();
@@ -86,7 +87,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
       setIsLoadingResume(true);
       try {
-        const data = await loadResumeData();
+        const data = await loadResumeData(user?.uid);
         setResumeData(data);
       } catch (error) {
         console.error('Error loading resume data:', error);
@@ -102,7 +103,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     }
 
     fetchResumeData();
-  }, [isAuthenticated]); // Added isAuthenticated to dependency array
+  }, [isAuthenticated, user?.uid]); // Added isAuthenticated to dependency array
 
   // Show alert when page loads if user is not signed in
   useEffect(() => {
@@ -305,7 +306,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         const templateName =
           TEMPLATE_METADATA.find(t => t.id === selectedTemplate)?.name ||
           'Custom Template';
-        await saveEmailToHistory({
+        await saveEmailToHistory(user?.uid, {
           companyName: formData.companyName,
           position: formData.position,
           recipientEmail: formData.recipientEmail,
@@ -598,7 +599,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <FirebaseSignInButton
+                <GoogleSignInButton
                   onSuccess={() => {
                     console.log('✨ Sign-in success - refreshing page');
                     setAlertDialog({

@@ -543,7 +543,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         variants={staggerContainer(0.08)}
         initial="hidden"
         animate="visible"
-        className="mx-auto max-w-4xl"
+        className="w-full"
       >
         <motion.div variants={fadeInUp} className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">

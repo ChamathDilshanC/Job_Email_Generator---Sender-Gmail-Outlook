@@ -81,7 +81,7 @@ export default function Profile() {
   // Show sign in required state if not authenticated
   if (!isAuthenticated && !isLoading) {
     return (
-      <div className="mx-auto max-w-4xl">
+      <div className="w-full">
         <motion.div
           variants={fadeInUp}
           initial="hidden"
@@ -147,7 +147,7 @@ export default function Profile() {
         variants={staggerContainer(0.08)}
         initial="hidden"
         animate="visible"
-        className="mx-auto max-w-6xl"
+        className="w-full"
       >
         <motion.div variants={fadeInUp} className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">

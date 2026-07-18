@@ -160,7 +160,7 @@ export default function History() {
         variants={staggerContainer(0.08)}
         initial="hidden"
         animate="visible"
-        className="mx-auto max-w-6xl"
+        className="w-full"
       >
         {/* Header */}
         <motion.div variants={fadeInUp} className="mb-8">

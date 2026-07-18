@@ -8,7 +8,18 @@ import {
   deleteEmailFromHistory,
   loadEmailHistory,
 } from '@/lib/emailHistoryService';
+import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { loadResumeData } from '@/lib/resumeDataService';
+import { motion } from 'framer-motion';
+import {
+  AlertTriangle,
+  Download,
+  Info,
+  LogOut,
+  SettingsIcon,
+  Trash2,
+  User,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Profile() {
@@ -70,18 +81,28 @@ export default function Profile() {
   // Show sign in required state if not authenticated
   if (!isAuthenticated && !isLoading) {
     return (
-      <div className="p-4 md:p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#a5b4fc] dark:to-[#a5b4fc] bg-clip-text text-transparent">
+      <div className="mx-auto max-w-4xl">
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+          className="mb-8"
+        >
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Profile
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage your personal information and preferences
           </p>
-        </div>
+        </motion.div>
 
-        <div className="animate-fade-in mx-auto mt-8 flex max-w-[600px] flex-col items-center justify-center gap-6 rounded-lg border-2 border-red-500 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-8 text-center">
-          <div className="text-5xl">⚠️</div>
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+          className="mx-auto mt-8 flex max-w-[600px] flex-col items-center justify-center gap-6 rounded-2xl border-2 border-red-500 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-8 text-center"
+        >
+          <AlertTriangle className="h-12 w-12 text-red-500" />
           <div>
             <h3 className="mb-2 text-xl font-semibold text-red-600 dark:text-red-400">
               Sign In Required
@@ -94,7 +115,6 @@ export default function Profile() {
 
           <GoogleSignInButton
             onSuccess={() => {
-              // Page will automatically update due to auth state change
               console.log('Signed in successfully');
             }}
             onError={(error: string) => {
@@ -107,7 +127,7 @@ export default function Profile() {
               });
             }}
           />
-        </div>
+        </motion.div>
 
         {/* Alert Dialog */}
         <AlertDialog
@@ -123,29 +143,33 @@ export default function Profile() {
 
   return (
     <>
-      <div className="p-4 md:p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#a5b4fc] dark:to-[#a5b4fc] bg-clip-text text-transparent">
+      <motion.div
+        variants={staggerContainer(0.08)}
+        initial="hidden"
+        animate="visible"
+        className="mx-auto max-w-6xl"
+      >
+        <motion.div variants={fadeInUp} className="mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Profile
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage your personal information and preferences
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
           {/* Sidebar */}
-          <div className="flex flex-col gap-6">
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
-              <div className="relative w-32 h-32 mx-auto mb-6">
+          <motion.div variants={fadeInUp} className="flex flex-col gap-6">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 text-center shadow-sm">
+              <div className="relative mx-auto mb-6 h-32 w-32">
                 {photoURL ? (
                   <img
                     src={photoURL}
                     alt={displayName}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 dark:border-gray-800"
+                    className="h-32 w-32 rounded-full border-4 border-gray-100 object-cover dark:border-gray-800"
                     referrerPolicy="no-referrer"
                     onError={e => {
-                      // Fallback to default avatar if image fails to load
                       e.currentTarget.style.display = 'none';
                       const fallback = e.currentTarget.nextElementSibling;
                       if (fallback) {
@@ -155,59 +179,61 @@ export default function Profile() {
                   />
                 ) : null}
                 <div
-                  className="w-32 h-32 rounded-full bg-gradient-to-br from-[#3b3be3] to-[#2f2fb8] flex items-center justify-center"
+                  className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-[#3b3be3] to-[#2f2fb8]"
                   style={{ display: photoURL ? 'none' : 'flex' }}
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2"
-                    className="w-16 h-16"
-                  >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                  <User className="h-16 w-16 text-white" strokeWidth={1.5} />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100">{displayName}</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{email}</p>
+              <h2 className="mb-1 text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                {displayName}
+              </h2>
+              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                {email}
+              </p>
               {user ? (
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 rounded-full text-xs font-medium mb-6">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-green-50 dark:bg-green-500/10 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-400">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
                   Connected with Google
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 rounded-full text-xs font-medium mb-6">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-red-50 dark:bg-red-500/10 px-3 py-1 text-xs font-medium text-red-700 dark:text-red-400">
+                  <div className="h-2 w-2 rounded-full bg-red-500" />
                   Not connected
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
+              <div className="grid grid-cols-2 gap-4 border-t border-gray-200 dark:border-gray-800 pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#3b3be3] dark:text-[#818cf8]">
+                  <div className="text-2xl font-semibold text-[#3b3be3] dark:text-[#818cf8]">
                     {isLoading ? '...' : emailStats.sent}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Emails Sent</div>
+                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Emails Sent
+                  </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#3b3be3] dark:text-[#818cf8]">
+                  <div className="text-2xl font-semibold text-[#3b3be3] dark:text-[#818cf8]">
                     {isLoading ? '...' : emailStats.total}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Emails</div>
+                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Total Emails
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Main Content */}
           <div className="flex flex-col gap-6">
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 md:p-8">
-              <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100">
+            <motion.div
+              variants={fadeInUp}
+              className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm md:p-8"
+            >
+              <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Account Information
               </h2>
               <div className="flex flex-col gap-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
                       Full Name
@@ -216,9 +242,9 @@ export default function Profile() {
                       type="text"
                       value={displayName}
                       disabled
-                      className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                      className="cursor-not-allowed rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-3 py-2 text-sm text-gray-600 dark:text-gray-400"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                    <p className="text-xs text-gray-500">
                       Synced from your Google account
                     </p>
                   </div>
@@ -230,32 +256,22 @@ export default function Profile() {
                       type="email"
                       value={email}
                       disabled
-                      className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                      className="cursor-not-allowed rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-3 py-2 text-sm text-gray-600 dark:text-gray-400"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                    <p className="text-xs text-gray-500">
                       Synced from your Google account
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 dark:bg-[#818cf8]/10 border border-blue-200 dark:border-[#818cf8]/25 rounded-lg p-4 mt-2">
+                <div className="mt-2 rounded-xl border border-blue-200 dark:border-[#818cf8]/25 bg-blue-50 dark:bg-[#818cf8]/10 p-4">
                   <div className="flex items-start gap-3">
-                    <svg
-                      className="w-5 h-5 text-blue-600 dark:text-[#a5b4fc] mt-0.5 flex-shrink-0"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-[#a5b4fc]" />
                     <div>
                       <p className="text-sm font-medium text-blue-900 dark:text-[#c7d2fe]">
                         Google Account Integration
                       </p>
-                      <p className="text-sm text-blue-700 dark:text-[#a5b4fc] mt-1">
+                      <p className="mt-1 text-sm text-blue-700 dark:text-[#a5b4fc]">
                         Your profile information is automatically synced from
                         your Google account. To update your name or email,
                         please update them in your Google account settings.
@@ -264,45 +280,42 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Advanced Settings */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 md:p-8">
-              <div className="flex items-center gap-2 mb-6">
-                <svg
-                  className="w-5 h-5 text-gray-700 dark:text-gray-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Advanced</h2>
+            <motion.div
+              variants={fadeInUp}
+              className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm md:p-8"
+            >
+              <div className="mb-6 flex items-center gap-2">
+                <SettingsIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  Advanced
+                </h2>
               </div>
 
-              <div className="flex flex-col gap-4">
+              <motion.div
+                variants={staggerContainer(0.05)}
+                initial="hidden"
+                animate="visible"
+                className="flex flex-col"
+              >
                 {/* Clear Cache */}
-                <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
+                <motion.div
+                  variants={fadeInUp}
+                  className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 py-4"
+                >
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                    <h3 className="mb-1 font-medium text-gray-900 dark:text-gray-100">
                       Clear Cache
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Clear application cache and temporary data
                     </p>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => {
                       setConfirmDialog({
                         open: true,
@@ -312,11 +325,8 @@ export default function Profile() {
                         type: 'warning',
                         onConfirm: async () => {
                           try {
-                            // Clear localStorage
                             localStorage.clear();
-                            // Clear sessionStorage
                             sessionStorage.clear();
-                            // Clear service worker cache if available
                             if ('caches' in window) {
                               const cacheNames = await caches.keys();
                               await Promise.all(
@@ -346,30 +356,32 @@ export default function Profile() {
                         },
                       });
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Clear Cache
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
 
                 {/* Export Data */}
-                <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
+                <motion.div
+                  variants={fadeInUp}
+                  className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 py-4"
+                >
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                    <h3 className="mb-1 font-medium text-gray-900 dark:text-gray-100">
                       Export Data
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Download all your data in JSON format
                     </p>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={async () => {
                       try {
-                        // Gather all user data
                         const resumeData = await loadResumeData(user?.uid);
-                        const emailHistory = await loadEmailHistory(
-                          user?.uid
-                        );
+                        const emailHistory = await loadEmailHistory(user?.uid);
 
                         const exportData = {
                           user: {
@@ -381,7 +393,6 @@ export default function Profile() {
                           exportedAt: new Date().toISOString(),
                         };
 
-                        // Create and download JSON file
                         const dataStr = JSON.stringify(exportData, null, 2);
                         const dataBlob = new Blob([dataStr], {
                           type: 'application/json',
@@ -415,21 +426,29 @@ export default function Profile() {
                         });
                       }
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
+                    <Download className="h-3.5 w-3.5" />
                     Export
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
 
                 {/* Sign Out */}
-                <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
+                <motion.div
+                  variants={fadeInUp}
+                  className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 py-4"
+                >
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Sign Out</h3>
+                    <h3 className="mb-1 font-medium text-gray-900 dark:text-gray-100">
+                      Sign Out
+                    </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Sign out from your Google account
                     </p>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => {
                       setConfirmDialog({
                         open: true,
@@ -447,7 +466,6 @@ export default function Profile() {
                                 'You have been successfully signed out.',
                               type: 'success',
                             });
-                            // Redirect to home page after a short delay
                             setTimeout(() => {
                               window.location.href = '/';
                             }, 1500);
@@ -464,23 +482,29 @@ export default function Profile() {
                         },
                       });
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-900 bg-yellow-400 border border-yellow-500 dark:border-yellow-600 rounded-lg hover:bg-yellow-300 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-yellow-500 dark:border-yellow-600 bg-yellow-400 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-yellow-300"
                   >
+                    <LogOut className="h-3.5 w-3.5" />
                     Sign Out
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
 
                 {/* Delete Account */}
-                <div className="flex items-center justify-between py-4">
+                <motion.div
+                  variants={fadeInUp}
+                  className="flex items-center justify-between py-4"
+                >
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
+                    <h3 className="mb-1 font-medium text-gray-900 dark:text-gray-100">
                       Delete Account
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Permanently delete your account and all data
                     </p>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => {
                       setConfirmDialog({
                         open: true,
@@ -490,22 +514,17 @@ export default function Profile() {
                         type: 'danger',
                         onConfirm: async () => {
                           try {
-                            // Delete user's resume data
                             await fetch(`/api/resume?userId=${user?.uid}`, {
                               method: 'DELETE',
                             });
 
-                            // Delete user's email history
-                            const history = await loadEmailHistory(
-                              user?.uid
-                            );
+                            const history = await loadEmailHistory(user?.uid);
                             await Promise.all(
                               history.map(email =>
                                 deleteEmailFromHistory(email.id)
                               )
                             );
 
-                            // Sign out and clear local data
                             localStorage.clear();
                             sessionStorage.clear();
 
@@ -517,7 +536,6 @@ export default function Profile() {
                               type: 'success',
                             });
 
-                            // Redirect to home page after a short delay
                             setTimeout(() => {
                               window.location.href = '/';
                             }, 1500);
@@ -534,16 +552,17 @@ export default function Profile() {
                         },
                       });
                     }}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
                   >
+                    <Trash2 className="h-3.5 w-3.5" />
                     Delete Account
-                  </button>
-                </div>
-              </div>
-            </div>
+                  </motion.button>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Alert Dialog */}
       <AlertDialog

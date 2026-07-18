@@ -36,7 +36,7 @@ export function Navbar({ onGetStarted, isSigningIn }: NavbarProps) {
             height={30}
             className="rounded-md"
           />
-          <span className="font-serif text-lg font-semibold tracking-tight text-foreground">
+          <span className="font-heading text-lg font-semibold tracking-tight text-foreground">
             JobMail
           </span>
         </div>

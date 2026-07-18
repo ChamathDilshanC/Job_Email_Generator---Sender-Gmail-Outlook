@@ -27,7 +27,7 @@ export function StatsBand() {
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">
             How it works
           </p>
-          <h2 className="mt-3 font-serif text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+          <h2 className="mt-3 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
             Fill in your resume once. Apply everywhere.
           </h2>
         </motion.div>
@@ -45,7 +45,7 @@ export function StatsBand() {
               variants={fadeInUp}
               className="border-l-2 border-primary/40 pl-5"
             >
-              <p className="font-serif text-4xl font-semibold text-foreground">
+              <p className="font-heading text-4xl font-semibold text-foreground">
                 {stat.value}
               </p>
               <p className="mt-1.5 text-sm text-muted-foreground">

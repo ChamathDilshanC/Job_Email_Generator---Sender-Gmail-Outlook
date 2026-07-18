@@ -26,7 +26,7 @@ export function TemplatesShowcase() {
           </motion.p>
           <motion.h2
             variants={fadeInUp}
-            className="mt-3 font-serif text-4xl font-semibold tracking-tight text-foreground md:text-5xl"
+            className="mt-3 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl"
           >
             A template for every moment
           </motion.h2>

@@ -11,11 +11,13 @@ import { WorkExperience } from '@/app/models/WorkExperience';
 import { AlertDialog } from '@/components/alert-dialog';
 import { Loader } from '@/components/ui/loader';
 import { useAuth } from '@/contexts/AuthContext';
+import { EASE } from '@/lib/motion';
 import { autoSaveResumeData, loadResumeData } from '@/lib/resumeDataService';
 import {
   fetchSkillsForPosition,
   getPositionSuggestions,
 } from '@/lib/skillsApiClient';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PhoneInput from 'react-phone-number-input';
 import en from 'react-phone-number-input/locale/en';
@@ -1180,7 +1182,15 @@ export default function ResumeBuilder() {
 
           {/* Main Content Area */}
           <div className="overflow-y-auto max-h-[calc(100vh-300px)] lg:max-h-full">
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 lg:p-8">
+            <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.25, ease: EASE }}
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 md:p-6 lg:p-8 shadow-sm"
+            >
               <h2 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6">
                 {activeSection === 'personal' && 'Personal Information'}
                 {activeSection === 'experience' && 'Work Experience'}
@@ -1824,7 +1834,8 @@ export default function ResumeBuilder() {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>

@@ -33,7 +33,7 @@ export function Hero({ onGetStarted, isSigningIn }: HeroProps) {
 
         <motion.h1
           variants={fadeInUp}
-          className="mt-7 font-serif text-5xl font-semibold leading-[1.05] tracking-tight text-foreground md:text-7xl"
+          className="mt-7 font-heading text-5xl font-semibold leading-[1.05] tracking-tight text-foreground md:text-7xl"
         >
           Job emails that
           <br />

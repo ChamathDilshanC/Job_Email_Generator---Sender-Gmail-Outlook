@@ -43,7 +43,7 @@ export function Footer() {
                 height={26}
                 className="rounded-md"
               />
-              <span className="font-serif text-base font-semibold text-white">
+              <span className="font-heading text-base font-semibold text-white">
                 JobMail
               </span>
             </div>

@@ -14,6 +14,7 @@ import {
   sendEmailWithAttachments,
   type GmailAttachment,
 } from '@/lib/gmailClient';
+import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
 import {
   JobDetails,
@@ -21,8 +22,20 @@ import {
   TemplateType,
 } from '@/lib/templateTypes';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  Copy,
+  LogOut,
+  Mail,
+  Paperclip,
+  Pencil,
+  Send,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
+import { ChangeEvent, FormEvent, ReactNode, useEffect, useState } from 'react';
 
 type AdditionalDetails = Omit<
   JobDetails,
@@ -44,6 +57,33 @@ type PageType = 'send-email' | 'templates' | 'resume' | 'history' | 'profile';
 
 interface SendEmailProps {
   onNavigate?: (page: PageType) => void;
+}
+
+function Field({
+  label,
+  action,
+  hint,
+  className = '',
+  children,
+}: {
+  label: string;
+  action?: ReactNode;
+  hint?: ReactNode;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <label className="text-xs font-medium text-muted-foreground">
+          {label}
+        </label>
+        {action}
+      </div>
+      {children}
+      {hint}
+    </div>
+  );
 }
 
 export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
@@ -152,10 +192,6 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleEmailClientChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setEmailClient(e.target.value as 'gmail' | 'outlook');
   };
 
   const handleAdditionalDetailChange = (
@@ -492,139 +528,133 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       : generateEmail(formData)
     : null;
 
+  const requiredBadge = (
+    <span className="badge text-[10px] uppercase tracking-wide">
+      Required
+    </span>
+  );
+
   return (
     <>
       {/* Loading Animation */}
       {isSending && <EmailSendingLoader message="Sending your email..." />}
 
-      <div className="page-header animate-fade-in">
-        <h1 className="page-title">Services</h1>
-        <p className="page-description">
-          Create professional job application emails
-        </p>
-      </div>
+      <motion.div
+        variants={staggerContainer(0.08)}
+        initial="hidden"
+        animate="visible"
+        className="mx-auto max-w-4xl"
+      >
+        <motion.div variants={fadeInUp} className="mb-6">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Send Application Email
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Fill in the details below and JobMail will generate a
+            personalized email from your resume.
+          </p>
+        </motion.div>
 
-      {/* Resume Builder Required Warning */}
-      {!resumeData && !isLoadingResume && (
-        <div className="animate-fade-in flex flex-wrap items-center gap-4 rounded-lg border-2 border-red-500 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 mb-6">
-          <div className="text-3xl">⚠️</div>
-          <div className="flex-1 min-w-[200px]">
-            <h3 className="font-semibold text-red-600 dark:text-red-400 mb-1">
-              Resume Builder Required
-            </h3>
-            <p className="text-red-800 dark:text-red-300 text-sm">
-              You must complete your Resume Builder profile before sending
-              emails. This ensures your application emails are personalized and
-              professional.
-            </p>
-          </div>
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              if (!isAuthenticated) {
-                setAlertDialog({
-                  open: true,
-                  title: 'Sign In Required',
-                  description:
-                    'Please sign in with your Google account to access the Resume Builder.',
-                  type: 'warning',
-                });
-                return;
-              }
-
-              // Only navigate if user is authenticated
-              if (isAuthenticated && onNavigate) {
-                onNavigate('resume');
-              }
-            }}
-            style={{
-              whiteSpace: 'nowrap',
-              opacity: !isAuthenticated ? 0.8 : 1,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-            title={
-              !isAuthenticated
-                ? 'Sign in to access Resume Builder'
-                : 'Go to Resume Builder'
-            }
-          >
-            {!isAuthenticated && (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-            )}
-            Go to Resume Builder →
-          </button>
-        </div>
-      )}
-
-      <div className="card animate-fade-in">
-        <div className="card-header">
-          <h2 className="card-title">Application Details</h2>
-          <div className="flex items-center gap-3">
-            {isAuthenticated && userEmail ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.26-.19-.58z"
-                      fill="#FBBC05"
-                    />
-                    <path
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      fill="#EA4335"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                    {userEmail}
-                  </span>
-                </div>
-                <button
-                  className="btn btn-secondary btn-icon"
-                  onClick={handleSignOutClick}
-                  title="Sign Out"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                </button>
+        {/* Resume Builder Required Warning */}
+        <AnimatePresence>
+          {!resumeData && !isLoadingResume && (
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border-2 border-red-500 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-5"
+            >
+              <AlertTriangle className="h-8 w-8 shrink-0 text-red-500" />
+              <div className="min-w-[200px] flex-1">
+                <h3 className="mb-1 font-semibold text-red-600 dark:text-red-400">
+                  Resume Builder Required
+                </h3>
+                <p className="text-sm text-red-800 dark:text-red-300">
+                  You must complete your Resume Builder profile before
+                  sending emails. This ensures your application emails are
+                  personalized and professional.
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-3">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="btn btn-primary whitespace-nowrap"
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    setAlertDialog({
+                      open: true,
+                      title: 'Sign In Required',
+                      description:
+                        'Please sign in with your Google account to access the Resume Builder.',
+                      type: 'warning',
+                    });
+                    return;
+                  }
+                  if (isAuthenticated && onNavigate) {
+                    onNavigate('resume');
+                  }
+                }}
+                title={
+                  !isAuthenticated
+                    ? 'Sign in to access Resume Builder'
+                    : 'Go to Resume Builder'
+                }
+              >
+                Go to Resume Builder →
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          variants={fadeInUp}
+          className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+        >
+          {/* Header */}
+          <div className="flex flex-col gap-4 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-lg font-semibold text-foreground">
+              Application Details
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              {isAuthenticated && userEmail ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 shadow-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24">
+                      <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
+                      />
+                      <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      />
+                      <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.26-.19-.58z"
+                        fill="#FBBC05"
+                      />
+                      <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                      {userEmail}
+                    </span>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="rounded-full border border-border p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    onClick={handleSignOutClick}
+                    title="Sign Out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </motion.button>
+                </div>
+              ) : (
                 <GoogleSignInButton
                   onSuccess={() => {
-                    console.log('✨ Sign-in success - refreshing page');
                     setAlertDialog({
                       open: true,
                       title: 'Signed In Successfully!',
@@ -644,500 +674,459 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     });
                   }}
                 />
-              </div>
-            )}
-            <button
-              className="btn btn-secondary btn-icon"
-              onClick={handleCopyEmail}
-              disabled={!isFormValid}
-              title="Copy Email"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-              {copySuccess && (
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                  Copied!
-                </span>
               )}
-            </button>
-            <button
-              className={`btn btn-primary ${
-                !canSendEmail ? 'opacity-50 cursor-pointer' : ''
-              }`}
-              onClick={handleSubmit}
-              disabled={isSending}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative rounded-full border border-border p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={handleCopyEmail}
+                disabled={!isFormValid}
+                title="Copy Email"
               >
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-              {isSending
-                ? 'Sending...'
-                : emailClient === 'gmail'
-                  ? 'Send via Gmail'
-                  : 'Send via Outlook'}
-            </button>
+                <Copy className="h-4 w-4" />
+                {copySuccess && (
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white">
+                    Copied!
+                  </span>
+                )}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: canSendEmail ? 1.03 : 1 }}
+                whileTap={{ scale: canSendEmail ? 0.97 : 1 }}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={handleSubmit}
+                disabled={isSending}
+              >
+                <Send className="h-4 w-4" />
+                {isSending
+                  ? 'Sending...'
+                  : emailClient === 'gmail'
+                    ? 'Send via Gmail'
+                    : 'Send via Outlook'}
+              </motion.button>
+            </div>
           </div>
-        </div>
 
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Field Name</th>
-                <th>Value</th>
-                <th>Email Client</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <strong>Company Name</strong>
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    name="companyName"
-                    className="form-input"
-                    placeholder="e.g., Google, Microsoft"
-                    value={formData.companyName}
-                    onChange={handleInputChange}
-                  />
-                </td>
-                <td>
-                  <select
-                    className="form-select"
-                    value={emailClient}
-                    onChange={handleEmailClientChange}
-                    style={{ minWidth: '120px' }}
+          {/* Fields */}
+          <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
+            <Field
+              label="Company Name"
+              action={
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={handleEditCompany}
+                    title="Edit company name"
+                    className="rounded p-1 text-amber-500 transition-colors hover:bg-amber-500/10"
                   >
-                    <option value="gmail">Gmail</option>
-                    <option value="outlook">Outlook</option>
-                  </select>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      className="btn-icon edit"
-                      onClick={handleEditCompany}
-                      title="Edit company name"
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                    </button>
-                    <button
-                      className="btn-icon delete"
-                      onClick={handleDeleteCompany}
-                      title="Clear company name"
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Position</strong>
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    name="position"
-                    className="form-input"
-                    placeholder="e.g., Full Stack Developer"
-                    value={formData.position}
-                    onChange={handleInputChange}
-                  />
-                </td>
-                <td>
-                  <span className="badge">Required</span>
-                </td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Email Template</strong>
-                </td>
-                <td>
-                  <select
-                    className="form-select"
-                    value={selectedTemplate}
-                    onChange={e =>
-                      setSelectedTemplate(
-                        parseInt(e.target.value) as TemplateType
-                      )
-                    }
-                    style={{ minWidth: '200px' }}
-                    disabled={!resumeData}
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteCompany}
+                    title="Clear company name"
+                    className="rounded p-1 text-red-500 transition-colors hover:bg-red-500/10"
                   >
-                    {TEMPLATE_METADATA.map(template => (
-                      <option key={template.id} value={template.id}>
-                        {template.name}
-                      </option>
-                    ))}
-                  </select>
-                  {!resumeData && (
-                    <p className="text-xs font-medium text-red-600 dark:text-red-400 mt-1">
-                      ⚠️ Resume Builder must be completed to send emails
-                    </p>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              }
+            >
+              <input
+                type="text"
+                name="companyName"
+                className="form-input"
+                placeholder="e.g., Google, Microsoft"
+                value={formData.companyName}
+                onChange={handleInputChange}
+              />
+            </Field>
+
+            <Field label="Position" action={requiredBadge}>
+              <input
+                type="text"
+                name="position"
+                className="form-input"
+                placeholder="e.g., Full Stack Developer"
+                value={formData.position}
+                onChange={handleInputChange}
+              />
+            </Field>
+
+            <Field label="Recipient Email" action={requiredBadge}>
+              <input
+                type="email"
+                name="recipientEmail"
+                className="form-input"
+                placeholder="e.g., hr@company.com"
+                value={formData.recipientEmail}
+                onChange={handleInputChange}
+              />
+            </Field>
+
+            <Field label="Send Via">
+              <div className="inline-flex rounded-lg border border-border p-1">
+                {(['gmail', 'outlook'] as const).map(client => (
+                  <button
+                    key={client}
+                    type="button"
+                    onClick={() => setEmailClient(client)}
+                    className={`flex-1 rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                      emailClient === client
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {client}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field
+              label="Email Template"
+              className="sm:col-span-2"
+              action={
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    !resumeData
+                      ? 'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400'
+                      : 'bg-blue-100 dark:bg-[#818cf8]/15 text-blue-800 dark:text-[#a5b4fc]'
+                  }`}
+                >
+                  {!resumeData ? (
+                    <>
+                      <AlertTriangle className="h-3 w-3" /> Resume Required
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-3 w-3" /> Ready
+                    </>
                   )}
-                </td>
-                <td>
+                </span>
+              }
+              hint={
+                !resumeData && (
+                  <p className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                    Resume Builder must be completed to send emails
+                  </p>
+                )
+              }
+            >
+              <select
+                className="form-select"
+                value={selectedTemplate}
+                onChange={e =>
+                  setSelectedTemplate(parseInt(e.target.value) as TemplateType)
+                }
+                disabled={!resumeData}
+              >
+                {TEMPLATE_METADATA.map(template => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
+          {/* Cover Letter Requirement Toggle */}
+          <div className="px-6">
+            <div className="flex items-center gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
+              <label className="flex items-center gap-3 cursor-pointer text-[0.95rem] font-medium text-gray-800 dark:text-gray-200">
+                <input
+                  type="checkbox"
+                  checked={requireCoverLetter}
+                  onChange={e => setRequireCoverLetter(e.target.checked)}
+                  className="h-[18px] w-[18px] cursor-pointer accent-primary"
+                />
+                <span>Require Cover Letter</span>
+              </label>
+              <span className="text-sm italic text-gray-500 dark:text-gray-400">
+                {requireCoverLetter
+                  ? '✓ Cover letter is required'
+                  : 'Cover letter is optional'}
+              </span>
+            </div>
+          </div>
+
+          {/* Additional Details for scenario templates (cold outreach, referral,
+              interview thank-you, follow-up, networking, offer response) */}
+          <div className="mt-4 px-6">
+            <button
+              type="button"
+              onClick={() => setShowAdditionalDetails(v => !v)}
+              className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              <span>
+                Additional Details{' '}
+                <span className="font-normal text-muted-foreground">
+                  (optional — for outreach, referral, interview &amp; offer
+                  templates)
+                </span>
+              </span>
+              <motion.span
+                animate={{ rotate: showAdditionalDetails ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </motion.span>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {showAdditionalDetails && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 gap-4 rounded-b-lg border border-t-0 border-border bg-card/50 p-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Recruiter / Hiring Manager Name
+                      </label>
+                      <input
+                        type="text"
+                        name="recruiterName"
+                        className="form-input"
+                        placeholder="e.g., Jane Smith"
+                        value={additionalDetails.recruiterName}
+                        onChange={handleAdditionalDetailChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Referred By
+                      </label>
+                      <input
+                        type="text"
+                        name="referralName"
+                        className="form-input"
+                        placeholder="e.g., Sam Perera"
+                        value={additionalDetails.referralName}
+                        onChange={handleAdditionalDetailChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Referral&apos;s Role
+                      </label>
+                      <input
+                        type="text"
+                        name="referralRole"
+                        className="form-input"
+                        placeholder="e.g., Senior Engineer"
+                        value={additionalDetails.referralRole}
+                        onChange={handleAdditionalDetailChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Interviewer Name
+                      </label>
+                      <input
+                        type="text"
+                        name="interviewerName"
+                        className="form-input"
+                        placeholder="e.g., Priya Nair"
+                        value={additionalDetails.interviewerName}
+                        onChange={handleAdditionalDetailChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Interview Date
+                      </label>
+                      <input
+                        type="text"
+                        name="interviewDate"
+                        className="form-input"
+                        placeholder="e.g., July 15"
+                        value={additionalDetails.interviewDate}
+                        onChange={handleAdditionalDetailChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Days Since Applied
+                      </label>
+                      <input
+                        type="text"
+                        name="daysSinceApplied"
+                        className="form-input"
+                        placeholder="e.g., 2 weeks"
+                        value={additionalDetails.daysSinceApplied}
+                        onChange={handleAdditionalDetailChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Offer Deadline
+                      </label>
+                      <input
+                        type="text"
+                        name="offerDeadline"
+                        className="form-input"
+                        placeholder="e.g., Friday"
+                        value={additionalDetails.offerDeadline}
+                        onChange={handleAdditionalDetailChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Offer Decision
+                      </label>
+                      <select
+                        name="decision"
+                        className="form-select"
+                        value={additionalDetails.decision}
+                        onChange={handleAdditionalDetailChange}
+                      >
+                        <option value="accept">Accepting</option>
+                        <option value="decline">Declining</option>
+                      </select>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* File Upload Sections */}
+          <div className="mt-4 px-6 pb-6">
+            <JobFileUpload
+              onFilesChange={setAttachments}
+              onAlert={(title, description, type) => {
+                setAlertDialog({
+                  open: true,
+                  title,
+                  description,
+                  type,
+                });
+              }}
+            />
+
+            {/* Upload Status Indicators */}
+            <div className="mt-4 rounded-lg border border-blue-100 dark:border-[#818cf8]/25 bg-[#f0f7ff] dark:bg-[#818cf8]/10 p-4">
+              <div className="mb-2 text-sm font-semibold text-[#1a5490] dark:text-[#a5b4fc]">
+                Upload Requirements
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2 text-sm">
+                  {attachments.cv ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  )}
                   <span
-                    className={`badge font-semibold ${
+                    className={
+                      attachments.cv
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }
+                  >
+                    CV{' '}
+                    {attachments.cv ? `(${attachments.cv.name})` : '(Required)'}
+                  </span>
+                </div>
+                {requireCoverLetter && (
+                  <div className="flex items-center gap-2 text-sm">
+                    {attachments.coverLetter ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span
+                      className={
+                        attachments.coverLetter
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }
+                    >
+                      Cover Letter{' '}
+                      {attachments.coverLetter
+                        ? `(${attachments.coverLetter.name})`
+                        : '(Required)'}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <AnimatePresence>
+                {!canSendEmail && isFormValid && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className={`mt-3 overflow-hidden rounded p-2 text-sm ${
                       !resumeData
-                        ? 'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400'
-                        : 'bg-blue-100 dark:bg-[#818cf8]/15 text-blue-800 dark:text-[#a5b4fc]'
+                        ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
+                        : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
                     }`}
                   >
                     {!resumeData
-                      ? 'Resume Builder Required ⚠️'
-                      : 'Template Ready ✓'}
-                  </span>
-                </td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>
-                  <strong>Recipient Email</strong>
-                </td>
-                <td>
-                  <input
-                    type="email"
-                    name="recipientEmail"
-                    className="form-input"
-                    placeholder="e.g., hr@company.com"
-                    value={formData.recipientEmail}
-                    onChange={handleInputChange}
-                  />
-                </td>
-                <td>
-                  <span className="badge">Required</span>
-                </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}></div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Cover Letter Requirement Toggle */}
-        <div
-          style={{
-            marginTop: '2rem',
-            padding: '0 1rem',
-            paddingBottom: '0.5rem',
-          }}
-        >
-          <div className="flex items-center gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
-            <label className="flex items-center gap-3 cursor-pointer text-[0.95rem] font-medium text-gray-800 dark:text-gray-200">
-              <input
-                type="checkbox"
-                checked={requireCoverLetter}
-                onChange={e => setRequireCoverLetter(e.target.checked)}
-                className="h-[18px] w-[18px] cursor-pointer accent-primary"
-              />
-              <span>Require Cover Letter</span>
-            </label>
-            <span className="text-sm italic text-gray-500 dark:text-gray-400">
-              {requireCoverLetter
-                ? '✓ Cover letter is required'
-                : 'Cover letter is optional'}
-            </span>
+                      ? '⚠️ Complete Resume Builder to enable email sending'
+                      : '⚠️ Please upload all required files to enable the send button'}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
 
-        {/* Additional Details for scenario templates (cold outreach, referral,
-            interview thank-you, follow-up, networking, offer response) */}
-        <div style={{ marginTop: '1rem', padding: '0 1rem' }}>
-          <button
-            type="button"
-            onClick={() => setShowAdditionalDetails(v => !v)}
-            className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            <span>
-              Additional Details{' '}
-              <span className="font-normal text-muted-foreground">
-                (optional — for outreach, referral, interview &amp; offer
-                templates)
-              </span>
-            </span>
-            <motion.span
-              animate={{ rotate: showAdditionalDetails ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </motion.span>
-          </button>
-
-          <AnimatePresence initial={false}>
-            {showAdditionalDetails && (
+          {/* Email Preview - mirrors the mock card on the landing page */}
+          <AnimatePresence>
+            {isFormValid && generatedEmail && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mx-6 mb-6 overflow-hidden rounded-xl border border-border"
               >
-                <div className="grid grid-cols-1 gap-4 rounded-b-lg border border-t-0 border-border bg-card/50 p-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Recruiter / Hiring Manager Name
-                    </label>
-                    <input
-                      type="text"
-                      name="recruiterName"
-                      className="form-input"
-                      placeholder="e.g., Jane Smith"
-                      value={additionalDetails.recruiterName}
-                      onChange={handleAdditionalDetailChange}
-                    />
+                <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Preview
+                  </span>
+                </div>
+                <div className="space-y-2 px-4 py-4 text-sm">
+                  <div className="flex gap-3">
+                    <span className="w-16 shrink-0 font-medium text-muted-foreground">
+                      To
+                    </span>
+                    <span className="text-foreground">
+                      {formData.recipientEmail}
+                    </span>
                   </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Referred By
-                    </label>
-                    <input
-                      type="text"
-                      name="referralName"
-                      className="form-input"
-                      placeholder="e.g., Sam Perera"
-                      value={additionalDetails.referralName}
-                      onChange={handleAdditionalDetailChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Referral&apos;s Role
-                    </label>
-                    <input
-                      type="text"
-                      name="referralRole"
-                      className="form-input"
-                      placeholder="e.g., Senior Engineer"
-                      value={additionalDetails.referralRole}
-                      onChange={handleAdditionalDetailChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Interviewer Name
-                    </label>
-                    <input
-                      type="text"
-                      name="interviewerName"
-                      className="form-input"
-                      placeholder="e.g., Priya Nair"
-                      value={additionalDetails.interviewerName}
-                      onChange={handleAdditionalDetailChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Interview Date
-                    </label>
-                    <input
-                      type="text"
-                      name="interviewDate"
-                      className="form-input"
-                      placeholder="e.g., July 15"
-                      value={additionalDetails.interviewDate}
-                      onChange={handleAdditionalDetailChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Days Since Applied
-                    </label>
-                    <input
-                      type="text"
-                      name="daysSinceApplied"
-                      className="form-input"
-                      placeholder="e.g., 2 weeks"
-                      value={additionalDetails.daysSinceApplied}
-                      onChange={handleAdditionalDetailChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Offer Deadline
-                    </label>
-                    <input
-                      type="text"
-                      name="offerDeadline"
-                      className="form-input"
-                      placeholder="e.g., Friday"
-                      value={additionalDetails.offerDeadline}
-                      onChange={handleAdditionalDetailChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                      Offer Decision
-                    </label>
-                    <select
-                      name="decision"
-                      className="form-select"
-                      value={additionalDetails.decision}
-                      onChange={handleAdditionalDetailChange}
-                    >
-                      <option value="accept">Accepting</option>
-                      <option value="decline">Declining</option>
-                    </select>
+                  <div className="flex gap-3">
+                    <span className="w-16 shrink-0 font-medium text-muted-foreground">
+                      Subject
+                    </span>
+                    <span className="text-foreground">
+                      {generatedEmail.subject}
+                    </span>
                   </div>
                 </div>
+                <div className="border-t border-border px-4 py-4">
+                  <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-foreground">
+                    {'bodyText' in generatedEmail
+                      ? generatedEmail.bodyText
+                      : generatedEmail.body}
+                  </pre>
+                </div>
+                {(attachments.cv || attachments.coverLetter) && (
+                  <div className="flex items-center gap-1.5 border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
+                    <Paperclip className="h-3.5 w-3.5" />
+                    {[attachments.cv?.name, attachments.coverLetter?.name]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* File Upload Sections */}
-        <div
-          style={{
-            marginTop: '1rem',
-            padding: '0 1rem',
-            paddingBottom: '1rem',
-          }}
-        >
-          <JobFileUpload
-            onFilesChange={setAttachments}
-            onAlert={(title, description, type) => {
-              setAlertDialog({
-                open: true,
-                title,
-                description,
-                type,
-              });
-            }}
-          />
-
-          {/* Upload Status Indicators */}
-          <div className="mt-4 rounded-md border border-blue-100 dark:border-[#818cf8]/25 bg-[#f0f7ff] dark:bg-[#818cf8]/10 p-3">
-            <div className="mb-2 text-sm font-semibold text-[#1a5490] dark:text-[#a5b4fc]">
-              Upload Requirements:
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontSize: '0.85rem',
-                }}
-              >
-                {attachments.cv ? (
-                  <span style={{ color: '#22c55e', fontWeight: '600' }}>✓</span>
-                ) : (
-                  <span style={{ color: '#ef4444', fontWeight: '600' }}>✗</span>
-                )}
-                <span style={{ color: attachments.cv ? '#22c55e' : '#ef4444' }}>
-                  CV{' '}
-                  {attachments.cv ? `(${attachments.cv.name})` : '(Required)'}
-                </span>
-              </div>
-              {requireCoverLetter && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    fontSize: '0.85rem',
-                  }}
-                >
-                  {attachments.coverLetter ? (
-                    <span style={{ color: '#22c55e', fontWeight: '600' }}>
-                      ✓
-                    </span>
-                  ) : (
-                    <span style={{ color: '#ef4444', fontWeight: '600' }}>
-                      ✗
-                    </span>
-                  )}
-                  <span
-                    style={{
-                      color: attachments.coverLetter ? '#22c55e' : '#ef4444',
-                    }}
-                  >
-                    Cover Letter{' '}
-                    {attachments.coverLetter
-                      ? `(${attachments.coverLetter.name})`
-                      : '(Required)'}
-                  </span>
-                </div>
-              )}
-            </div>
-            {!canSendEmail && isFormValid && (
-              <div
-                className={`mt-3 rounded p-2 text-sm ${
-                  !resumeData
-                    ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
-                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
-                }`}
-              >
-                {!resumeData
-                  ? '⚠️ Complete Resume Builder to enable email sending'
-                  : '⚠️ Please upload all required files to enable the send button'}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Email Preview */}
-        {isFormValid && generatedEmail && (
-          <div className="email-preview animate-fade-in">
-            <div className="email-field">
-              <span className="field-label">To:</span>
-              <span className="field-value">{formData.recipientEmail}</span>
-            </div>
-            <div className="email-field">
-              <span className="field-label">Subject:</span>
-              <span className="field-value">{generatedEmail.subject}</span>
-            </div>
-            <div className="email-body">
-              <pre>
-                {'bodyText' in generatedEmail
-                  ? generatedEmail.bodyText
-                  : generatedEmail.body}
-              </pre>
-            </div>
-          </div>
-        )}
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Alert Dialog */}
       <AlertDialog

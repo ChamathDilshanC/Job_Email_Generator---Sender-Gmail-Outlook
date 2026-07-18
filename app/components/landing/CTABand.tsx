@@ -21,7 +21,7 @@ export function CTABand({ onGetStarted, isSigningIn }: CTABandProps) {
       >
         <motion.h2
           variants={fadeInUp}
-          className="font-serif text-4xl font-semibold tracking-tight text-white md:text-5xl"
+          className="font-heading text-4xl font-semibold tracking-tight text-white md:text-5xl"
         >
           Send your next application in minutes.
         </motion.h2>

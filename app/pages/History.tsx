@@ -10,6 +10,9 @@ import {
   deleteEmailFromHistory,
   loadEmailHistory,
 } from '@/lib/emailHistoryService';
+import { fadeInUp, staggerContainer } from '@/lib/motion';
+import { motion } from 'framer-motion';
+import { Building2, CheckCircle2, Clock, Search, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function History() {
@@ -120,147 +123,114 @@ export default function History() {
     setSelectedEmail(null);
   };
 
+  const stats = [
+    {
+      label: 'Total Sent',
+      value: totalSent,
+      icon: CheckCircle2,
+      iconClass: 'text-green-500',
+      bgClass: 'bg-green-50 dark:bg-green-500/10',
+    },
+    {
+      label: 'Pending',
+      value: totalPending,
+      icon: Clock,
+      iconClass: 'text-amber-500',
+      bgClass: 'bg-yellow-50 dark:bg-yellow-500/10',
+    },
+    {
+      label: 'Failed',
+      value: totalFailed,
+      icon: XCircle,
+      iconClass: 'text-red-500',
+      bgClass: 'bg-red-50 dark:bg-red-500/10',
+    },
+    {
+      label: 'Companies',
+      value: uniqueCompanies,
+      icon: Building2,
+      iconClass: 'text-purple-500',
+      bgClass: 'bg-purple-50 dark:bg-purple-500/10',
+    },
+  ];
+
   return (
     <>
-      <div className="min-h-screen bg-gray-50 dark:bg-transparent p-4 md:p-8">
+      <motion.div
+        variants={staggerContainer(0.08)}
+        initial="hidden"
+        animate="visible"
+        className="mx-auto max-w-6xl"
+      >
         {/* Header */}
-        <div className="max-w-7xl mx-auto mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#a5b4fc] dark:to-[#a5b4fc] bg-clip-text text-transparent">
+        <motion.div variants={fadeInUp} className="mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Email History
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             View and manage your sent job application emails
           </p>
-        </div>
+        </motion.div>
 
         {/* Stats Cards */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
-            <div className="w-12 h-12 rounded-lg bg-green-50 dark:bg-green-500/10 flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="2"
-                className="w-6 h-6"
+        <motion.div
+          variants={staggerContainer(0.06)}
+          className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {stats.map(stat => (
+            <motion.div
+              key={stat.label}
+              variants={fadeInUp}
+              whileHover={{ y: -3 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+              className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm hover:shadow-lg dark:hover:shadow-black/40"
+            >
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bgClass}`}
               >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <div className="text-3xl font-bold leading-none mb-1">
-                {totalSent}
+                <stat.icon className={`h-6 w-6 ${stat.iconClass}`} />
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Total Sent</div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
-            <div className="w-12 h-12 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="2"
-                className="w-6 h-6"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <div className="text-3xl font-bold leading-none mb-1">
-                {totalPending}
+              <div className="flex-1">
+                <div className="mb-1 text-3xl font-semibold leading-none text-foreground">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {stat.label}
+                </div>
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Pending</div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
-            <div className="w-12 h-12 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="2"
-                className="w-6 h-6"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1="9" y1="9" x2="15" y2="15" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <div className="text-3xl font-bold leading-none mb-1">
-                {totalFailed}
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Failed</div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
-            <div className="w-12 h-12 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#8b5cf6"
-                strokeWidth="2"
-                className="w-6 h-6"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <div className="text-3xl font-bold leading-none mb-1">
-                {uniqueCompanies}
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Companies</div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          ))}
+        </motion.div>
 
         {/* Search Bar */}
-        <div className="max-w-7xl mx-auto mb-6">
+        <motion.div variants={fadeInUp} className="mb-6">
           <div className="relative">
             <input
               type="text"
               placeholder="Search by company, position, or email..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 pl-12 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 rounded-lg focus:ring-2 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] focus:border-transparent transition-all"
+              className="w-full rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 py-3 pl-12 pr-4 transition-all focus:border-transparent focus:ring-2 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8]"
             />
-            <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto">
+        <motion.div variants={fadeInUp}>
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#3b3be3] dark:border-[#818cf8] mb-4"></div>
-                <p className="text-gray-600 dark:text-gray-400">Loading your email history...</p>
+                <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-[#3b3be3] dark:border-[#818cf8]" />
+                <p className="text-gray-600 dark:text-gray-400">
+                  Loading your email history...
+                </p>
               </div>
             </div>
           ) : filteredEmails.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-12 text-center">
               <svg
-                className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4"
+                className="mx-auto mb-4 h-16 w-16 text-gray-300 dark:text-gray-700"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -272,10 +242,10 @@ export default function History() {
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              <h3 className="mb-2 text-xl font-semibold text-gray-700 dark:text-gray-200">
                 {searchQuery ? 'No emails found' : 'No email history yet'}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
+              <p className="mb-6 text-gray-500 dark:text-gray-400">
                 {searchQuery
                   ? 'Try adjusting your search query'
                   : 'Your sent job application emails will appear here'}
@@ -283,7 +253,7 @@ export default function History() {
               {!searchQuery && (
                 <a
                   href="/send-email"
-                  className="inline-block px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2f2fb8] transition-colors"
+                  className="inline-block rounded-full bg-[#3b3be3] px-6 py-3 font-medium text-white transition-colors hover:bg-[#2f2fb8]"
                 >
                   Send Your First Email
                 </a>
@@ -294,7 +264,10 @@ export default function History() {
               <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                 Showing {filteredEmails.length} of {emailHistory.length} emails
               </div>
-              <div className="grid grid-cols-1 gap-6">
+              <motion.div
+                variants={staggerContainer(0.06)}
+                className="grid grid-cols-1 gap-5"
+              >
                 {filteredEmails.map(email => (
                   <EmailHistoryCard
                     key={email.id}
@@ -303,11 +276,11 @@ export default function History() {
                     onViewDetails={handleViewDetails}
                   />
                 ))}
-              </div>
+              </motion.div>
             </>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Modal */}
       <EmailHistoryModal

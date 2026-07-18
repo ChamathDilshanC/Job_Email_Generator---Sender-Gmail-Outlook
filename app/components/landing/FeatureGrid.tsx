@@ -65,7 +65,7 @@ export function FeatureGrid() {
           </motion.p>
           <motion.h2
             variants={fadeInUp}
-            className="mt-3 font-serif text-4xl font-semibold tracking-tight text-foreground md:text-5xl"
+            className="mt-3 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl"
           >
             Built to get you the interview
           </motion.h2>

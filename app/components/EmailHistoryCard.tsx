@@ -1,6 +1,7 @@
 'use client';
 
 import { EmailHistory } from '@/app/models/EmailHistory';
+import { fadeInUp } from '@/lib/motion';
 import { motion } from 'framer-motion';
 
 interface EmailHistoryCardProps {
@@ -39,9 +40,10 @@ export default function EmailHistoryCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg dark:hover:shadow-black/40 transition-all duration-300"
+      variants={fadeInUp}
+      whileHover={{ y: -3 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+      className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm hover:shadow-lg dark:hover:shadow-black/40"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">

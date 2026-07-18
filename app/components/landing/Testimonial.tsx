@@ -14,7 +14,7 @@ export function Testimonial() {
         viewport={viewportOnce}
         className="mx-auto max-w-3xl text-center"
       >
-        <p className="font-serif text-2xl font-medium italic leading-snug text-foreground md:text-3xl">
+        <p className="font-heading text-2xl font-medium italic leading-snug text-foreground md:text-3xl">
           &ldquo;I built JobMail after sending the same tired template for
           the hundredth time. Now every email is tailored to the role in
           seconds — and it actually sounds like me.&rdquo;

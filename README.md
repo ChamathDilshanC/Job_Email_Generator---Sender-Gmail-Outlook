@@ -6,6 +6,7 @@ A modern, feature-rich Next.js application for creating and sending professional
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
 ![Azure](https://img.shields.io/badge/Azure-Cosmos%20DB-0089D6?style=for-the-badge&logo=microsoftazure)
 ![Google](https://img.shields.io/badge/Google-OAuth%202.0-4285F4?style=for-the-badge&logo=google)
+![Vercel](https://img.shields.io/badge/Vercel-Hosting-black?style=for-the-badge&logo=vercel)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ## 📑 Table of Contents
@@ -38,7 +39,7 @@ graph TB
         AuthCtx["AuthContext\n(contexts/AuthContext.tsx)"]
     end
 
-    subgraph Server["Next.js Server — hosted on Azure App Service"]
+    subgraph Server["Next.js Server — hosted on Vercel"]
         R1["/api/resume"]
         R2["/api/email-history"]
         R3["/api/send-email"]
@@ -174,7 +175,7 @@ erDiagram
 | Authentication | Direct Google OAuth 2.0 (`@react-oauth/google`) |
 | Database | MongoDB driver → Azure Cosmos DB for MongoDB |
 | Email sending | Gmail API (`googleapis`), `mailto:` for Outlook |
-| Hosting | Azure App Service / Azure Static Web Apps |
+| Hosting | Vercel |
 | Icons | Lucide React |
 | State management | React Context API |
 
@@ -309,23 +310,25 @@ Defined in `.env.local.example`; copy to `.env.local` (and `.env.production.loca
 
 ## 🚢 Deployment
 
-### Azure App Service (recommended)
+### Vercel (current host)
 
-1. Push your code to GitHub
-2. Create an **Azure App Service** (Linux, Node 18+) or **Azure Static Web Apps** resource — both have a free tier
-3. Connect it to your GitHub repo (Deployment Center) for CI/CD on every push
-4. Add the variables from `.env.local` under **Configuration → Application settings**
-5. Deploy
+The app auto-deploys via Vercel's GitHub integration on every push to `main` — no workflow file needed for that part. Environment variables (same as `.env.local`) are configured separately in **Vercel Dashboard → Project → Settings → Environment Variables**; they are *not* read from any local `.env*` file.
+
+### CI/CD on GitHub
+
+- `.github/workflows/ci.yml` — runs typecheck + build on every push/PR to `main`
+- `.github/workflows/release.yml` — tag a version (`git tag vX.Y.Z && git push origin vX.Y.Z`) and it auto-creates a GitHub Release with generated notes
 
 ### Other Platforms
 
-- **Vercel** — zero-config Next.js hosting
 - **Netlify** — static site deployment
+- **Azure App Service** — Linux/Node hosting with a free tier
 - **Custom VPS** — Node.js hosting
 
 ## 📝 Recent Updates
 
-- ✅ Migrated authentication off Firebase to direct Google OAuth; moved hosting/DB to Azure
+- ✅ Added GitHub Actions CI (typecheck + build) and tag-triggered release automation
+- ✅ Migrated authentication off Firebase to direct Google OAuth; moved database to Azure Cosmos DB for MongoDB (hosting stays on Vercel)
 - ✅ Implemented locked tabs for unauthenticated users
 - ✅ Added Sign Out button in Profile settings
 - ✅ Auto cache clearing on sign-out
@@ -357,7 +360,8 @@ MIT License — free to use for personal and commercial projects
 ## 🙏 Acknowledgments
 
 - Google for OAuth & Gmail API
-- Microsoft Azure for hosting & Cosmos DB
+- Microsoft Azure for Cosmos DB
+- Vercel for hosting
 - Shadcn/ui for beautiful components
 
 ---

@@ -1,6 +1,9 @@
 import { ResumeData } from './resumeDataService';
 import { GeneratedEmail, JobDetails, TemplateType } from './templateTypes';
 
+const FONT =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
 /**
  * Format date range for work experience or projects
  */
@@ -27,7 +30,7 @@ function formatDateRange(
 }
 
 /**
- * Format social links for email display
+ * Format social links for email display (plain text)
  */
 function formatSocialLinks(socialLinks?: {
   github?: string;
@@ -51,8 +54,130 @@ function formatSocialLinks(socialLinks?: {
 }
 
 /**
+ * Render social links as HTML anchors, styled with the template's accent color
+ */
+function renderSocialLinksHtml(
+  socialLinks:
+    | {
+        github?: string;
+        linkedin?: string;
+        portfolio?: string;
+        twitter?: string;
+        website?: string;
+        other?: string;
+      }
+    | undefined,
+  accent: string
+): string {
+  if (!socialLinks) return '';
+
+  const links: string[] = [];
+  if (socialLinks.linkedin)
+    links.push(
+      `<a href="${socialLinks.linkedin}" style="color:${accent}; text-decoration:none; font-weight:600;">LinkedIn</a>`
+    );
+  if (socialLinks.github)
+    links.push(
+      `<a href="${socialLinks.github}" style="color:${accent}; text-decoration:none; font-weight:600;">GitHub</a>`
+    );
+  if (socialLinks.portfolio)
+    links.push(
+      `<a href="${socialLinks.portfolio}" style="color:${accent}; text-decoration:none; font-weight:600;">Portfolio</a>`
+    );
+  if (socialLinks.website)
+    links.push(
+      `<a href="${socialLinks.website}" style="color:${accent}; text-decoration:none; font-weight:600;">Website</a>`
+    );
+  if (socialLinks.twitter)
+    links.push(
+      `<a href="${socialLinks.twitter}" style="color:${accent}; text-decoration:none; font-weight:600;">Twitter</a>`
+    );
+
+  return links.join('&nbsp;&nbsp;&middot;&nbsp;&nbsp;');
+}
+
+/**
+ * Shared "letterhead" header used at the top of every template - name,
+ * contact line, and social links, underlined in the template's accent color.
+ */
+function renderHeaderHtml(
+  fullName: string,
+  personalInfo: { email?: string; phone?: string; location?: string },
+  socialLinks: ResumeData['socialLinks'],
+  accent: string
+): string {
+  const contactParts = [
+    personalInfo.email,
+    personalInfo.phone,
+    personalInfo.location,
+  ].filter(Boolean);
+  const linksHtml = renderSocialLinksHtml(socialLinks, accent);
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding-bottom:12px; border-bottom:3px solid ${accent};">
+      <div style="font-size:22px; font-weight:700; color:#111827; font-family:${FONT};">${fullName}</div>
+      <div style="font-size:13px; color:#6b7280; margin-top:6px; font-family:${FONT};">${contactParts.join(
+    '&nbsp;&nbsp;|&nbsp;&nbsp;'
+  )}</div>
+      ${
+        linksHtml
+          ? `<div style="font-size:13px; margin-top:6px; font-family:${FONT};">${linksHtml}</div>`
+          : ''
+      }
+    </td>
+  </tr>
+</table>
+<div style="height:24px; line-height:24px; font-size:1px;">&nbsp;</div>`;
+}
+
+/**
+ * A rounded "pill" badge - used for skills, tech stacks, etc.
+ */
+function renderPill(text: string, accent: string, bg: string): string {
+  return `<span style="display:inline-block; padding:5px 12px; margin:3px 6px 3px 0; background-color:${bg}; color:${accent}; border-radius:999px; font-size:13px; font-weight:600; font-family:${FONT}; border:1px solid ${accent}40;">${text}</span>`;
+}
+
+/**
+ * Shared closing block: sign-off + a divider + a "resume attached" note,
+ * styled with the template's accent color. Appears at the bottom of every
+ * template so the reader never has to guess whether a CV was included.
+ */
+function renderClosingHtml(
+  fullName: string,
+  signOff: string,
+  accent: string,
+  bg: string
+): string {
+  return `<p style="margin-top:28px; font-family:${FONT}; font-size:14px; color:#333;">${signOff},<br>
+<strong>${fullName}</strong></p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:24px;">
+  <tr><td style="border-top:1px solid #e5e7eb; font-size:1px; line-height:1px;">&nbsp;</td></tr>
+</table>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:18px; background-color:${bg}; border-radius:8px;">
+  <tr>
+    <td style="padding:14px 16px; font-family:${FONT}; font-size:14px; color:#374151;">
+      <span style="font-size:16px;">&#128206;</span>&nbsp;&nbsp;<strong style="color:${accent};">Attached:</strong> My resume/CV is included with this email for your review.
+    </td>
+  </tr>
+</table>`;
+}
+
+function attachmentNoteText(): string {
+  return `\n${'─'.repeat(40)}\n📎 Attached: My resume/CV is included with this email for your review.`;
+}
+
+function wrapHtml(inner: string): string {
+  return `<div style="font-family:${FONT}; line-height:1.6; color:#333; max-width:640px; margin:0 auto;">
+${inner}
+</div>`;
+}
+
+/**
  * Template 1: Professional Introduction
- * Classic professional approach with emphasis on qualifications and enthusiasm
+ * Classic, formal letter - deep blue accent, flowing prose, no bells and whistles.
  */
 function generateProfessionalIntroduction(
   resumeData: ResumeData,
@@ -61,6 +186,8 @@ function generateProfessionalIntroduction(
   const { personalInfo, skills, workExperiences, education, socialLinks } =
     resumeData;
   const { companyName, position } = jobDetails;
+  const accent = '#1d4ed8';
+  const bg = '#eff6ff';
 
   const fullName = personalInfo.fullName || 'Your Name';
   const topSkills =
@@ -102,34 +229,22 @@ ${
 
 I am particularly drawn to ${companyName} because of your innovative approach and commitment to excellence. I would welcome the opportunity to discuss how my experience and skills can contribute to your team's success.
 
-I have attached my resume for your review. Thank you for considering my application. I look forward to hearing from you.
+Thank you for considering my application. I look forward to hearing from you.
 
 Best regards,
-${fullName}`;
+${fullName}
+${attachmentNoteText()}`;
 
-  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-<p><strong>${fullName}</strong><br>
-${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
-    personalInfo.location || ''
-  }${
-    linksText
-      ? `<br>${linksText
-          .trim()
-          .split(' | ')
-          .map(link => {
-            if (link.includes('http')) {
-              const [label, url] = link.split(': ');
-              return `<a href="${url}" style="color: #1a73e8; text-decoration: none;">${label}</a>`;
-            }
-            return link;
-          })
-          .join(' | ')}`
-      : ''
-  }</p>
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
 
 <p>Dear Hiring Manager,</p>
 
-<p>I am writing to express my strong interest in the <strong>${position}</strong> position at <strong style="color: #1a73e8;">${companyName}</strong>. ${
+<p>I am writing to express my strong interest in the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. ${
     personalInfo.summary ||
     `With my background and proven track record, I am confident I would be a valuable addition to your team.`
   }</p>
@@ -155,13 +270,11 @@ ${
     : ''
 }
 
-<p>I am particularly drawn to <strong style="color: #1a73e8;">${companyName}</strong> because of your innovative approach and commitment to excellence. I would welcome the opportunity to discuss how my experience and skills can contribute to your team's success.</p>
+<p>I am particularly drawn to <strong style="color:${accent};">${companyName}</strong> because of your innovative approach and commitment to excellence. I would welcome the opportunity to discuss how my experience and skills can contribute to your team's success.</p>
 
-<p>I have attached my resume for your review. Thank you for considering my application. I look forward to hearing from you.</p>
+<p>Thank you for considering my application. I look forward to hearing from you.</p>
 
-<p>Best regards,<br>
-${fullName}</p>
-</div>`;
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 
   return {
     subject: `Application for ${position} - ${fullName}`,
@@ -172,14 +285,16 @@ ${fullName}</p>
 
 /**
  * Template 2: Skills Highlight
- * Emphasizes technical expertise and specific skill sets
+ * Teal accent, skills rendered as pill badges instead of a bullet list.
  */
 function generateSkillsHighlight(
   resumeData: ResumeData,
   jobDetails: JobDetails
 ): GeneratedEmail {
-  const { personalInfo, skills, projects } = resumeData;
+  const { personalInfo, skills, projects, socialLinks } = resumeData;
   const { companyName, position } = jobDetails;
+  const accent = '#0d9488';
+  const bg = '#f0fdfa';
 
   const fullName = personalInfo.fullName || 'Your Name';
   const skillsList =
@@ -214,38 +329,44 @@ ${recentProjects
 
 I am impressed by ${companyName}'s commitment to innovation, and I am confident that my technical background and problem-solving abilities would make me a strong contributor to your projects.
 
-Please find my resume attached. I would appreciate the opportunity to discuss how my skill set aligns with your needs.
+I would appreciate the opportunity to discuss how my skill set aligns with your needs.
 
 Thank you for your time and consideration.
 
 Sincerely,
-${fullName}`;
+${fullName}
+${attachmentNoteText()}`;
 
-  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-<p><strong>${fullName}</strong><br>
-${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
-    personalInfo.location || ''
-  }</p>
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
 
 <p>Dear Hiring Manager,</p>
 
-<p>I am excited to apply for the <strong>${position}</strong> role at <strong style="color: #1a73e8;">${companyName}</strong>. As a professional with expertise in <strong>${
+<p>I am excited to apply for the <strong>${position}</strong> role at <strong style="color:${accent};">${companyName}</strong>. As a professional with expertise in <strong>${
     skills.position || 'software development'
   }</strong>, I am eager to bring my technical capabilities to your innovative team.</p>
 
-<p style="font-weight: bold; margin-top: 20px;">Key Skills & Competencies:</p>
-<ul style="margin-top: 10px;">
-${skills.selectedSkills.map(skill => `<li>${skill}</li>`).join('')}
-</ul>
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Key Skills &amp; Competencies</p>
+<div>
+${
+  skills.selectedSkills.length > 0
+    ? skills.selectedSkills.map(skill => renderPill(skill, accent, bg)).join('')
+    : renderPill('Your key skills', accent, bg)
+}
+</div>
 
 ${
   recentProjects.length > 0
-    ? `<p style="font-weight: bold; margin-top: 20px;">Recent Achievements:</p>
-<ul>
+    ? `<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Recent Achievements</p>
+<ul style="margin-top:0; padding-left:20px;">
 ${recentProjects
   .map(
     p =>
-      `<li><strong>${p.name}</strong>: ${
+      `<li style="margin-bottom:6px;"><strong>${p.name}</strong>: ${
         p.description || 'Successfully delivered project'
       }</li>`
   )
@@ -254,15 +375,11 @@ ${recentProjects
     : ''
 }
 
-<p>I am impressed by <strong style="color: #1a73e8;">${companyName}</strong>'s commitment to innovation, and I am confident that my technical background and problem-solving abilities would make me a strong contributor to your projects.</p>
+<p>I am impressed by <strong style="color:${accent};">${companyName}</strong>'s commitment to innovation, and I am confident that my technical background and problem-solving abilities would make me a strong contributor to your projects.</p>
 
-<p>Please find my resume attached. I would appreciate the opportunity to discuss how my skill set aligns with your needs.</p>
+<p>I would appreciate the opportunity to discuss how my skill set aligns with your needs.</p>
 
-<p>Thank you for your time and consideration.</p>
-
-<p>Sincerely,<br>
-${fullName}</p>
-</div>`;
+${renderClosingHtml(fullName, 'Sincerely', accent, bg)}`);
 
   return {
     subject: `Skilled ${position} Ready to Contribute - ${fullName}`,
@@ -273,14 +390,16 @@ ${fullName}</p>
 
 /**
  * Template 3: Experience-Focused
- * Best for candidates with significant work history
+ * Indigo accent, work history rendered as a vertical timeline.
  */
 function generateExperienceFocused(
   resumeData: ResumeData,
   jobDetails: JobDetails
 ): GeneratedEmail {
-  const { personalInfo, workExperiences } = resumeData;
+  const { personalInfo, workExperiences, socialLinks } = resumeData;
   const { companyName, position } = jobDetails;
+  const accent = '#4f46e5';
+  const bg = '#eef2ff';
 
   const fullName = personalInfo.fullName || 'Your Name';
   const experienceYears =
@@ -316,57 +435,59 @@ ${exp.responsibilities
 
 I am particularly interested in ${companyName} because of your reputation for excellence. My experience has prepared me to make immediate contributions to your team.
 
-I have attached my detailed resume and would welcome the opportunity to discuss how my background aligns with your requirements.
-
 Thank you for considering my application.
 
 Best regards,
-${fullName}`;
+${fullName}
+${attachmentNoteText()}`;
 
-  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-<p><strong>${fullName}</strong><br>
-${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
-    personalInfo.location || ''
-  }</p>
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
 
 <p>Dear Hiring Manager,</p>
 
-<p>With <strong>${experienceYears} years</strong> of professional experience, I am writing to apply for the <strong>${position}</strong> position at <strong style="color: #1a73e8;">${companyName}</strong>. Throughout my career, I have consistently delivered results and driven success in challenging environments.</p>
+<p>With <span style="background-color:${bg}; color:${accent}; font-weight:700; padding:2px 8px; border-radius:6px;">${experienceYears} years</span> of professional experience, I am writing to apply for the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. Throughout my career, I have consistently delivered results and driven success in challenging environments.</p>
 
-<p style="font-weight: bold; margin-top: 20px;">Professional Highlights:</p>
+<p style="font-weight:700; margin-top:22px; margin-bottom:4px; color:#111827;">Professional Highlights</p>
 ${workExperiences
   .slice(0, 3)
   .map(
-    exp => `
-<div style="margin-bottom: 15px;">
-<p style="margin: 5px 0;"><strong>${exp.position}</strong> | ${
+    exp => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:14px;">
+  <tr>
+    <td style="width:10px; vertical-align:top; padding-top:4px;">
+      <div style="width:10px; height:10px; border-radius:50%; background-color:${accent};"></div>
+    </td>
+    <td style="width:2px; border-left:2px solid ${accent}33; padding:0 12px;"></td>
+    <td style="vertical-align:top; padding-bottom:6px;">
+      <p style="margin:0 0 2px 0;"><strong>${exp.position}</strong> &middot; ${
       exp.company
-    } | <em>${formatDateRange(
-      exp.startDate,
-      exp.endDate,
-      exp.currentlyWorking
-    )}</em></p>
-<p style="margin: 5px 0;">${exp.description || ''}</p>
-<ul style="margin: 5px 0;">
+    }</p>
+      <p style="margin:0 0 6px 0; font-size:12px; color:#6b7280; font-weight:600;">${formatDateRange(
+        exp.startDate,
+        exp.endDate,
+        exp.currentlyWorking
+      )}</p>
+      <p style="margin:0 0 6px 0;">${exp.description || ''}</p>
+      <ul style="margin:0; padding-left:18px;">
 ${exp.responsibilities
   .filter(r => r)
   .slice(0, 3)
-  .map(r => `<li>${r}</li>`)
+  .map(r => `<li style="margin-bottom:4px;">${r}</li>`)
   .join('')}
-</ul>
-</div>`
+      </ul>
+    </td>
+  </tr>
+</table>`
   )
   .join('')}
 
-<p>I am particularly interested in <strong style="color: #1a73e8;">${companyName}</strong> because of your reputation for excellence. My experience has prepared me to make immediate contributions to your team.</p>
+<p style="margin-top:22px;">I am particularly interested in <strong style="color:${accent};">${companyName}</strong> because of your reputation for excellence. My experience has prepared me to make immediate contributions to your team.</p>
 
-<p>I have attached my detailed resume and would welcome the opportunity to discuss how my background aligns with your requirements.</p>
-
-<p>Thank you for considering my application.</p>
-
-<p>Best regards,<br>
-${fullName}</p>
-</div>`;
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 
   return {
     subject: `Experienced ${position} Seeking New Opportunity - ${fullName}`,
@@ -377,14 +498,16 @@ ${fullName}</p>
 
 /**
  * Template 4: Project Showcase
- * Perfect for showcasing concrete work examples
+ * Violet accent, projects rendered as cards with a colored top bar and tech pills.
  */
 function generateProjectShowcase(
   resumeData: ResumeData,
   jobDetails: JobDetails
 ): GeneratedEmail {
-  const { personalInfo, projects, skills } = resumeData;
+  const { personalInfo, projects, skills, socialLinks } = resumeData;
   const { companyName, position } = jobDetails;
+  const accent = '#7c3aed';
+  const bg = '#f5f3ff';
 
   const fullName = personalInfo.fullName || 'Your Name';
   const topProjects = projects.slice(0, 3);
@@ -424,72 +547,77 @@ ${skills.selectedSkills.join(', ')}
 
 These projects demonstrate my ability to deliver high-quality solutions, which I understand is crucial for success in this role. I am particularly drawn to ${companyName}'s innovative work.
 
-My resume and portfolio are attached for your review. I would love to discuss how my project experience can benefit your team.
-
 Thank you for your consideration.
 
 Sincerely,
-${fullName}`;
+${fullName}
+${attachmentNoteText()}`;
 
-  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-<p><strong>${fullName}</strong><br>
-${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
-    personalInfo.location || ''
-  }</p>
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
 
 <p>Dear Hiring Manager,</p>
 
-<p>I am applying for the <strong>${position}</strong> role at <strong style="color: #1a73e8;">${companyName}</strong>, and I am excited to share how my project experience aligns with your needs.</p>
+<p>I am applying for the <strong>${position}</strong> role at <strong style="color:${accent};">${companyName}</strong>, and I am excited to share how my project experience aligns with your needs.</p>
 
-<p style="font-weight: bold; margin-top: 20px;">Featured Projects:</p>
+<p style="font-weight:700; margin-top:22px; margin-bottom:4px; color:#111827;">Featured Projects</p>
 ${topProjects
   .map(
-    p => `
-<div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #1a73e8;">
-<p style="margin: 5px 0;"><strong>${p.name}</strong> | ${
+    p => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:14px; border:1px solid #ece9fb; border-radius:10px; overflow:hidden;">
+  <tr><td style="height:4px; background-color:${accent}; font-size:1px; line-height:1px;">&nbsp;</td></tr>
+  <tr>
+    <td style="padding:16px;">
+      <p style="margin:0 0 2px 0;"><strong style="font-size:15px;">${
+        p.name
+      }</strong> <span style="color:#6b7280; font-size:12px;">&middot; ${
       p.role
-    } | <em>${formatDateRange(
+    } &middot; ${formatDateRange(
       p.startDate,
       p.endDate,
       p.currentlyWorking
-    )}</em></p>
-<p style="margin: 5px 0;">${p.description || ''}</p>
-<p style="margin: 5px 0;"><strong>Technologies:</strong> ${p.technologies.join(
-      ', '
-    )}</p>
-<ul style="margin: 5px 0;">
+    )}</span></p>
+      <p style="margin:8px 0;">${p.description || ''}</p>
+      <div style="margin:10px 0;">
+${p.technologies.map(t => renderPill(t, accent, bg)).join('')}
+      </div>
+      <ul style="margin:8px 0; padding-left:18px;">
 ${p.keyFeatures
   .filter(f => f)
   .slice(0, 3)
-  .map(f => `<li>${f}</li>`)
+  .map(f => `<li style="margin-bottom:4px;">${f}</li>`)
   .join('')}
-</ul>
-${
-  p.projectUrl
-    ? `<p style="margin: 5px 0;"><strong>Project URL:</strong> <a href="${p.projectUrl}" style="color: #1a73e8;">${p.projectUrl}</a></p>`
-    : ''
-}
-${
-  p.githubUrl
-    ? `<p style="margin: 5px 0;"><strong>GitHub:</strong> <a href="${p.githubUrl}" style="color: #1a73e8;">${p.githubUrl}</a></p>`
-    : ''
-}
-</div>`
+      </ul>
+      ${
+        p.projectUrl || p.githubUrl
+          ? `<p style="margin:10px 0 0 0;">${
+              p.projectUrl
+                ? `<a href="${p.projectUrl}" style="color:${accent}; font-weight:600; text-decoration:none;">View Project &rarr;</a>`
+                : ''
+            }${p.projectUrl && p.githubUrl ? '&nbsp;&nbsp;&middot;&nbsp;&nbsp;' : ''}${
+              p.githubUrl
+                ? `<a href="${p.githubUrl}" style="color:${accent}; font-weight:600; text-decoration:none;">Source Code &rarr;</a>`
+                : ''
+            }</p>`
+          : ''
+      }
+    </td>
+  </tr>
+</table>`
   )
   .join('')}
 
-<p style="font-weight: bold;">Technical Expertise:</p>
-<p>${skills.selectedSkills.join(', ')}</p>
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Technical Expertise</p>
+<div>${skills.selectedSkills.map(s => renderPill(s, accent, bg)).join('')}</div>
 
-<p>These projects demonstrate my ability to deliver high-quality solutions, which I understand is crucial for success in this role. I am particularly drawn to <strong style="color: #1a73e8;">${companyName}</strong>'s innovative work.</p>
-
-<p>My resume and portfolio are attached for your review. I would love to discuss how my project experience can benefit your team.</p>
+<p style="margin-top:22px;">These projects demonstrate my ability to deliver high-quality solutions, which I understand is crucial for success in this role. I am particularly drawn to <strong style="color:${accent};">${companyName}</strong>'s innovative work.</p>
 
 <p>Thank you for your consideration.</p>
 
-<p>Sincerely,<br>
-${fullName}</p>
-</div>`;
+${renderClosingHtml(fullName, 'Sincerely', accent, bg)}`);
 
   return {
     subject: `Application for ${position} - Portfolio Included`,
@@ -500,14 +628,17 @@ ${fullName}</p>
 
 /**
  * Template 5: Career Transition
- * Ideal for career changers emphasizing transferable skills
+ * Amber accent, with a "from -> to" banner framing the transition narrative.
  */
 function generateCareerTransition(
   resumeData: ResumeData,
   jobDetails: JobDetails
 ): GeneratedEmail {
-  const { personalInfo, skills, workExperiences, education } = resumeData;
+  const { personalInfo, skills, workExperiences, education, socialLinks } =
+    resumeData;
   const { companyName, position } = jobDetails;
+  const accent = '#d97706';
+  const bg = '#fffbeb';
 
   const fullName = personalInfo.fullName || 'Your Name';
   const previousField = workExperiences[0]?.position || 'my previous field';
@@ -522,6 +653,8 @@ ${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
 Dear Hiring Manager,
 
 I am writing to express my interest in the ${position} position at ${companyName}. While my background includes experience as ${previousField}, I have developed strong transferable skills that make me an excellent candidate for this role.
+
+${previousField} -> ${position}
 
 Transferable Skills:
 ${transferableSkills.map(skill => `• ${skill}`).join('\n')}
@@ -543,57 +676,64 @@ ${
 
 I am particularly excited about ${companyName} because of your innovative approach. My unique perspective combined with my skills would bring fresh insights to your team.
 
-Please find my resume attached. I would appreciate the opportunity to discuss how my diverse background can add value to your organization.
-
 Thank you for considering my application.
 
 Best regards,
-${fullName}`;
+${fullName}
+${attachmentNoteText()}`;
 
-  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-<p><strong>${fullName}</strong><br>
-${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
-    personalInfo.location || ''
-  }</p>
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
 
 <p>Dear Hiring Manager,</p>
 
-<p>I am writing to express my interest in the <strong>${position}</strong> position at <strong style="color: #1a73e8;">${companyName}</strong>. While my background includes experience as <strong>${previousField}</strong>, I have developed strong transferable skills that make me an excellent candidate for this role.</p>
+<p>I am writing to express my interest in the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. While my background includes experience as <strong>${previousField}</strong>, I have developed strong transferable skills that make me an excellent candidate for this role.</p>
 
-<p style="font-weight: bold; margin-top: 20px;">Transferable Skills:</p>
-<ul>
-${transferableSkills.map(skill => `<li>${skill}</li>`).join('')}
-</ul>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin:18px 0;">
+  <tr>
+    <td style="background-color:${bg}; border-radius:8px; padding:14px 16px; text-align:center; font-family:${FONT};">
+      <span style="font-size:14px; color:#6b7280; font-weight:600;">${previousField}</span>
+      <span style="color:${accent}; font-weight:700; margin:0 10px;">&rarr;</span>
+      <span style="font-size:14px; color:${accent}; font-weight:700;">${position}</span>
+    </td>
+  </tr>
+</table>
+
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Transferable Skills</p>
+<div>${transferableSkills.map(skill => renderPill(skill, accent, bg)).join('')}</div>
 
 ${
   recentEducation.length > 0
-    ? `<p style="font-weight: bold; margin-top: 20px;">Recent Training & Development:</p>
-<ul>
+    ? `<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Recent Training &amp; Development</p>
+<ul style="margin-top:0; padding-left:20px;">
 ${recentEducation
   .map(
     edu =>
-      `<li><strong>${edu.degree}</strong> in ${edu.fieldOfStudy} - ${edu.institution}</li>`
+      `<li style="margin-bottom:6px;"><strong>${edu.degree}</strong> in ${edu.fieldOfStudy} - ${edu.institution}</li>`
   )
   .join('')}
 </ul>`
     : ''
 }
 
-<p style="font-weight: bold; margin-top: 20px;">Why This Opportunity:</p>
-<p>${
-    personalInfo.summary ||
-    'I am passionate about this field and eager to apply my diverse background to new challenges.'
-  }</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:22px;">
+  <tr>
+    <td style="border-left:3px solid ${accent}; padding:4px 16px; font-style:italic; color:#4b5563;">
+      ${
+        personalInfo.summary ||
+        'I am passionate about this field and eager to apply my diverse background to new challenges.'
+      }
+    </td>
+  </tr>
+</table>
 
-<p>I am particularly excited about <strong style="color: #1a73e8;">${companyName}</strong> because of your innovative approach. My unique perspective combined with my skills would bring fresh insights to your team.</p>
+<p style="margin-top:22px;">I am particularly excited about <strong style="color:${accent};">${companyName}</strong> because of your innovative approach. My unique perspective combined with my skills would bring fresh insights to your team.</p>
 
-<p>Please find my resume attached. I would appreciate the opportunity to discuss how my diverse background can add value to your organization.</p>
-
-<p>Thank you for considering my application.</p>
-
-<p>Best regards,<br>
-${fullName}</p>
-</div>`;
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 
   return {
     subject: `Transitioning Professional Applying for ${position}`,
@@ -604,7 +744,7 @@ ${fullName}</p>
 
 /**
  * Template 6: Comprehensive Profile
- * Detailed template showcasing all resume sections
+ * The full report - every section, blue accent, sectioned like a one-page portfolio.
  */
 function generateComprehensiveProfile(
   resumeData: ResumeData,
@@ -619,14 +759,12 @@ function generateComprehensiveProfile(
     socialLinks,
   } = resumeData;
   const { companyName, position } = jobDetails;
+  const accent = '#2563eb';
+  const bg = '#eff6ff';
 
   const fullName = personalInfo.fullName || 'Your Name';
   const linksText = formatSocialLinks(socialLinks);
-
-  // Organize skills by category (if possible, otherwise just list them)
   const allSkills = skills.selectedSkills;
-  const skillsText =
-    allSkills.length > 0 ? allSkills.join(', ') : 'your technical skills';
 
   const bodyText = `${fullName}
 ${personalInfo.phone || ''} | ${personalInfo.email || ''}${
@@ -726,64 +864,54 @@ I am excited about the opportunity to contribute to ${companyName}'s innovative 
 I would welcome the opportunity to discuss how my technical skills, project experience, and passion align with your team's objectives. Thank you for considering my application.
 
 Best regards,
-${fullName}`;
+${fullName}
+${attachmentNoteText()}`;
 
-  const bodyHtml = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; width: 50%; margin: 0 auto;">
-<p><strong style="font-size: 18px;">${fullName}</strong><br>
-${personalInfo.phone || ''} | ${personalInfo.email || ''}${
-    linksText
-      ? `<br>${linksText
-          .trim()
-          .split(' | ')
-          .map(link => {
-            if (link.includes('http')) {
-              const [label, url] = link.split(': ');
-              return `<a href="${url}" style="color: #1a73e8; text-decoration: none;">${label}</a>`;
-            }
-            return link;
-          })
-          .join(' | ')}`
-      : ''
-  }</p>
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
 
 <p>Dear Hiring Manager,</p>
 
-<p>I am writing to express my interest in the <strong>${position}</strong> position at <strong style="color: #1a73e8;">${companyName}</strong>. ${
+<p>I am writing to express my interest in the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. ${
     personalInfo.summary ||
     `As a ${
       skills.position || 'professional'
     } with comprehensive experience across multiple domains, I bring hands-on expertise in modern technologies, agile methodologies, and full-stack development that align with your team's needs.`
   }</p>
 
-<h3 style="color: #1a73e8; margin-top: 25px; margin-bottom: 10px;">Technical Proficiency</h3>
-<ul style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Technical Proficiency</h3>
+<div>
 ${
   allSkills.length > 0
-    ? allSkills.map(skill => `<li>${skill}</li>`).join('')
-    : '<li>Your technical skills</li>'
+    ? allSkills.map(skill => renderPill(skill, accent, bg)).join('')
+    : renderPill('Your technical skills', accent, bg)
 }
-</ul>
+</div>
 
 ${
   workExperiences.length > 0
-    ? `<h3 style="color: #1a73e8; margin-top: 25px; margin-bottom: 10px;">Professional Experience & Key Projects</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Professional Experience &amp; Key Projects</h3>
 ${workExperiences
   .slice(0, 3)
   .map(
-    exp => `<div style="margin-bottom: 20px;">
-<p style="margin: 5px 0;"><strong>${exp.position}</strong> | ${
+    exp => `<div style="margin-bottom:16px;">
+<p style="margin:0 0 2px 0;"><strong>${exp.position}</strong> &middot; ${
       exp.company
-    } | <em>${formatDateRange(
+    } <span style="color:#6b7280; font-size:12px; font-weight:600;">&middot; ${formatDateRange(
       exp.startDate,
       exp.endDate,
       exp.currentlyWorking
-    )}</em></p>
-<p style="margin: 5px 0;">${exp.description || ''}</p>
-<ul style="margin: 5px 0;">
+    )}</span></p>
+<p style="margin:6px 0;">${exp.description || ''}</p>
+<ul style="margin:6px 0; padding-left:18px;">
 ${exp.responsibilities
   .filter(r => r)
   .slice(0, 3)
-  .map(r => `<li>${r}</li>`)
+  .map(r => `<li style="margin-bottom:4px;">${r}</li>`)
   .join('')}
 </ul>
 </div>`
@@ -794,34 +922,38 @@ ${exp.responsibilities
 
 ${
   projects.length > 0
-    ? `<h3 style="color: #1a73e8; margin-top: 25px; margin-bottom: 10px;">Featured Projects</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Featured Projects</h3>
 ${projects
   .slice(0, 3)
   .map(
-    p => `<div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #1a73e8;">
-<p style="margin: 5px 0;"><strong>${p.name}</strong></p>
-<p style="margin: 5px 0;">${p.description || ''}</p>
-<p style="margin: 5px 0;"><strong>Technologies:</strong> ${p.technologies.join(
-      ', '
-    )}</p>
-<ul style="margin: 5px 0;">
+    p => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:14px; background-color:#f8fafc; border-radius:8px;">
+  <tr>
+    <td style="padding:14px 16px;">
+      <p style="margin:0 0 4px 0;"><strong>${p.name}</strong></p>
+      <p style="margin:0 0 8px 0;">${p.description || ''}</p>
+      <p style="margin:0 0 8px 0; font-size:13px;"><strong>Technologies:</strong> ${p.technologies.join(
+        ', '
+      )}</p>
+      <ul style="margin:0 0 8px 0; padding-left:18px;">
 ${p.keyFeatures
   .filter(f => f)
   .slice(0, 2)
-  .map(f => `<li>${f}</li>`)
+  .map(f => `<li style="margin-bottom:4px;">${f}</li>`)
   .join('')}
-</ul>
-${
-  p.projectUrl
-    ? `<p style="margin: 5px 0;"><strong>Project URL:</strong> <a href="${p.projectUrl}" style="color: #1a73e8;">${p.projectUrl}</a></p>`
-    : ''
-}
-${
-  p.githubUrl
-    ? `<p style="margin: 5px 0;"><strong>GitHub:</strong> <a href="${p.githubUrl}" style="color: #1a73e8;">${p.githubUrl}</a></p>`
-    : ''
-}
-</div>`
+      </ul>
+      ${
+        p.projectUrl
+          ? `<p style="margin:0 0 2px 0; font-size:13px;"><strong>Project URL:</strong> <a href="${p.projectUrl}" style="color:${accent};">${p.projectUrl}</a></p>`
+          : ''
+      }
+      ${
+        p.githubUrl
+          ? `<p style="margin:0; font-size:13px;"><strong>GitHub:</strong> <a href="${p.githubUrl}" style="color:${accent};">${p.githubUrl}</a></p>`
+          : ''
+      }
+    </td>
+  </tr>
+</table>`
   )
   .join('')}`
     : ''
@@ -829,39 +961,39 @@ ${
 
 ${
   education.length > 0
-    ? `<h3 style="color: #1a73e8; margin-top: 25px; margin-bottom: 10px;">Education</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Education</h3>
 ${education
   .slice(0, 2)
   .map(
-    edu => `<p style="margin: 5px 0;"><strong>${edu.degree}</strong> in ${
+    edu => `<p style="margin:0 0 10px 0;"><strong>${edu.degree}</strong> in ${
       edu.fieldOfStudy
     }<br>
-${edu.institution} | <em>${formatDateRange(
+<span style="color:#6b7280; font-size:13px;">${
+      edu.institution
+    } &middot; ${formatDateRange(
       edu.startDate,
       edu.endDate,
       edu.currentlyStudying
-    )}</em></p>`
+    )}</span></p>`
   )
   .join('')}`
     : ''
 }
 
-<h3 style="color: #1a73e8; margin-top: 25px; margin-bottom: 10px;">What I Bring to Your Team</h3>
-<ul>
-<li><strong>Problem-Solving:</strong> Strong analytical skills with ability to debug complex issues and optimize application performance</li>
-<li><strong>Collaboration:</strong> Experience working in team environments, participating in code reviews, and contributing to technical discussions</li>
-<li><strong>Learning Agility:</strong> Quick learner passionate about emerging technologies, best practices, and continuous skill development</li>
-<li><strong>Clean Code Advocate:</strong> Commitment to writing maintainable, well-documented code following industry standards</li>
-<li><strong>Initiative:</strong> Self-starter with proven ability to manage multiple projects and deliver results in fast-paced environments</li>
+<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">What I Bring to Your Team</h3>
+<ul style="padding-left:18px;">
+<li style="margin-bottom:6px;"><strong>Problem-Solving:</strong> Strong analytical skills with ability to debug complex issues and optimize application performance</li>
+<li style="margin-bottom:6px;"><strong>Collaboration:</strong> Experience working in team environments, participating in code reviews, and contributing to technical discussions</li>
+<li style="margin-bottom:6px;"><strong>Learning Agility:</strong> Quick learner passionate about emerging technologies, best practices, and continuous skill development</li>
+<li style="margin-bottom:6px;"><strong>Clean Code Advocate:</strong> Commitment to writing maintainable, well-documented code following industry standards</li>
+<li style="margin-bottom:6px;"><strong>Initiative:</strong> Self-starter with proven ability to manage multiple projects and deliver results in fast-paced environments</li>
 </ul>
 
-<p>I am excited about the opportunity to contribute to <strong style="color: #1a73e8;">${companyName}</strong>'s innovative projects while learning from your experienced engineering team. My combination of academic foundation, practical experience, and enthusiasm for software development positions me to make meaningful contributions from day one.</p>
+<p style="margin-top:22px;">I am excited about the opportunity to contribute to <strong style="color:${accent};">${companyName}</strong>'s innovative projects while learning from your experienced engineering team. My combination of academic foundation, practical experience, and enthusiasm for software development positions me to make meaningful contributions from day one.</p>
 
-<p>I would welcome the opportunity to discuss how my technical skills, project experience, and passion align with your team's objectives. Thank you for considering my application.</p>
+<p>I would welcome the opportunity to discuss how my technical skills, project experience, and passion align with your team's objectives.</p>
 
-<p>Best regards,<br>
-${fullName}</p>
-</div>`;
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 
   return {
     subject: `Application for ${position} - ${fullName}`,

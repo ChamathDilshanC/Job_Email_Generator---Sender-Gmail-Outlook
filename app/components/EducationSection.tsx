@@ -248,7 +248,7 @@ export default function EducationSection({
     <div className="w-full">
       {!showForm && (
         <>
-          <p className="text-gray-600 mb-4 text-sm md:text-base">
+          <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm md:text-base">
             Add your educational background and qualifications.
           </p>
           <button
@@ -263,7 +263,7 @@ export default function EducationSection({
               {educations.map(edu => (
                 <div
                   key={edu.id}
-                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-6 transition-all duration-200 hover:border-[#3b3be3] hover:shadow-lg"
+                  className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 transition-all duration-200 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-lg"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex gap-4 flex-1">
@@ -272,7 +272,7 @@ export default function EducationSection({
                           <img
                             src={getUniversityLogoUrl(edu.domain)}
                             alt={edu.institution}
-                            className="w-14 h-14 object-contain rounded-lg bg-white border border-gray-200 p-2"
+                            className="w-14 h-14 object-contain rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 p-2"
                             onError={e => {
                               // Fallback to favicon
                               (
@@ -283,18 +283,18 @@ export default function EducationSection({
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
                           {edu.degree} in {edu.fieldOfStudy}
                         </h3>
-                        <p className="text-[15px] text-gray-600 mb-1">
+                        <p className="text-[15px] text-gray-600 dark:text-gray-400 mb-1">
                           {edu.institution} • {edu.location}
                         </p>
-                        <p className="text-sm text-gray-500 italic">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
                           {edu.startDate} -{' '}
                           {edu.currentlyStudying ? 'Present' : edu.endDate}
                         </p>
                         {edu.gpa && (
-                          <p className="text-sm text-gray-700 mt-1 font-medium">
+                          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 font-medium">
                             GPA: {edu.gpa}
                           </p>
                         )}
@@ -304,7 +304,7 @@ export default function EducationSection({
                       <button
                         onClick={() => handleEdit(edu)}
                         title="Edit"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-blue-50 hover:border-[#3b3be3] hover:text-[#3b3be3] transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:text-[#3b3be3] dark:hover:text-[#818cf8] transition-all duration-200"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -320,7 +320,7 @@ export default function EducationSection({
                       <button
                         onClick={() => handleDelete(edu.id)}
                         title="Delete"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 transition-all duration-200"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -343,7 +343,7 @@ export default function EducationSection({
                         .map((achievement, idx) => (
                           <li
                             key={idx}
-                            className="text-sm text-gray-700 leading-relaxed pl-6 mb-2 relative before:content-['▹'] before:absolute before:left-0 before:text-[#3b3be3] before:font-bold before:text-lg"
+                            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-6 mb-2 relative before:content-['▹'] before:absolute before:left-0 before:text-[#3b3be3] dark:before:text-[#818cf8] before:font-bold before:text-lg"
                           >
                             {achievement}
                           </li>
@@ -358,8 +358,8 @@ export default function EducationSection({
       )}
 
       {showForm && (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-6 lg:p-8">
-          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800">
+        <div className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 lg:p-8">
+          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
             {editingEdu ? 'Edit' : 'Add'} Education
           </h3>
 
@@ -368,7 +368,7 @@ export default function EducationSection({
               className="flex flex-col gap-2"
               style={{ position: 'relative' }}
             >
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Institution Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -388,18 +388,18 @@ export default function EducationSection({
                     setShowUniversitySuggestions(true);
                   }
                 }}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
               />
               {showUniversitySuggestions &&
                 universitySuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
+                  <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
                     {universitySuggestions.map((university, index) => (
                       <div
                         key={index}
-                        className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 last:border-b-0 flex items-center gap-3 ${
+                        className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 dark:border-gray-800 last:border-b-0 flex items-center gap-3 ${
                           index === selectedUniversityIndex
-                            ? 'bg-blue-50 text-[#3b3be3]'
-                            : 'text-gray-700 hover:bg-gray-50'
+                            ? 'bg-blue-50 dark:bg-blue-500/10 text-[#3b3be3] dark:text-[#818cf8]'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60'
                         }`}
                         onMouseEnter={() => setSelectedUniversityIndex(index)}
                         onMouseDown={e => {
@@ -411,7 +411,7 @@ export default function EducationSection({
                           <img
                             src={getUniversityLogoUrl(university.domains[0])}
                             alt={university.name}
-                            className="w-8 h-8 object-contain rounded bg-white border border-gray-200 p-1"
+                            className="w-8 h-8 object-contain rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 p-1"
                             onError={e => {
                               (
                                 e.target as HTMLImageElement
@@ -423,7 +423,7 @@ export default function EducationSection({
                           <div className="font-medium text-sm">
                             {university.name}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             {university['state-province'] &&
                               `${university['state-province']}, `}
                             {university.country}
@@ -434,14 +434,14 @@ export default function EducationSection({
                   </div>
                 )}
               {isSearchingUniversities && (
-                <div className="text-xs text-gray-500 mt-1">Searching...</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Searching...</div>
               )}
             </div>
             <div
               className="flex flex-col gap-2"
               style={{ position: 'relative' }}
             >
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Degree <span className="text-red-500">*</span>
               </label>
               <input
@@ -458,17 +458,17 @@ export default function EducationSection({
                   setDegreeSuggestions(results);
                   setShowDegreeSuggestions(results.length > 0);
                 }}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
               />
               {showDegreeSuggestions && degreeSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
+                <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
                   {degreeSuggestions.map((degree, index) => (
                     <div
                       key={index}
-                      className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 last:border-b-0 text-sm ${
+                      className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 dark:border-gray-800 last:border-b-0 text-sm ${
                         index === selectedDegreeIndex
-                          ? 'bg-blue-50 text-[#3b3be3] font-medium'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'bg-blue-50 dark:bg-blue-500/10 text-[#3b3be3] dark:text-[#818cf8] font-medium'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60'
                       }`}
                       onMouseEnter={() => setSelectedDegreeIndex(index)}
                       onMouseDown={e => {
@@ -486,7 +486,7 @@ export default function EducationSection({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Field of Study <span className="text-red-500">*</span>
               </label>
               <input
@@ -494,11 +494,11 @@ export default function EducationSection({
                 placeholder="e.g., Computer Science"
                 value={formData.fieldOfStudy}
                 onChange={e => updateField('fieldOfStudy', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Location <span className="text-red-500">*</span>
               </label>
               <input
@@ -506,14 +506,14 @@ export default function EducationSection({
                 placeholder="e.g., Cambridge, MA"
                 value={formData.location}
                 onChange={e => updateField('location', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Start Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -529,13 +529,13 @@ export default function EducationSection({
                   }
                   dateFormat="MM/dd/yyyy"
                   placeholderText="Select start date"
-                  className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 w-full hover:border-[#3b3be3] hover:shadow-sm"
+                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 w-full hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-sm"
                   maxDate={new Date()}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 End Date{' '}
                 {!formData.currentlyStudying && (
                   <span className="text-red-500">*</span>
@@ -556,7 +556,7 @@ export default function EducationSection({
                     formData.currentlyStudying ? 'Present' : 'Select end date'
                   }
                   disabled={formData.currentlyStudying}
-                  className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 w-full hover:border-[#3b3be3] hover:shadow-sm"
+                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60 w-full hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-sm"
                   maxDate={new Date()}
                   minDate={
                     formData.startDate ? new Date(formData.startDate) : null
@@ -567,7 +567,7 @@ export default function EducationSection({
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Education Status
             </label>
             <div className="flex gap-4">
@@ -578,9 +578,9 @@ export default function EducationSection({
                   value="completed"
                   checked={!formData.currentlyStudying}
                   onChange={() => updateField('currentlyStudying', false)}
-                  className="w-4 h-4 text-[#3b3be3] border-gray-300 focus:ring-[#3b3be3] cursor-pointer"
+                  className="w-4 h-4 text-[#3b3be3] dark:text-[#818cf8] border-gray-300 dark:border-gray-700 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">Completed</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Completed</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -592,9 +592,9 @@ export default function EducationSection({
                     updateField('currentlyStudying', true);
                     updateField('endDate', '');
                   }}
-                  className="w-4 h-4 text-[#3b3be3] border-gray-300 focus:ring-[#3b3be3] cursor-pointer"
+                  className="w-4 h-4 text-[#3b3be3] dark:text-[#818cf8] border-gray-300 dark:border-gray-700 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-300">
                   Currently Studying Here
                 </span>
               </label>
@@ -602,7 +602,7 @@ export default function EducationSection({
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               GPA (Optional)
             </label>
             <input
@@ -610,12 +610,12 @@ export default function EducationSection({
               placeholder="e.g., 3.8/4.0"
               value={formData.gpa}
               onChange={e => updateField('gpa', e.target.value)}
-              className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+              className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
             />
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Achievements & Honors
             </label>
             {formData.achievements.map((achievement, index) => (
@@ -625,13 +625,13 @@ export default function EducationSection({
                   placeholder="e.g., Dean's List, Published Research Paper"
                   value={achievement}
                   onChange={e => updateAchievement(index, e.target.value)}
-                  className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                  className="flex-1 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
                 />
                 {formData.achievements.length > 1 && (
                   <button
                     onClick={() => removeAchievement(index)}
                     type="button"
-                    className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-all duration-200"
+                    className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 transition-all duration-200"
                   >
                     <svg
                       className="w-[18px] h-[18px]"
@@ -650,16 +650,16 @@ export default function EducationSection({
             <button
               onClick={addAchievement}
               type="button"
-              className="px-4 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+              className="px-4 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm"
             >
               + Add Achievement
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
             <button
               onClick={handleCancel}
-              className="px-4 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+              className="px-4 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm"
             >
               Cancel
             </button>

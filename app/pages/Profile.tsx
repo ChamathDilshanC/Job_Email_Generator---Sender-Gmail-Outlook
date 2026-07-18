@@ -72,46 +72,21 @@ export default function Profile() {
     return (
       <div className="p-4 md:p-8">
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#a5b4fc] dark:to-[#a5b4fc] bg-clip-text text-transparent">
             Profile
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-400">
             Manage your personal information and preferences
           </p>
         </div>
 
-        <div
-          className="animate-fade-in"
-          style={{
-            backgroundColor: '#fef2f2',
-            border: '2px solid #ef4444',
-            borderRadius: '8px',
-            padding: '2rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1.5rem',
-            textAlign: 'center',
-            maxWidth: '600px',
-            margin: '0 auto',
-            marginTop: '2rem',
-          }}
-        >
-          <div style={{ fontSize: '3rem' }}>⚠️</div>
+        <div className="animate-fade-in mx-auto mt-8 flex max-w-[600px] flex-col items-center justify-center gap-6 rounded-lg border-2 border-red-500 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-8 text-center">
+          <div className="text-5xl">⚠️</div>
           <div>
-            <h3
-              style={{
-                margin: 0,
-                fontWeight: '600',
-                color: '#dc2626',
-                marginBottom: '0.5rem',
-                fontSize: '1.25rem',
-              }}
-            >
+            <h3 className="mb-2 text-xl font-semibold text-red-600 dark:text-red-400">
               Sign In Required
             </h3>
-            <p style={{ margin: 0, color: '#991b1b', fontSize: '1rem' }}>
+            <p className="text-base text-red-800 dark:text-red-300">
               Please sign in with Google to manage your profile, view email
               statistics, and access your account settings.
             </p>
@@ -150,10 +125,10 @@ export default function Profile() {
     <>
       <div className="p-4 md:p-8">
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#a5b4fc] dark:to-[#a5b4fc] bg-clip-text text-transparent">
             Profile
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-400">
             Manage your personal information and preferences
           </p>
         </div>
@@ -161,13 +136,13 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
           {/* Sidebar */}
           <div className="flex flex-col gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
               <div className="relative w-32 h-32 mx-auto mb-6">
                 {photoURL ? (
                   <img
                     src={photoURL}
                     alt={displayName}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-100"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 dark:border-gray-800"
                     referrerPolicy="no-referrer"
                     onError={e => {
                       // Fallback to default avatar if image fails to load
@@ -195,31 +170,31 @@ export default function Profile() {
                   </svg>
                 </div>
               </div>
-              <h2 className="text-2xl font-bold mb-1">{displayName}</h2>
-              <p className="text-sm text-gray-500 mb-2">{email}</p>
+              <h2 className="text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100">{displayName}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{email}</p>
               {user ? (
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium mb-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 rounded-full text-xs font-medium mb-6">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   Connected with Google
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-700 rounded-full text-xs font-medium mb-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 rounded-full text-xs font-medium mb-6">
                   <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                   Not connected
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#3b3be3]">
+                  <div className="text-2xl font-bold text-[#3b3be3] dark:text-[#818cf8]">
                     {isLoading ? '...' : emailStats.sent}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Emails Sent</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Emails Sent</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#3b3be3]">
+                  <div className="text-2xl font-bold text-[#3b3be3] dark:text-[#818cf8]">
                     {isLoading ? '...' : emailStats.total}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Total Emails</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Emails</div>
                 </div>
               </div>
             </div>
@@ -227,46 +202,46 @@ export default function Profile() {
 
           {/* Main Content */}
           <div className="flex flex-col gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8">
-              <h2 className="text-xl font-semibold mb-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 md:p-8">
+              <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100">
                 Account Information
               </h2>
               <div className="flex flex-col gap-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-600">
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
                       Full Name
                     </label>
                     <input
                       type="text"
                       value={displayName}
                       disabled
-                      className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-600 cursor-not-allowed"
+                      className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-400 cursor-not-allowed"
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
                       Synced from your Google account
                     </p>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-600">
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
                       Email Address
                     </label>
                     <input
                       type="email"
                       value={email}
                       disabled
-                      className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-600 cursor-not-allowed"
+                      className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-400 cursor-not-allowed"
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
                       Synced from your Google account
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-2">
+                <div className="bg-blue-50 dark:bg-[#818cf8]/10 border border-blue-200 dark:border-[#818cf8]/25 rounded-lg p-4 mt-2">
                   <div className="flex items-start gap-3">
                     <svg
-                      className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
+                      className="w-5 h-5 text-blue-600 dark:text-[#a5b4fc] mt-0.5 flex-shrink-0"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -277,10 +252,10 @@ export default function Profile() {
                       />
                     </svg>
                     <div>
-                      <p className="text-sm font-medium text-blue-900">
+                      <p className="text-sm font-medium text-blue-900 dark:text-[#c7d2fe]">
                         Google Account Integration
                       </p>
-                      <p className="text-sm text-blue-700 mt-1">
+                      <p className="text-sm text-blue-700 dark:text-[#a5b4fc] mt-1">
                         Your profile information is automatically synced from
                         your Google account. To update your name or email,
                         please update them in your Google account settings.
@@ -292,10 +267,10 @@ export default function Profile() {
             </div>
 
             {/* Advanced Settings */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 md:p-8">
               <div className="flex items-center gap-2 mb-6">
                 <svg
-                  className="w-5 h-5 text-gray-700"
+                  className="w-5 h-5 text-gray-700 dark:text-gray-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -313,17 +288,17 @@ export default function Profile() {
                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                <h2 className="text-xl font-semibold">Advanced</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Advanced</h2>
               </div>
 
               <div className="flex flex-col gap-4">
                 {/* Clear Cache */}
-                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-1">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
                       Clear Cache
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Clear application cache and temporary data
                     </p>
                   </div>
@@ -371,19 +346,19 @@ export default function Profile() {
                         },
                       });
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Clear Cache
                   </button>
                 </div>
 
                 {/* Export Data */}
-                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-1">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
                       Export Data
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Download all your data in JSON format
                     </p>
                   </div>
@@ -440,17 +415,17 @@ export default function Profile() {
                         });
                       }
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Export
                   </button>
                 </div>
 
                 {/* Sign Out */}
-                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between py-4 border-b border-gray-200 dark:border-gray-800">
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-1">Sign Out</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Sign Out</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Sign out from your Google account
                     </p>
                   </div>
@@ -489,7 +464,7 @@ export default function Profile() {
                         },
                       });
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-yellow-400 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-900 bg-yellow-400 border border-yellow-500 dark:border-yellow-600 rounded-lg hover:bg-yellow-300 transition-colors"
                   >
                     Sign Out
                   </button>
@@ -498,10 +473,10 @@ export default function Profile() {
                 {/* Delete Account */}
                 <div className="flex items-center justify-between py-4">
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-1">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
                       Delete Account
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Permanently delete your account and all data
                     </p>
                   </div>

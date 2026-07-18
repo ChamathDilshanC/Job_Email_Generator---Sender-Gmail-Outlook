@@ -122,21 +122,21 @@ export default function History() {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-transparent p-4 md:p-8">
         {/* Header */}
         <div className="max-w-7xl mx-auto mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#a5b4fc] dark:to-[#a5b4fc] bg-clip-text text-transparent">
             Email History
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             View and manage your sent job application emails
           </p>
         </div>
 
         {/* Stats Cards */}
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
+            <div className="w-12 h-12 rounded-lg bg-green-50 dark:bg-green-500/10 flex items-center justify-center">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -151,12 +151,12 @@ export default function History() {
               <div className="text-3xl font-bold leading-none mb-1">
                 {totalSent}
               </div>
-              <div className="text-sm text-gray-500">Total Sent</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Sent</div>
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="w-12 h-12 rounded-lg bg-yellow-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
+            <div className="w-12 h-12 rounded-lg bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -172,12 +172,12 @@ export default function History() {
               <div className="text-3xl font-bold leading-none mb-1">
                 {totalPending}
               </div>
-              <div className="text-sm text-gray-500">Pending</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Pending</div>
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="w-12 h-12 rounded-lg bg-red-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
+            <div className="w-12 h-12 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -194,12 +194,12 @@ export default function History() {
               <div className="text-3xl font-bold leading-none mb-1">
                 {totalFailed}
               </div>
-              <div className="text-sm text-gray-500">Failed</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Failed</div>
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-            <div className="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40">
+            <div className="w-12 h-12 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -217,7 +217,7 @@ export default function History() {
               <div className="text-3xl font-bold leading-none mb-1">
                 {uniqueCompanies}
               </div>
-              <div className="text-sm text-gray-500">Companies</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Companies</div>
             </div>
           </div>
         </div>
@@ -230,7 +230,7 @@ export default function History() {
               placeholder="Search by company, position, or email..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3b3be3] focus:border-transparent transition-all"
+              className="w-full px-4 py-3 pl-12 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 rounded-lg focus:ring-2 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] focus:border-transparent transition-all"
             />
             <svg
               className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -253,14 +253,14 @@ export default function History() {
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#3b3be3] mb-4"></div>
-                <p className="text-gray-600">Loading your email history...</p>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#3b3be3] dark:border-[#818cf8] mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">Loading your email history...</p>
               </div>
             </div>
           ) : filteredEmails.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
               <svg
-                className="w-16 h-16 text-gray-300 mx-auto mb-4"
+                className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -272,10 +272,10 @@ export default function History() {
                   d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 {searchQuery ? 'No emails found' : 'No email history yet'}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
                 {searchQuery
                   ? 'Try adjusting your search query'
                   : 'Your sent job application emails will appear here'}
@@ -291,7 +291,7 @@ export default function History() {
             </div>
           ) : (
             <>
-              <div className="mb-4 text-sm text-gray-600">
+              <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                 Showing {filteredEmails.length} of {emailHistory.length} emails
               </div>
               <div className="grid grid-cols-1 gap-6">

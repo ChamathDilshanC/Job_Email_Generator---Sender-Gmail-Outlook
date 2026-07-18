@@ -110,8 +110,8 @@ export default function LinksSection({ links, onChange }: LinksSectionProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4">
+        <p className="text-sm text-blue-800 dark:text-blue-400">
           ℹ️ Add your professional and social links. All fields are optional.
           These links will be included in your email templates.
         </p>
@@ -120,10 +120,10 @@ export default function LinksSection({ links, onChange }: LinksSectionProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {linkFields.map(field => (
           <div key={field.key} className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <span className="text-gray-500">{field.icon}</span>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-gray-500 dark:text-gray-400">{field.icon}</span>
               {field.label}
-              <span className="text-xs text-gray-400 font-normal">
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-normal">
                 (Optional)
               </span>
             </label>
@@ -132,14 +132,14 @@ export default function LinksSection({ links, onChange }: LinksSectionProps) {
               value={links[field.key] || ''}
               onChange={e => handleChange(field.key, e.target.value)}
               placeholder={field.placeholder}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3b3be3] focus:border-transparent transition-all duration-200 text-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] focus:border-transparent transition-all duration-200 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
             />
           </div>
         ))}
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <p className="text-xs text-gray-600">
+      <div className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+        <p className="text-xs text-gray-600 dark:text-gray-400">
           💡 <strong>Tip:</strong> Make sure to include the full URL (starting
           with https://) for each link.
         </p>

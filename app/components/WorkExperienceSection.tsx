@@ -131,7 +131,7 @@ export default function WorkExperienceSection({
     <div className="w-full">
       {!showForm && (
         <>
-          <p className="text-gray-600 mb-4 text-sm md:text-base">
+          <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm md:text-base">
             Add your work experience, starting with the most recent position.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -154,17 +154,17 @@ export default function WorkExperienceSection({
               {experiences.map(exp => (
                 <div
                   key={exp.id}
-                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-6 transition-all duration-200 hover:border-[#3b3be3] hover:shadow-lg"
+                  className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 transition-all duration-200 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-lg"
                 >
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
                     <div className="flex-1">
-                      <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-1">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
                         {exp.position}
                       </h3>
-                      <p className="text-sm md:text-[15px] text-gray-600 mb-1">
+                      <p className="text-sm md:text-[15px] text-gray-600 dark:text-gray-400 mb-1">
                         {exp.company} • {exp.location}
                       </p>
-                      <p className="text-xs md:text-sm text-gray-500 italic">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 italic">
                         {exp.startDate} -{' '}
                         {exp.currentlyWorking ? 'Present' : exp.endDate}
                       </p>
@@ -173,7 +173,7 @@ export default function WorkExperienceSection({
                       <button
                         onClick={() => handleEdit(exp)}
                         title="Edit"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-blue-50 hover:border-[#3b3be3] hover:text-[#3b3be3] transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:text-[#3b3be3] dark:hover:text-[#818cf8] transition-all duration-200"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -189,7 +189,7 @@ export default function WorkExperienceSection({
                       <button
                         onClick={() => handleDelete(exp.id)}
                         title="Delete"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 transition-all duration-200"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -206,7 +206,7 @@ export default function WorkExperienceSection({
                   </div>
 
                   {exp.description && (
-                    <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
                       {exp.description}
                     </p>
                   )}
@@ -218,7 +218,7 @@ export default function WorkExperienceSection({
                         .map((resp, idx) => (
                           <li
                             key={idx}
-                            className="text-sm text-gray-700 leading-relaxed pl-6 mb-2 relative before:content-['▹'] before:absolute before:left-0 before:text-[#3b3be3] before:font-bold before:text-lg"
+                            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-6 mb-2 relative before:content-['▹'] before:absolute before:left-0 before:text-[#3b3be3] dark:before:text-[#818cf8] before:font-bold before:text-lg"
                           >
                             {resp}
                           </li>
@@ -233,14 +233,14 @@ export default function WorkExperienceSection({
       )}
 
       {showForm && (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-6 lg:p-8">
-          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800">
+        <div className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 lg:p-8">
+          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
             {editingExp ? 'Edit' : 'Add'} Work Experience
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Company Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -248,11 +248,11 @@ export default function WorkExperienceSection({
                 placeholder="e.g., Google, Microsoft"
                 value={formData.company}
                 onChange={e => updateField('company', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Position/Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -260,13 +260,13 @@ export default function WorkExperienceSection({
                 placeholder="e.g., Senior Software Engineer"
                 value={formData.position}
                 onChange={e => updateField('position', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Location <span className="text-red-500">*</span>
             </label>
             <input
@@ -274,13 +274,13 @@ export default function WorkExperienceSection({
               placeholder="e.g., San Francisco, CA"
               value={formData.location}
               onChange={e => updateField('location', e.target.value)}
-              className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+              className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Start Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -296,13 +296,13 @@ export default function WorkExperienceSection({
                   }
                   dateFormat="MM/dd/yyyy"
                   placeholderText="Select start date"
-                  className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 w-full hover:border-[#3b3be3] hover:shadow-sm"
+                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 w-full hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-sm"
                   maxDate={new Date()}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 End Date{' '}
                 {!formData.currentlyWorking && (
                   <span className="text-red-500">*</span>
@@ -323,7 +323,7 @@ export default function WorkExperienceSection({
                     formData.currentlyWorking ? 'Present' : 'Select end date'
                   }
                   disabled={formData.currentlyWorking}
-                  className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 w-full hover:border-[#3b3be3] hover:shadow-sm"
+                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60 w-full hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-sm"
                   maxDate={new Date()}
                   minDate={
                     formData.startDate ? new Date(formData.startDate) : null
@@ -334,7 +334,7 @@ export default function WorkExperienceSection({
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Employment Status
             </label>
             <div className="flex gap-4">
@@ -345,9 +345,9 @@ export default function WorkExperienceSection({
                   value="past"
                   checked={!formData.currentlyWorking}
                   onChange={() => updateField('currentlyWorking', false)}
-                  className="w-4 h-4 text-[#3b3be3] border-gray-300 focus:ring-[#3b3be3] cursor-pointer"
+                  className="w-4 h-4 text-[#3b3be3] dark:text-[#818cf8] border-gray-300 dark:border-gray-700 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">Past Position</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Past Position</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -359,9 +359,9 @@ export default function WorkExperienceSection({
                     updateField('currentlyWorking', true);
                     updateField('endDate', '');
                   }}
-                  className="w-4 h-4 text-[#3b3be3] border-gray-300 focus:ring-[#3b3be3] cursor-pointer"
+                  className="w-4 h-4 text-[#3b3be3] dark:text-[#818cf8] border-gray-300 dark:border-gray-700 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-300">
                   Currently Working Here
                 </span>
               </label>
@@ -369,7 +369,7 @@ export default function WorkExperienceSection({
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Job Description
             </label>
             <textarea
@@ -377,12 +377,12 @@ export default function WorkExperienceSection({
               placeholder="Brief overview of your role and what the company does..."
               value={formData.description}
               onChange={e => updateField('description', e.target.value)}
-              className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 resize-none"
+              className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 resize-none"
             />
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Key Responsibilities & Achievements
             </label>
             {formData.responsibilities.map((resp, index) => (
@@ -392,13 +392,13 @@ export default function WorkExperienceSection({
                   placeholder="e.g., Led a team of 5 developers to build..."
                   value={resp}
                   onChange={e => updateResponsibility(index, e.target.value)}
-                  className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                  className="flex-1 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20"
                 />
                 {formData.responsibilities.length > 1 && (
                   <button
                     onClick={() => removeResponsibility(index)}
                     type="button"
-                    className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-all duration-200"
+                    className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 transition-all duration-200"
                   >
                     <svg
                       className="w-[18px] h-[18px]"
@@ -417,16 +417,16 @@ export default function WorkExperienceSection({
             <button
               onClick={addResponsibility}
               type="button"
-              className="px-4 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+              className="px-4 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm"
             >
               + Add Responsibility
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
             <button
               onClick={handleCancel}
-              className="px-4 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+              className="px-4 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm"
             >
               Cancel
             </button>

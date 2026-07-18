@@ -36,3 +36,12 @@ next-env.d.ts
 
 # .md files
 *.md
+
+# .env files
+.env.local
+.env.production.local
+
+# vertex
+Vertex.pdf
+
+.claude

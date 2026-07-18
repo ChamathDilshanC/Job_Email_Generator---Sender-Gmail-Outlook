@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&display=swap');
 
 :root {
   /* Clean Color Palette */
@@ -682,37 +682,89 @@ a {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  /* NOTE: tailwind.config.js wraps every one of these in hsl(var(--x)), so
+     values here must stay "H S% L%" triplets - the previous oklch(...)
+     values were invalid once wrapped (hsl(oklch(...))), so dark mode never
+     actually worked for the shadcn primitives (Button, Sidebar, Dialog...).
+     These are picked to match the neutral palette below. */
+  --background: 240 6% 6%;
+  --foreground: 0 0% 96%;
+  --card: 240 6% 9%;
+  --card-foreground: 0 0% 96%;
+  --popover: 240 6% 9%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 236 82% 70%;
+  --primary-foreground: 240 10% 8%;
+  --secondary: 240 5% 15%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 240 5% 15%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 240 5% 18%;
+  --accent-foreground: 0 0% 96%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5% 18%;
+  --input: 240 5% 18%;
+  --ring: 236 82% 70%;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: 240 6% 8%;
+  --sidebar-foreground: 0 0% 96%;
+  --sidebar-primary: 236 82% 70%;
+  --sidebar-primary-foreground: 240 10% 8%;
+  --sidebar-accent: 240 5% 15%;
+  --sidebar-accent-foreground: 0 0% 96%;
+  --sidebar-border: 240 5% 18%;
+  --sidebar-ring: 236 82% 70%;
+
+  /* Legacy custom-property system (.card/.btn/.form-input/.table/.badge etc.)
+     These have no dark values by default - the whole hand-rolled component
+     layer reads from them, so this is the single highest-leverage place to
+     make the rest of the app (SendEmail, History, Profile, ResumeBuilder)
+     go dark without touching every file. */
+  --bg-main: #0a0a0c;
+  --bg-sidebar: #0f0f12;
+  --bg-card: #131316;
+  --bg-hover: #1c1c20;
+  --bg-input: #18181b;
+
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  --border-color: #27272a;
+  --border-focus: #818cf8;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+}
+
+.dark .btn-primary {
+  background: #6366f1;
+}
+
+.dark .btn-primary:hover {
+  background: #4f46e5;
+}
+
+.dark .form-input:focus,
+.dark .form-select:focus {
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+}
+
+.dark .badge.success {
+  background: rgba(52, 211, 153, 0.15);
+  color: #6ee7b7;
+}
+
+.dark .mobile-not-supported-content {
+  background: rgba(24, 24, 27, 0.95);
+  color: var(--text-primary);
 }
 
 /* ============================================
@@ -1098,6 +1150,84 @@ a {
 
 .react-datepicker__year-text--selected:hover {
   background-color: #2929c9;
+}
+
+/* Dark mode overrides for the phone input and date picker - these are
+   third-party widgets styled with hardcoded hex colors above, so they need
+   their own .dark overrides rather than reading the app's CSS variables. */
+.dark .phone-input-custom,
+.dark .phone-input-custom .PhoneInputInput,
+.dark .react-datepicker__input-container input {
+  background-color: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark .phone-input-custom:focus-within,
+.dark .react-datepicker__input-container input:focus {
+  background-color: var(--bg-card);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+}
+
+.dark .react-datepicker__input-container input:disabled {
+  background-color: var(--bg-hover);
+  color: var(--text-muted);
+}
+
+.dark .phone-input-custom .PhoneInputCountry {
+  border-right-color: var(--border-color);
+}
+
+.dark .phone-input-custom .PhoneInputCountrySelect {
+  color: var(--text-primary);
+}
+
+.dark .react-datepicker {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.dark .react-datepicker__month-container {
+  background-color: var(--bg-card);
+}
+
+.dark .react-datepicker__day,
+.dark .react-datepicker__month-text,
+.dark .react-datepicker__year-text {
+  color: var(--text-secondary);
+}
+
+.dark .react-datepicker__day:hover,
+.dark .react-datepicker__month-text:hover,
+.dark .react-datepicker__year-text:hover {
+  background-color: rgba(129, 140, 248, 0.15);
+  color: #a5b4fc;
+}
+
+.dark .react-datepicker__day--selected,
+.dark .react-datepicker__day--keyboard-selected,
+.dark .react-datepicker__month-text--selected,
+.dark .react-datepicker__month-text--keyboard-selected,
+.dark .react-datepicker__year-text--selected,
+.dark .react-datepicker__year-text--keyboard-selected {
+  background-color: #6366f1;
+  color: white;
+}
+
+.dark .react-datepicker__day--selected:hover,
+.dark .react-datepicker__month-text--selected:hover,
+.dark .react-datepicker__year-text--selected:hover {
+  background-color: #4f46e5;
+}
+
+.dark .react-datepicker__day--disabled {
+  color: var(--text-muted);
+}
+
+.dark .react-datepicker__day--today {
+  border-color: #818cf8;
 }
 
 @layer base {

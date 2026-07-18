@@ -239,7 +239,7 @@ export default function ProjectSection({
     <div className="w-full">
       {!showForm && (
         <>
-          <p className="text-gray-600 mb-4 text-sm md:text-base">
+          <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm md:text-base">
             Add your projects, starting with the most recent or significant
             ones.
           </p>
@@ -257,17 +257,17 @@ export default function ProjectSection({
               {projects.map(proj => (
                 <div
                   key={proj.id}
-                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-6 transition-all duration-200 hover:border-[#3b3be3] hover:shadow-lg"
+                  className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 transition-all duration-200 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-lg"
                 >
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
                     <div className="flex-1">
-                      <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-1">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
                         {proj.name}
                       </h3>
-                      <p className="text-sm md:text-[15px] text-gray-600 mb-1">
+                      <p className="text-sm md:text-[15px] text-gray-600 dark:text-gray-400 mb-1">
                         {proj.role}
                       </p>
-                      <p className="text-xs md:text-sm text-gray-500 italic">
+                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 italic">
                         {proj.startDate} -{' '}
                         {proj.currentlyWorking ? 'Present' : proj.endDate}
                       </p>
@@ -276,7 +276,7 @@ export default function ProjectSection({
                           {proj.technologies.map((tech, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                              className="px-2 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded text-xs font-medium"
                             >
                               {tech}
                             </span>
@@ -288,7 +288,7 @@ export default function ProjectSection({
                       <button
                         onClick={() => handleEdit(proj)}
                         title="Edit"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-blue-50 hover:border-[#3b3be3] hover:text-[#3b3be3] transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:text-[#3b3be3] dark:hover:text-[#818cf8] transition-all duration-200"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -304,7 +304,7 @@ export default function ProjectSection({
                       <button
                         onClick={() => handleDelete(proj.id)}
                         title="Delete"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-all duration-200"
+                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-200"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -321,14 +321,14 @@ export default function ProjectSection({
                   </div>
 
                   {proj.description && (
-                    <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
                       {proj.description}
                     </p>
                   )}
 
                   {proj.keyFeatures.filter(f => f.trim()).length > 0 && (
                     <div className="mb-3">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         Key Features:
                       </h4>
                       <ul className="list-none pl-0 m-0">
@@ -337,7 +337,7 @@ export default function ProjectSection({
                           .map((feature, idx) => (
                             <li
                               key={idx}
-                              className="text-sm text-gray-700 leading-relaxed pl-6 mb-2 relative before:content-['▹'] before:absolute before:left-0 before:text-[#3b3be3] before:font-bold before:text-lg"
+                              className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-6 mb-2 relative before:content-['▹'] before:absolute before:left-0 before:text-[#3b3be3] before:font-bold before:text-lg"
                             >
                               {feature}
                             </li>
@@ -353,7 +353,7 @@ export default function ProjectSection({
                           href={proj.projectUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:text-blue-800 underline"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
                         >
                           🔗 Project Link
                         </a>
@@ -363,7 +363,7 @@ export default function ProjectSection({
                           href={proj.githubUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:text-blue-800 underline"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
                         >
                           💻 GitHub
                         </a>
@@ -378,14 +378,14 @@ export default function ProjectSection({
       )}
 
       {showForm && (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-6 lg:p-8">
-          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800">
+        <div className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 lg:p-8">
+          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
             {editingProject ? 'Edit' : 'Add'} Project
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Project Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -393,11 +393,11 @@ export default function ProjectSection({
                 placeholder="e.g., E-commerce Platform"
                 value={formData.name}
                 onChange={e => updateField('name', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Your Role <span className="text-red-500">*</span>
               </label>
               <input
@@ -405,7 +405,7 @@ export default function ProjectSection({
                 placeholder="e.g., Full Stack Developer"
                 value={formData.role}
                 onChange={e => updateField('role', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30"
               />
             </div>
           </div>
@@ -414,7 +414,7 @@ export default function ProjectSection({
             className="flex flex-col gap-2 mb-5"
             style={{ position: 'relative' }}
           >
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Technologies Used
             </label>
             <div className="flex gap-2">
@@ -433,12 +433,12 @@ export default function ProjectSection({
                   // Delay to allow click on suggestion
                   setTimeout(() => setShowTechSuggestions(false), 200);
                 }}
-                className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="flex-1 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30"
               />
               <button
                 onClick={addTechnology}
                 type="button"
-                className="px-4 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+                className="px-4 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm"
               >
                 Add
               </button>
@@ -446,14 +446,14 @@ export default function ProjectSection({
 
             {/* Technology Suggestions Dropdown */}
             {showTechSuggestions && techSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-[250px] overflow-y-auto shadow-lg z-[1000]">
+              <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg mt-1 max-h-[250px] overflow-y-auto shadow-lg z-[1000]">
                 {techSuggestions.map((tech, index) => (
                   <div
                     key={index}
-                    className={`px-4 py-2.5 cursor-pointer transition-all duration-200 border-b border-gray-200 text-gray-700 text-sm last:border-b-0 ${
+                    className={`px-4 py-2.5 cursor-pointer transition-all duration-200 border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 text-sm last:border-b-0 ${
                       index === selectedTechIndex
-                        ? 'bg-blue-50 text-[#3b3be3]'
-                        : 'hover:bg-gray-50'
+                        ? 'bg-blue-50 dark:bg-blue-500/10 text-[#3b3be3] dark:text-[#818cf8]'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                     onMouseEnter={() => setSelectedTechIndex(index)}
                     onMouseDown={e => {
@@ -472,12 +472,12 @@ export default function ProjectSection({
                 {formData.technologies.map((tech, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium flex items-center gap-2"
+                    className="px-3 py-1.5 bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-medium flex items-center gap-2"
                   >
                     {tech}
                     <button
                       onClick={() => removeTechnology(idx)}
-                      className="hover:text-blue-900"
+                      className="hover:text-blue-900 dark:hover:text-blue-300"
                     >
                       ×
                     </button>
@@ -491,7 +491,7 @@ export default function ProjectSection({
               currentTech.trim() &&
               techSuggestions.length > 0 && (
                 <div className="mt-4">
-                  <h4 className="text-sm font-semibold mb-2 text-gray-700">
+                  <h4 className="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                     Suggested Technologies (Click to add)
                   </h4>
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
@@ -503,7 +503,7 @@ export default function ProjectSection({
                           key={idx}
                           type="button"
                           onClick={() => selectTechnology(tech)}
-                          className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 font-medium hover:bg-blue-50 hover:border-[#3b3be3] hover:text-[#3b3be3] transition-all duration-200"
+                          className="px-3 py-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-lg text-xs text-gray-700 dark:text-gray-300 font-medium hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:text-[#3b3be3] dark:hover:text-[#818cf8] transition-all duration-200"
                         >
                           {tech}
                         </button>
@@ -515,8 +515,8 @@ export default function ProjectSection({
             {/* Loading State */}
             {isLoadingSkills && (
               <div className="mt-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#3b3be3] rounded-full animate-spin"></div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="w-4 h-4 border-2 border-gray-300 dark:border-gray-700 border-t-[#3b3be3] rounded-full animate-spin"></div>
                   Loading technology suggestions...
                 </div>
               </div>
@@ -525,7 +525,7 @@ export default function ProjectSection({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Start Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -541,13 +541,13 @@ export default function ProjectSection({
                   }
                   dateFormat="MM/dd/yyyy"
                   placeholderText="Select start date"
-                  className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 w-full hover:border-[#3b3be3] hover:shadow-sm"
+                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30 w-full hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-sm"
                   maxDate={new Date()}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 End Date{' '}
                 {!formData.currentlyWorking && (
                   <span className="text-red-500">*</span>
@@ -568,7 +568,7 @@ export default function ProjectSection({
                     formData.currentlyWorking ? 'Ongoing' : 'Select end date'
                   }
                   disabled={formData.currentlyWorking}
-                  className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 w-full hover:border-[#3b3be3] hover:shadow-sm"
+                  className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60 w-full hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-sm"
                   maxDate={new Date()}
                   minDate={
                     formData.startDate ? new Date(formData.startDate) : null
@@ -579,7 +579,7 @@ export default function ProjectSection({
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Project Status
             </label>
             <div className="flex gap-4">
@@ -590,9 +590,9 @@ export default function ProjectSection({
                   value="completed"
                   checked={!formData.currentlyWorking}
                   onChange={() => updateField('currentlyWorking', false)}
-                  className="w-4 h-4 text-[#3b3be3] border-gray-300 focus:ring-[#3b3be3] cursor-pointer"
+                  className="w-4 h-4 text-[#3b3be3] dark:text-[#818cf8] border-gray-300 dark:border-gray-700 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">Completed</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Completed</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -604,15 +604,15 @@ export default function ProjectSection({
                     updateField('currentlyWorking', true);
                     updateField('endDate', '');
                   }}
-                  className="w-4 h-4 text-[#3b3be3] border-gray-300 focus:ring-[#3b3be3] cursor-pointer"
+                  className="w-4 h-4 text-[#3b3be3] dark:text-[#818cf8] border-gray-300 dark:border-gray-700 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">Ongoing</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Ongoing</span>
               </label>
             </div>
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Project Description
             </label>
             <textarea
@@ -620,12 +620,12 @@ export default function ProjectSection({
               placeholder="Brief overview of the project and its purpose..."
               value={formData.description}
               onChange={e => updateField('description', e.target.value)}
-              className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 resize-none"
+              className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30 resize-none"
             />
           </div>
 
           <div className="flex flex-col gap-2 mb-5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Key Features & Achievements
             </label>
             {formData.keyFeatures.map((feature, index) => (
@@ -635,13 +635,13 @@ export default function ProjectSection({
                   placeholder="e.g., Implemented real-time chat functionality..."
                   value={feature}
                   onChange={e => updateKeyFeature(index, e.target.value)}
-                  className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                  className="flex-1 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30"
                 />
                 {formData.keyFeatures.length > 1 && (
                   <button
                     onClick={() => removeKeyFeature(index)}
                     type="button"
-                    className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 rounded-lg text-gray-600 hover:bg-red-50 hover:border-red-500 hover:text-red-500 transition-all duration-200"
+                    className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-200"
                   >
                     <svg
                       className="w-[18px] h-[18px]"
@@ -660,7 +660,7 @@ export default function ProjectSection({
             <button
               onClick={addKeyFeature}
               type="button"
-              className="px-4 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+              className="px-4 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm"
             >
               + Add Feature
             </button>
@@ -668,7 +668,7 @@ export default function ProjectSection({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Project URL (Optional)
               </label>
               <input
@@ -676,11 +676,11 @@ export default function ProjectSection({
                 placeholder="https://project-demo.com"
                 value={formData.projectUrl}
                 onChange={e => updateField('projectUrl', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 GitHub URL (Optional)
               </label>
               <input
@@ -688,15 +688,15 @@ export default function ProjectSection({
                 placeholder="https://github.com/username/repo"
                 value={formData.githubUrl}
                 onChange={e => updateField('githubUrl', e.target.value)}
-                className="px-3 py-2.5 border border-gray-300 rounded-lg bg-white text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100"
+                className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30"
               />
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
             <button
               onClick={handleCancel}
-              className="px-4 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm"
+              className="px-4 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm"
             >
               Cancel
             </button>

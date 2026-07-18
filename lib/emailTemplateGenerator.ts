@@ -165,6 +165,37 @@ function renderClosingHtml(
 </table>`;
 }
 
+/**
+ * Sign-off used by templates that shouldn't claim a resume is attached
+ * (thank-you notes, check-ins, networking asks, offer responses).
+ */
+function renderSimpleClosingHtml(
+  fullName: string,
+  signOff: string,
+  accent: string
+): string {
+  return `<p style="margin-top:28px; font-family:${FONT}; font-size:14px; color:#333;">${signOff},<br>
+<strong>${fullName}</strong></p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:24px;">
+  <tr><td style="border-top:1px solid #e5e7eb; font-size:1px; line-height:1px;">&nbsp;</td></tr>
+</table>`;
+}
+
+/**
+ * Centered callout banner - used for referral credit, interview recap,
+ * days-since-applied, and offer-decision highlights.
+ */
+function renderBannerHtml(text: string, accent: string, bg: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin:18px 0;">
+  <tr>
+    <td style="background-color:${bg}; border-radius:8px; padding:14px 16px; text-align:center; font-family:${FONT}; font-size:14px; font-weight:600; color:${accent};">
+      ${text}
+    </td>
+  </tr>
+</table>`;
+}
+
 function attachmentNoteText(): string {
   return `\n${'─'.repeat(40)}\n📎 Attached: My resume/CV is included with this email for your review.`;
 }
@@ -1003,6 +1034,521 @@ ${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 }
 
 /**
+ * Template 7: Cold Outreach to Recruiter
+ * Rose accent - proactive introduction sent with no open posting in hand.
+ */
+function generateColdOutreach(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, workExperiences, socialLinks } = resumeData;
+  const { companyName, position, recruiterName } = jobDetails;
+  const accent = '#e11d48';
+  const bg = '#fff1f2';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = recruiterName || 'Hiring Team';
+  const topSkills = skills.selectedSkills.slice(0, 6);
+  const latestExperience = workExperiences[0];
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear ${greetingName},
+
+My name is ${fullName}, and I'm a ${
+    skills.position || 'professional'
+  } with a strong interest in joining ${companyName}. I don't see a specific posting that's an exact match right now, but I wanted to introduce myself directly in case a ${position} opportunity - or something similar - is on your radar.
+
+A quick snapshot of what I bring:
+${
+  topSkills.length > 0
+    ? topSkills.map(skill => `• ${skill}`).join('\n')
+    : '• A strong, adaptable skill set'
+}
+
+${
+  latestExperience
+    ? `Most recently, I've been working as a ${latestExperience.position} at ${
+        latestExperience.company
+      }, where I ${
+        latestExperience.description ||
+        'have grown my skills and delivered meaningful results'
+      }.`
+    : ''
+}
+
+I'd welcome the chance to share more about my background, or simply to stay on your radar for future openings at ${companyName}. Would you be open to a short conversation?
+
+Thank you for your time and consideration.
+
+Best regards,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+<p>My name is ${fullName}, and I'm a <strong>${
+    skills.position || 'professional'
+  }</strong> with a strong interest in joining <strong style="color:${accent};">${companyName}</strong>. I don't see a specific posting that's an exact match right now, but I wanted to introduce myself directly in case a <strong>${position}</strong> opportunity - or something similar - is on your radar.</p>
+
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">What I Bring</p>
+<div>
+${
+  topSkills.length > 0
+    ? topSkills.map(skill => renderPill(skill, accent, bg)).join('')
+    : renderPill('A strong, adaptable skill set', accent, bg)
+}
+</div>
+
+${
+  latestExperience
+    ? `<p style="margin-top:18px;">Most recently, I've been working as a <strong>${
+        latestExperience.position
+      }</strong> at <strong>${
+        latestExperience.company
+      }</strong>, where I ${
+        latestExperience.description ||
+        'have grown my skills and delivered meaningful results'
+      }.</p>`
+    : ''
+}
+
+<p>I'd welcome the chance to share more about my background, or simply to stay on your radar for future openings at <strong style="color:${accent};">${companyName}</strong>. Would you be open to a short conversation?</p>
+
+<p>Thank you for your time and consideration.</p>
+
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
+
+  return {
+    subject: `Interested in Opportunities at ${companyName} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 8: Referral Application
+ * Emerald accent - opens with a referral callout banner for instant credibility.
+ */
+function generateReferralApplication(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, workExperiences, socialLinks } = resumeData;
+  const { companyName, position, referralName, referralRole } = jobDetails;
+  const accent = '#059669';
+  const bg = '#ecfdf5';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const topSkills = skills.selectedSkills.slice(0, 5).join(', ') || 'my skills';
+  const latestExperience = workExperiences[0];
+  const referralIntro = referralName
+    ? `${referralName}${
+        referralRole ? `, ${referralRole} at ${companyName},` : ` at ${companyName}`
+      } suggested I reach out about the ${position} role, and after learning more about the team, I'm excited to apply.`
+    : `I'm applying for the ${position} role at ${companyName} on the recommendation of someone on your team.`;
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear Hiring Manager,
+
+${
+  referralName
+    ? `Referred by: ${referralName}${referralRole ? ` (${referralRole})` : ''}`
+    : 'Referred by a member of your team'
+}
+
+${referralIntro}
+
+My background includes ${topSkills}${
+    latestExperience
+      ? `, most recently as a ${latestExperience.position} at ${latestExperience.company}`
+      : ''
+  }.
+
+I'd love the opportunity to bring the same qualities ${
+    referralName ? `${referralName} vouched for` : 'my colleagues recognize'
+  } to your team.
+
+Thank you for considering my application.
+
+Best regards,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear Hiring Manager,</p>
+
+${renderBannerHtml(
+  `🤝 Referred by ${referralName || 'a member of your team'}${
+    referralRole ? ` &middot; ${referralRole}` : ''
+  }`,
+  accent,
+  bg
+)}
+
+<p>${referralIntro}</p>
+
+<p>My background includes <strong>${topSkills}</strong>${
+    latestExperience
+      ? `, most recently as a <strong>${latestExperience.position}</strong> at <strong>${latestExperience.company}</strong>`
+      : ''
+  }.</p>
+
+<p>I'd love the opportunity to bring the same qualities ${
+    referralName ? `${referralName} vouched for` : 'my colleagues recognize'
+  } to your team.</p>
+
+<p>Thank you for considering my application.</p>
+
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
+
+  return {
+    subject: `Referred by ${referralName || 'a Colleague'} for ${position} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 9: Interview Thank You
+ * Cyan accent - sent within a day of an interview, no resume attachment note.
+ */
+function generateInterviewThankYou(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, workExperiences, socialLinks } = resumeData;
+  const { companyName, position, interviewerName, interviewDate } =
+    jobDetails;
+  const accent = '#0891b2';
+  const bg = '#ecfeff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = interviewerName || 'Hiring Team';
+  const topSkills =
+    skills.selectedSkills.slice(0, 5).join(', ') || 'my background';
+  const latestExperience = workExperiences[0];
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear ${greetingName},
+
+Thank you for taking the time to speak with me${
+    interviewDate ? ` on ${interviewDate}` : ' recently'
+  } about the ${position} role at ${companyName}. I really enjoyed our conversation and learning more about the team's work.
+
+Our discussion reinforced how well my background in ${topSkills} aligns with what you're looking for, and I left even more excited about the opportunity to contribute.
+
+${
+  latestExperience
+    ? `In particular, I think my experience as a ${latestExperience.position} at ${latestExperience.company} would translate directly to the challenges we discussed.`
+    : ''
+}
+
+Please don't hesitate to reach out if you need any additional information from me. I look forward to hearing about the next steps.
+
+Thank you again for your time and consideration.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+<p>Thank you for taking the time to speak with me${
+    interviewDate
+      ? ` on <span style="background-color:${bg}; color:${accent}; font-weight:700; padding:2px 8px; border-radius:6px;">${interviewDate}</span>`
+      : ' recently'
+  } about the <strong>${position}</strong> role at <strong style="color:${accent};">${companyName}</strong>. I really enjoyed our conversation and learning more about the team's work.</p>
+
+<p>Our discussion reinforced how well my background in <strong>${topSkills}</strong> aligns with what you're looking for, and I left even more excited about the opportunity to contribute.</p>
+
+${
+  latestExperience
+    ? `<p>In particular, I think my experience as a <strong>${latestExperience.position}</strong> at <strong>${latestExperience.company}</strong> would translate directly to the challenges we discussed.</p>`
+    : ''
+}
+
+<p>Please don't hesitate to reach out if you need any additional information from me. I look forward to hearing about the next steps.</p>
+
+<p>Thank you again for your time and consideration.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Thank You - ${position} Interview`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 10: Application Follow-Up / Check-In
+ * Slate accent - low-key, polite nudge, no resume attachment note.
+ */
+function generateFollowUpCheckIn(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, workExperiences, socialLinks } = resumeData;
+  const { companyName, position, daysSinceApplied } = jobDetails;
+  const accent = '#475569';
+  const bg = '#f8fafc';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const topSkills =
+    skills.selectedSkills.slice(0, 5).join(', ') || 'my key skills';
+  const latestExperience = workExperiences[0];
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear Hiring Manager,
+
+I hope you're doing well. I wanted to follow up on my application for the ${position} position at ${companyName}${
+    daysSinceApplied ? `, submitted ${daysSinceApplied} ago` : ''
+  }. I remain very enthusiastic about the opportunity and wanted to check in on its status.
+
+To briefly recap, I bring ${topSkills}${
+    latestExperience
+      ? `, most recently as a ${latestExperience.position} at ${latestExperience.company}`
+      : ''
+  }.
+
+I understand you're likely reviewing many applications, and I appreciate the time this takes. Please let me know if there's any additional information I can provide to support my candidacy.
+
+Thank you again for your consideration - I look forward to hearing from you.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear Hiring Manager,</p>
+
+<p>I hope you're doing well. I wanted to follow up on my application for the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. I remain very enthusiastic about the opportunity and wanted to check in on its status.</p>
+
+${
+  daysSinceApplied
+    ? renderBannerHtml(`⏱ Applied ${daysSinceApplied} ago`, accent, bg)
+    : ''
+}
+
+<p>To briefly recap, I bring <strong>${topSkills}</strong>${
+    latestExperience
+      ? `, most recently as a <strong>${latestExperience.position}</strong> at <strong>${latestExperience.company}</strong>`
+      : ''
+  }.</p>
+
+<p>I understand you're likely reviewing many applications, and I appreciate the time this takes. Please let me know if there's any additional information I can provide to support my candidacy.</p>
+
+<p>Thank you again for your consideration - I look forward to hearing from you.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Following Up: ${position} Application - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 11: Networking / Informational Interview Request
+ * Fuchsia accent - explicitly not a job application, no resume attachment note.
+ */
+function generateNetworkingInformational(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, socialLinks } = resumeData;
+  const { companyName, position, recruiterName } = jobDetails;
+  const accent = '#a21caf';
+  const bg = '#fdf4ff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = recruiterName ? ` ${recruiterName}` : '';
+  const topSkills =
+    skills.selectedSkills.slice(0, 5).join(', ') || 'a varied technical background';
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Hi${greetingName},
+
+My name is ${fullName}, and I'm a ${
+    skills.position || 'professional'
+  } exploring opportunities in ${position} roles. I've been following ${companyName}'s work and would love to learn more about your experience there.
+
+Would you be open to a brief 15-20 minute call sometime in the next couple of weeks? I'm not looking for a referral or interview - just hoping to learn more about your day-to-day and any advice you'd offer someone hoping to grow into a role like yours.
+
+A little about my background: ${topSkills}.
+
+I know your time is valuable, so I'm happy to work around your schedule. Thank you for considering, and I hope to connect soon.
+
+Best,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Hi${greetingName},</p>
+
+<p>My name is ${fullName}, and I'm a <strong>${
+    skills.position || 'professional'
+  }</strong> exploring opportunities in <strong>${position}</strong> roles. I've been following <strong style="color:${accent};">${companyName}</strong>'s work and would love to learn more about your experience there.</p>
+
+<p>Would you be open to a brief 15-20 minute call sometime in the next couple of weeks? I'm not looking for a referral or interview - just hoping to learn more about your day-to-day and any advice you'd offer someone hoping to grow into a role like yours.</p>
+
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">A Little About Me</p>
+<div>${skills.selectedSkills
+    .slice(0, 6)
+    .map(s => renderPill(s, accent, bg))
+    .join('') || renderPill(topSkills, accent, bg)}</div>
+
+<p style="margin-top:18px;">I know your time is valuable, so I'm happy to work around your schedule. Thank you for considering, and I hope to connect soon.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best', accent)}`);
+
+  return {
+    subject: `Quick Question About ${companyName} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 12: Offer Response (Accept / Decline)
+ * Accent flips green/slate based on jobDetails.decision - no resume attachment note.
+ */
+function generateOfferResponse(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, socialLinks } = resumeData;
+  const { companyName, position, recruiterName, offerDeadline, decision } =
+    jobDetails;
+  const isAccept = decision !== 'decline';
+  const accent = isAccept ? '#16a34a' : '#52525b';
+  const bg = isAccept ? '#f0fdf4' : '#f4f4f5';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = recruiterName || 'Hiring Team';
+  const deadlineClause = offerDeadline ? ` ahead of the ${offerDeadline} deadline` : '';
+
+  const bodyText = isAccept
+    ? `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+        personalInfo.location || ''
+      }
+
+Dear ${greetingName},
+
+Thank you so much for offering me the ${position} position at ${companyName}. I'm thrilled to accept the offer${deadlineClause}.
+
+Please let me know the next steps, including any paperwork or onboarding details I should prepare. I'm looking forward to getting started and contributing to ${companyName}'s continued success.
+
+Thank you again for this opportunity.
+
+Best regards,
+${fullName}`
+    : `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+        personalInfo.location || ''
+      }
+
+Dear ${greetingName},
+
+Thank you so much for offering me the ${position} position at ${companyName}, and for the time you and the team invested throughout the process. After careful consideration, I've decided to decline the offer${deadlineClause}.
+
+This was not an easy decision, and I have great respect for ${companyName} and the team I met along the way. I hope our paths cross again in the future.
+
+Thank you again for your understanding, and best wishes to the team.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+${renderBannerHtml(
+  isAccept ? '✅ Accepting the Offer' : '🙏 Declining the Offer',
+  accent,
+  bg
+)}
+
+${
+  isAccept
+    ? `<p>Thank you so much for offering me the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. I'm thrilled to accept the offer${deadlineClause}.</p>
+
+<p>Please let me know the next steps, including any paperwork or onboarding details I should prepare. I'm looking forward to getting started and contributing to ${companyName}'s continued success.</p>
+
+<p>Thank you again for this opportunity.</p>`
+    : `<p>Thank you so much for offering me the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>, and for the time you and the team invested throughout the process. After careful consideration, I've decided to decline the offer${deadlineClause}.</p>
+
+<p>This was not an easy decision, and I have great respect for ${companyName} and the team I met along the way. I hope our paths cross again in the future.</p>
+
+<p>Thank you again for your understanding, and best wishes to the team.</p>`
+}
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Re: Offer for ${position} at ${companyName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
  * Main function to generate email from template
  */
 export function generateEmailFromTemplate(
@@ -1023,6 +1569,18 @@ export function generateEmailFromTemplate(
       return generateCareerTransition(resumeData, jobDetails);
     case TemplateType.COMPREHENSIVE_PROFILE:
       return generateComprehensiveProfile(resumeData, jobDetails);
+    case TemplateType.COLD_OUTREACH:
+      return generateColdOutreach(resumeData, jobDetails);
+    case TemplateType.REFERRAL_APPLICATION:
+      return generateReferralApplication(resumeData, jobDetails);
+    case TemplateType.INTERVIEW_THANK_YOU:
+      return generateInterviewThankYou(resumeData, jobDetails);
+    case TemplateType.FOLLOW_UP_CHECK_IN:
+      return generateFollowUpCheckIn(resumeData, jobDetails);
+    case TemplateType.NETWORKING_INFORMATIONAL:
+      return generateNetworkingInformational(resumeData, jobDetails);
+    case TemplateType.OFFER_RESPONSE:
+      return generateOfferResponse(resumeData, jobDetails);
     default:
       return generateProfessionalIntroduction(resumeData, jobDetails);
   }

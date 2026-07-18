@@ -7,12 +7,28 @@ export enum TemplateType {
   PROJECT_SHOWCASE = 4,
   CAREER_TRANSITION = 5,
   COMPREHENSIVE_PROFILE = 6,
+  COLD_OUTREACH = 7,
+  REFERRAL_APPLICATION = 8,
+  INTERVIEW_THANK_YOU = 9,
+  FOLLOW_UP_CHECK_IN = 10,
+  NETWORKING_INFORMATIONAL = 11,
+  OFFER_RESPONSE = 12,
 }
 
 export interface JobDetails {
   companyName: string;
   position: string;
   recipientEmail: string;
+  /** Optional context used by the outreach/follow-up/offer templates - safely
+   *  ignored by templates that don't need them. */
+  recruiterName?: string;
+  referralName?: string;
+  referralRole?: string;
+  interviewerName?: string;
+  interviewDate?: string;
+  daysSinceApplied?: string;
+  offerDeadline?: string;
+  decision?: 'accept' | 'decline';
 }
 
 export interface GeneratedEmail {
@@ -78,5 +94,59 @@ export const TEMPLATE_METADATA: TemplateMetadata[] = [
     preview: 'Complete professional profile with all sections',
     description:
       'Detailed template showcasing skills, experience, projects, and education',
+  },
+  {
+    id: TemplateType.COLD_OUTREACH,
+    name: 'Cold Outreach to Recruiter',
+    subject: 'Interested in Opportunities at {Company} - {Your Name}',
+    preview:
+      'A concise, confident introduction sent directly to a recruiter or hiring manager',
+    description:
+      'Best for proactively reaching out before (or without) a matching open posting',
+  },
+  {
+    id: TemplateType.REFERRAL_APPLICATION,
+    name: 'Referral Application',
+    subject: 'Referred by {Referral Name} for {Position} - {Your Name}',
+    preview:
+      'Leads with the referral connection to build instant credibility',
+    description:
+      'Ideal when a current employee or contact has referred you for a role',
+  },
+  {
+    id: TemplateType.INTERVIEW_THANK_YOU,
+    name: 'Interview Thank You',
+    subject: 'Thank You - {Position} Interview',
+    preview:
+      'A warm, timely thank-you note reinforcing your fit right after an interview',
+    description:
+      'Send within 24 hours of an interview to reinforce enthusiasm and fit',
+  },
+  {
+    id: TemplateType.FOLLOW_UP_CHECK_IN,
+    name: 'Application Follow-Up',
+    subject: 'Following Up: {Position} Application - {Your Name}',
+    preview:
+      'A polite check-in after applying with no response, without being pushy',
+    description:
+      'Use one to two weeks after applying when you have not heard back yet',
+  },
+  {
+    id: TemplateType.NETWORKING_INFORMATIONAL,
+    name: 'Networking Request',
+    subject: 'Quick Question About {Company} - {Your Name}',
+    preview:
+      'Requests a short informational chat rather than a job opening',
+    description:
+      'For reaching out to professionals at a company you admire to learn more',
+  },
+  {
+    id: TemplateType.OFFER_RESPONSE,
+    name: 'Offer Response',
+    subject: 'Re: Offer for {Position} at {Company}',
+    preview:
+      'A gracious acceptance or decline letter that keeps the relationship warm',
+    description:
+      'Use once you have decided whether to accept or decline a job offer',
   },
 ];

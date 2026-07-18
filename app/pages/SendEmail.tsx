@@ -15,8 +15,30 @@ import {
   type GmailAttachment,
 } from '@/lib/gmailClient';
 import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
-import { TEMPLATE_METADATA, TemplateType } from '@/lib/templateTypes';
+import {
+  JobDetails,
+  TEMPLATE_METADATA,
+  TemplateType,
+} from '@/lib/templateTypes';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+
+type AdditionalDetails = Omit<
+  JobDetails,
+  'companyName' | 'position' | 'recipientEmail'
+>;
+
+const EMPTY_ADDITIONAL_DETAILS: AdditionalDetails = {
+  recruiterName: '',
+  referralName: '',
+  referralRole: '',
+  interviewerName: '',
+  interviewDate: '',
+  daysSinceApplied: '',
+  offerDeadline: '',
+  decision: 'accept',
+};
 
 type PageType = 'send-email' | 'templates' | 'resume' | 'history' | 'profile';
 
@@ -30,6 +52,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     position: '',
     recipientEmail: '',
   });
+
+  const [additionalDetails, setAdditionalDetails] = useState<AdditionalDetails>(
+    EMPTY_ADDITIONAL_DETAILS
+  );
+  const [showAdditionalDetails, setShowAdditionalDetails] = useState(false);
 
   const [emailClient, setEmailClient] = useState<'gmail' | 'outlook'>('gmail');
   const [copySuccess, setCopySuccess] = useState(false);
@@ -131,6 +158,19 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setEmailClient(e.target.value as 'gmail' | 'outlook');
   };
 
+  const handleAdditionalDetailChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setAdditionalDetails(
+      prev =>
+        ({
+          ...prev,
+          [name]: value,
+        }) as AdditionalDetails
+    );
+  };
+
   const handleSignOutClick = () => {
     setAlertDialog({
       open: true,
@@ -202,6 +242,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           companyName: formData.companyName,
           position: formData.position,
           recipientEmail: formData.recipientEmail,
+          ...additionalDetails,
         };
         const generated = generateEmailFromTemplate(
           selectedTemplate,
@@ -379,6 +420,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         companyName: formData.companyName,
         position: formData.position,
         recipientEmail: formData.recipientEmail,
+        ...additionalDetails,
       };
       const generated = generateEmailFromTemplate(
         selectedTemplate,
@@ -445,6 +487,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           companyName: formData.companyName,
           position: formData.position,
           recipientEmail: formData.recipientEmail,
+          ...additionalDetails,
         })
       : generateEmail(formData)
     : null;
@@ -463,33 +506,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
       {/* Resume Builder Required Warning */}
       {!resumeData && !isLoadingResume && (
-        <div
-          className="animate-fade-in"
-          style={{
-            backgroundColor: '#fef2f2',
-            border: '2px solid #ef4444',
-            borderRadius: '8px',
-            padding: '1rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ fontSize: '2rem' }}>⚠️</div>
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <h3
-              style={{
-                margin: 0,
-                fontWeight: '600',
-                color: '#dc2626',
-                marginBottom: '0.25rem',
-              }}
-            >
+        <div className="animate-fade-in flex flex-wrap items-center gap-4 rounded-lg border-2 border-red-500 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 mb-6">
+          <div className="text-3xl">⚠️</div>
+          <div className="flex-1 min-w-[200px]">
+            <h3 className="font-semibold text-red-600 dark:text-red-400 mb-1">
               Resume Builder Required
             </h3>
-            <p style={{ margin: 0, color: '#991b1b', fontSize: '0.9rem' }}>
+            <p className="text-red-800 dark:text-red-300 text-sm">
               You must complete your Resume Builder profile before sending
               emails. This ensures your application emails are personalized and
               professional.
@@ -552,7 +575,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           <div className="flex items-center gap-3">
             {isAuthenticated && userEmail ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
                   <svg
                     width="18"
                     height="18"
@@ -576,7 +599,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                       fill="#EA4335"
                     />
                   </svg>
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                     {userEmail}
                   </span>
                 </div>
@@ -782,22 +805,18 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     ))}
                   </select>
                   {!resumeData && (
-                    <p
-                      className="text-xs text-red-600 mt-1"
-                      style={{ fontWeight: '500' }}
-                    >
+                    <p className="text-xs font-medium text-red-600 dark:text-red-400 mt-1">
                       ⚠️ Resume Builder must be completed to send emails
                     </p>
                   )}
                 </td>
                 <td>
                   <span
-                    className="badge"
-                    style={{
-                      backgroundColor: !resumeData ? '#fee2e2' : '#dbeafe',
-                      color: !resumeData ? '#dc2626' : '#1e40af',
-                      fontWeight: '600',
-                    }}
+                    className={`badge font-semibold ${
+                      !resumeData
+                        ? 'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400'
+                        : 'bg-blue-100 dark:bg-[#818cf8]/15 text-blue-800 dark:text-[#a5b4fc]'
+                    }`}
                   >
                     {!resumeData
                       ? 'Resume Builder Required ⚠️'
@@ -839,52 +858,166 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             paddingBottom: '0.5rem',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '8px',
-              border: '1px solid #e0e0e0',
-            }}
-          >
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                cursor: 'pointer',
-                fontSize: '0.95rem',
-                fontWeight: '500',
-                color: '#333',
-              }}
-            >
+          <div className="flex items-center gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
+            <label className="flex items-center gap-3 cursor-pointer text-[0.95rem] font-medium text-gray-800 dark:text-gray-200">
               <input
                 type="checkbox"
                 checked={requireCoverLetter}
                 onChange={e => setRequireCoverLetter(e.target.checked)}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  cursor: 'pointer',
-                }}
+                className="h-[18px] w-[18px] cursor-pointer accent-primary"
               />
               <span>Require Cover Letter</span>
             </label>
-            <span
-              style={{
-                fontSize: '0.85rem',
-                color: '#666',
-                fontStyle: 'italic',
-              }}
-            >
+            <span className="text-sm italic text-gray-500 dark:text-gray-400">
               {requireCoverLetter
                 ? '✓ Cover letter is required'
                 : 'Cover letter is optional'}
             </span>
           </div>
+        </div>
+
+        {/* Additional Details for scenario templates (cold outreach, referral,
+            interview thank-you, follow-up, networking, offer response) */}
+        <div style={{ marginTop: '1rem', padding: '0 1rem' }}>
+          <button
+            type="button"
+            onClick={() => setShowAdditionalDetails(v => !v)}
+            className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            <span>
+              Additional Details{' '}
+              <span className="font-normal text-muted-foreground">
+                (optional — for outreach, referral, interview &amp; offer
+                templates)
+              </span>
+            </span>
+            <motion.span
+              animate={{ rotate: showAdditionalDetails ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </motion.span>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {showAdditionalDetails && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-1 gap-4 rounded-b-lg border border-t-0 border-border bg-card/50 p-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Recruiter / Hiring Manager Name
+                    </label>
+                    <input
+                      type="text"
+                      name="recruiterName"
+                      className="form-input"
+                      placeholder="e.g., Jane Smith"
+                      value={additionalDetails.recruiterName}
+                      onChange={handleAdditionalDetailChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Referred By
+                    </label>
+                    <input
+                      type="text"
+                      name="referralName"
+                      className="form-input"
+                      placeholder="e.g., Sam Perera"
+                      value={additionalDetails.referralName}
+                      onChange={handleAdditionalDetailChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Referral&apos;s Role
+                    </label>
+                    <input
+                      type="text"
+                      name="referralRole"
+                      className="form-input"
+                      placeholder="e.g., Senior Engineer"
+                      value={additionalDetails.referralRole}
+                      onChange={handleAdditionalDetailChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Interviewer Name
+                    </label>
+                    <input
+                      type="text"
+                      name="interviewerName"
+                      className="form-input"
+                      placeholder="e.g., Priya Nair"
+                      value={additionalDetails.interviewerName}
+                      onChange={handleAdditionalDetailChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Interview Date
+                    </label>
+                    <input
+                      type="text"
+                      name="interviewDate"
+                      className="form-input"
+                      placeholder="e.g., July 15"
+                      value={additionalDetails.interviewDate}
+                      onChange={handleAdditionalDetailChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Days Since Applied
+                    </label>
+                    <input
+                      type="text"
+                      name="daysSinceApplied"
+                      className="form-input"
+                      placeholder="e.g., 2 weeks"
+                      value={additionalDetails.daysSinceApplied}
+                      onChange={handleAdditionalDetailChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Offer Deadline
+                    </label>
+                    <input
+                      type="text"
+                      name="offerDeadline"
+                      className="form-input"
+                      placeholder="e.g., Friday"
+                      value={additionalDetails.offerDeadline}
+                      onChange={handleAdditionalDetailChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      Offer Decision
+                    </label>
+                    <select
+                      name="decision"
+                      className="form-select"
+                      value={additionalDetails.decision}
+                      onChange={handleAdditionalDetailChange}
+                    >
+                      <option value="accept">Accepting</option>
+                      <option value="decline">Declining</option>
+                    </select>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* File Upload Sections */}
@@ -908,23 +1041,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           />
 
           {/* Upload Status Indicators */}
-          <div
-            style={{
-              marginTop: '1rem',
-              padding: '0.75rem',
-              backgroundColor: '#f0f7ff',
-              borderRadius: '6px',
-              border: '1px solid #d0e7ff',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                marginBottom: '0.5rem',
-                color: '#1a5490',
-              }}
-            >
+          <div className="mt-4 rounded-md border border-blue-100 dark:border-[#818cf8]/25 bg-[#f0f7ff] dark:bg-[#818cf8]/10 p-3">
+            <div className="mb-2 text-sm font-semibold text-[#1a5490] dark:text-[#a5b4fc]">
               Upload Requirements:
             </div>
             <div
@@ -985,14 +1103,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </div>
             {!canSendEmail && isFormValid && (
               <div
-                style={{
-                  marginTop: '0.75rem',
-                  padding: '0.5rem',
-                  backgroundColor: !resumeData ? '#fef2f2' : '#fef3c7',
-                  borderRadius: '4px',
-                  fontSize: '0.85rem',
-                  color: !resumeData ? '#dc2626' : '#92400e',
-                }}
+                className={`mt-3 rounded p-2 text-sm ${
+                  !resumeData
+                    ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
+                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
+                }`}
               >
                 {!resumeData
                   ? '⚠️ Complete Resume Builder to enable email sending'

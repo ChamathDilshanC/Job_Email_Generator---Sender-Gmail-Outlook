@@ -38,7 +38,7 @@ export default function EmailHistoryModal({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -74,30 +74,30 @@ export default function EmailHistoryModal({
           {/* Email Details */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Recipient</p>
-              <p className="text-gray-900 font-medium">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Recipient</p>
+              <p className="text-gray-900 dark:text-gray-100 font-medium">
                 {email.recipientEmail}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Sent Date</p>
-              <p className="text-gray-900 font-medium">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Sent Date</p>
+              <p className="text-gray-900 dark:text-gray-100 font-medium">
                 {formatDate(email.sentDate)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Template Used</p>
-              <p className="text-gray-900 font-medium">{email.templateName}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Template Used</p>
+              <p className="text-gray-900 dark:text-gray-100 font-medium">{email.templateName}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Status</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</p>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                   email.status === 'sent'
-                    ? 'bg-green-100 text-green-800'
+                    ? 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400'
                     : email.status === 'pending'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
+                    ? 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400'
+                    : 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400'
                 }`}
               >
                 {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
@@ -107,9 +107,9 @@ export default function EmailHistoryModal({
 
           {/* Attachments */}
           <div className="mb-6">
-            <p className="text-sm text-gray-500 mb-2">Attachments</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Attachments</p>
             <div className="flex gap-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-[#818cf8]/10 text-blue-700 dark:text-[#a5b4fc] rounded-lg text-sm">
                 <svg
                   className="w-4 h-4"
                   fill="currentColor"
@@ -124,7 +124,7 @@ export default function EmailHistoryModal({
                 {email.attachments.cv}
               </span>
               {email.attachments.coverLetter && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-[#818cf8]/10 text-blue-700 dark:text-[#a5b4fc] rounded-lg text-sm">
                   <svg
                     className="w-4 h-4"
                     fill="currentColor"
@@ -144,15 +144,15 @@ export default function EmailHistoryModal({
 
           {/* Email Subject */}
           <div className="mb-4">
-            <p className="text-sm text-gray-500 mb-2">Subject</p>
-            <p className="text-gray-900 font-medium">{email.emailSubject}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Subject</p>
+            <p className="text-gray-900 dark:text-gray-100 font-medium">{email.emailSubject}</p>
           </div>
 
           {/* Email Preview */}
           <div>
-            <p className="text-sm text-gray-500 mb-2">Email Preview</p>
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Email Preview</p>
+            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                 {email.emailPreview}
               </p>
             </div>
@@ -160,10 +160,10 @@ export default function EmailHistoryModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4 flex justify-end">
+        <div className="border-t border-gray-200 dark:border-gray-800 p-4 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            className="px-6 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
             Close
           </button>

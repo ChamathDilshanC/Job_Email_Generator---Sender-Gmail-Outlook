@@ -746,7 +746,7 @@ export default function ResumeBuilder() {
   return (
     <div className="h-full">
       {/* Sticky Mobile Header */}
-      <div className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+      <div className="lg:hidden sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => setIsMobileSidebarOpen(true)}
           className="w-11 h-11 flex items-center justify-center bg-[#3b3be3] text-white rounded-lg hover:bg-[#2929c9] transition-all shadow-md"
@@ -765,7 +765,7 @@ export default function ResumeBuilder() {
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        <h1 className="text-lg font-bold text-gray-800 truncate">
+        <h1 className="text-lg font-bold text-gray-800 dark:text-gray-200 truncate">
           Resume Builder
         </h1>
       </div>
@@ -774,10 +774,10 @@ export default function ResumeBuilder() {
       <div className="p-4 md:p-6 lg:p-8">
         {/* Desktop Header */}
         <div className="mb-6 md:mb-8 hidden lg:block">
-          <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
+          <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
             Template Information
           </h1>
-          <p className="text-gray-600 text-sm md:text-base">
+          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
             Create a professional template to complement your job applications
           </p>
         </div>
@@ -792,8 +792,8 @@ export default function ResumeBuilder() {
                   stepsCompleted.personal
                     ? 'bg-green-500 text-white'
                     : activeSection === 'personal'
-                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
-                    : 'bg-gray-200 text-gray-500'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100 dark:ring-blue-500/20'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                 }`}
               >
                 {stepsCompleted.personal ? '✓' : '1'}
@@ -801,8 +801,8 @@ export default function ResumeBuilder() {
               <span
                 className={`text-xs md:text-sm mt-2 font-medium ${
                   activeSection === 'personal'
-                    ? 'text-[#3b3be3]'
-                    : 'text-gray-600'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8]'
+                    : 'text-gray-600 dark:text-gray-400'
                 }`}
               >
                 Personal
@@ -812,7 +812,7 @@ export default function ResumeBuilder() {
             {/* Connector Line 1-2 */}
             <div
               className={`flex-1 h-1 mx-2 transition-all duration-300 ${
-                stepsCompleted.personal ? 'bg-green-500' : 'bg-gray-200'
+                stepsCompleted.personal ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
 
@@ -823,10 +823,10 @@ export default function ResumeBuilder() {
                   stepsCompleted.experience
                     ? 'bg-green-500 text-white'
                     : activeSection === 'experience'
-                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100 dark:ring-blue-500/20'
                     : canAccessSection('experience')
-                    ? 'bg-gray-200 text-gray-500'
-                    : 'bg-gray-100 text-gray-400'
+                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                 }`}
               >
                 {stepsCompleted.experience
@@ -838,8 +838,8 @@ export default function ResumeBuilder() {
               <span
                 className={`text-xs md:text-sm mt-2 font-medium ${
                   activeSection === 'experience'
-                    ? 'text-[#3b3be3]'
-                    : 'text-gray-600'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8]'
+                    : 'text-gray-600 dark:text-gray-400'
                 }`}
               >
                 Experience
@@ -849,7 +849,7 @@ export default function ResumeBuilder() {
             {/* Connector Line 2-3 */}
             <div
               className={`flex-1 h-1 mx-2 transition-all duration-300 ${
-                stepsCompleted.experience ? 'bg-green-500' : 'bg-gray-200'
+                stepsCompleted.experience ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
 
@@ -860,10 +860,10 @@ export default function ResumeBuilder() {
                   stepsCompleted.education
                     ? 'bg-green-500 text-white'
                     : activeSection === 'education'
-                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100 dark:ring-blue-500/20'
                     : canAccessSection('education')
-                    ? 'bg-gray-200 text-gray-500'
-                    : 'bg-gray-100 text-gray-400'
+                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                 }`}
               >
                 {stepsCompleted.education
@@ -875,8 +875,8 @@ export default function ResumeBuilder() {
               <span
                 className={`text-xs md:text-sm mt-2 font-medium ${
                   activeSection === 'education'
-                    ? 'text-[#3b3be3]'
-                    : 'text-gray-600'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8]'
+                    : 'text-gray-600 dark:text-gray-400'
                 }`}
               >
                 Education
@@ -886,7 +886,7 @@ export default function ResumeBuilder() {
             {/* Connector Line 3-4 */}
             <div
               className={`flex-1 h-1 mx-2 transition-all duration-300 ${
-                stepsCompleted.education ? 'bg-green-500' : 'bg-gray-200'
+                stepsCompleted.education ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
 
@@ -897,10 +897,10 @@ export default function ResumeBuilder() {
                   stepsCompleted.projects
                     ? 'bg-green-500 text-white'
                     : activeSection === 'projects'
-                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100 dark:ring-blue-500/20'
                     : canAccessSection('projects')
-                    ? 'bg-gray-200 text-gray-500'
-                    : 'bg-gray-100 text-gray-400'
+                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                 }`}
               >
                 {stepsCompleted.projects
@@ -912,8 +912,8 @@ export default function ResumeBuilder() {
               <span
                 className={`text-xs md:text-sm mt-2 font-medium ${
                   activeSection === 'projects'
-                    ? 'text-[#3b3be3]'
-                    : 'text-gray-600'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8]'
+                    : 'text-gray-600 dark:text-gray-400'
                 }`}
               >
                 Projects
@@ -923,7 +923,7 @@ export default function ResumeBuilder() {
             {/* Connector Line 4-5 */}
             <div
               className={`flex-1 h-1 mx-2 transition-all duration-300 ${
-                stepsCompleted.projects ? 'bg-green-500' : 'bg-gray-200'
+                stepsCompleted.projects ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
 
@@ -934,10 +934,10 @@ export default function ResumeBuilder() {
                   stepsCompleted.skills
                     ? 'bg-green-500 text-white'
                     : activeSection === 'skills'
-                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100'
+                    ? 'bg-[#3b3be3] text-white ring-4 ring-blue-100 dark:ring-blue-500/20'
                     : canAccessSection('skills')
-                    ? 'bg-gray-200 text-gray-500'
-                    : 'bg-gray-100 text-gray-400'
+                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                 }`}
               >
                 {stepsCompleted.skills
@@ -949,8 +949,8 @@ export default function ResumeBuilder() {
               <span
                 className={`text-xs md:text-sm mt-2 font-medium ${
                   activeSection === 'skills'
-                    ? 'text-[#3b3be3]'
-                    : 'text-gray-600'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8]'
+                    : 'text-gray-600 dark:text-gray-400'
                 }`}
               >
                 Skills
@@ -971,7 +971,7 @@ export default function ResumeBuilder() {
         <div className="flex flex-col lg:grid lg:grid-cols-[200px_1fr_300px] gap-4 lg:gap-6 lg:h-[calc(100vh-200px)]">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
-            className={`fixed lg:relative inset-y-0 left-0 w-64 lg:w-auto bg-white lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
+            className={`fixed lg:relative inset-y-0 left-0 w-64 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
               isMobileSidebarOpen
                 ? 'translate-x-0'
                 : '-translate-x-full lg:translate-x-0'
@@ -979,13 +979,13 @@ export default function ResumeBuilder() {
           >
             <div className="h-full flex flex-col gap-2 p-4 lg:p-0 overflow-y-auto">
               {/* Mobile Close Button */}
-              <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-800">
+              <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                   Sections
                 </h2>
                 <button
                   onClick={() => setIsMobileSidebarOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-all"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
                   aria-label="Close menu"
                 >
                   <svg
@@ -1001,10 +1001,10 @@ export default function ResumeBuilder() {
                 </button>
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'personal'
-                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
-                    : 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
+                    : 'text-gray-700 dark:text-gray-300 font-medium hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:bg-blue-50 dark:hover:bg-blue-500/10'
                 }`}
                 onClick={() => {
                   setActiveSection('personal');
@@ -1014,7 +1014,7 @@ export default function ResumeBuilder() {
                 <svg
                   className={`w-[18px] h-[18px] ${
                     activeSection === 'personal'
-                      ? 'opacity-100 text-[#3b3be3]'
+                      ? 'opacity-100 text-[#3b3be3] dark:text-[#818cf8]'
                       : 'opacity-60'
                   }`}
                   viewBox="0 0 24 24"
@@ -1028,12 +1028,12 @@ export default function ResumeBuilder() {
                 Personal Info
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'experience'
-                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
                     : canAccessSection('experience')
-                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
-                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                    ? 'text-gray-700 dark:text-gray-300 font-medium hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer'
+                    : 'text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 cursor-not-allowed opacity-60'
                 }`}
                 onClick={() => {
                   if (canAccessSection('experience')) {
@@ -1051,7 +1051,7 @@ export default function ResumeBuilder() {
                 <svg
                   className={`w-[18px] h-[18px] ${
                     activeSection === 'experience'
-                      ? 'opacity-100 text-[#3b3be3]'
+                      ? 'opacity-100 text-[#3b3be3] dark:text-[#818cf8]'
                       : 'opacity-60'
                   }`}
                   viewBox="0 0 24 24"
@@ -1065,12 +1065,12 @@ export default function ResumeBuilder() {
                 Experience
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'education'
-                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
                     : canAccessSection('education')
-                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
-                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                    ? 'text-gray-700 dark:text-gray-300 font-medium hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer'
+                    : 'text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 cursor-not-allowed opacity-60'
                 }`}
                 onClick={() => {
                   if (canAccessSection('education')) {
@@ -1088,7 +1088,7 @@ export default function ResumeBuilder() {
                 <svg
                   className={`w-[18px] h-[18px] ${
                     activeSection === 'education'
-                      ? 'opacity-100 text-[#3b3be3]'
+                      ? 'opacity-100 text-[#3b3be3] dark:text-[#818cf8]'
                       : 'opacity-60'
                   }`}
                   viewBox="0 0 24 24"
@@ -1102,12 +1102,12 @@ export default function ResumeBuilder() {
                 Education
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'projects'
-                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
                     : canAccessSection('projects')
-                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
-                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                    ? 'text-gray-700 dark:text-gray-300 font-medium hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer'
+                    : 'text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 cursor-not-allowed opacity-60'
                 }`}
                 onClick={() => {
                   if (canAccessSection('projects')) {
@@ -1125,7 +1125,7 @@ export default function ResumeBuilder() {
                 <svg
                   className={`w-[18px] h-[18px] ${
                     activeSection === 'projects'
-                      ? 'opacity-100 text-[#3b3be3]'
+                      ? 'opacity-100 text-[#3b3be3] dark:text-[#818cf8]'
                       : 'opacity-60'
                   }`}
                   viewBox="0 0 24 24"
@@ -1139,12 +1139,12 @@ export default function ResumeBuilder() {
                 Projects
               </div>
               <div
-                className={`flex items-center gap-3 py-3.5 px-4 bg-white border border-gray-200 rounded-lg transition-all duration-200 text-sm min-w-[150px] lg:min-w-0 flex-shrink-0 ${
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg transition-all duration-200 text-sm min-w-[150px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'skills'
-                    ? 'text-[#3b3be3] border-[#3b3be3] font-bold'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
                     : canAccessSection('skills')
-                    ? 'text-gray-700 font-medium hover:border-[#3b3be3] hover:bg-blue-50 cursor-pointer'
-                    : 'text-gray-400 border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                    ? 'text-gray-700 dark:text-gray-300 font-medium hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer'
+                    : 'text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/60 cursor-not-allowed opacity-60'
                 }`}
                 onClick={() => {
                   if (canAccessSection('skills')) {
@@ -1162,7 +1162,7 @@ export default function ResumeBuilder() {
                 <svg
                   className={`w-[18px] h-[18px] ${
                     activeSection === 'skills'
-                      ? 'opacity-100 text-[#3b3be3]'
+                      ? 'opacity-100 text-[#3b3be3] dark:text-[#818cf8]'
                       : 'opacity-60'
                   }`}
                   viewBox="0 0 24 24"
@@ -1180,7 +1180,7 @@ export default function ResumeBuilder() {
 
           {/* Main Content Area */}
           <div className="overflow-y-auto max-h-[calc(100vh-300px)] lg:max-h-full">
-            <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 lg:p-8">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 lg:p-8">
               <h2 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6">
                 {activeSection === 'personal' && 'Personal Information'}
                 {activeSection === 'experience' && 'Work Experience'}
@@ -1191,10 +1191,10 @@ export default function ResumeBuilder() {
 
               {activeSection === 'personal' && (
                 <div className="flex flex-col gap-5">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-4">
                     <div className="flex items-start gap-3">
                       <svg
-                        className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1205,10 +1205,10 @@ export default function ResumeBuilder() {
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-900">
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-400">
                           Please enter valid and accurate data
                         </p>
-                        <p className="text-xs text-blue-700 mt-1">
+                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
                           Your email templates and CV will be created based on
                           this information.
                         </p>
@@ -1217,7 +1217,7 @@ export default function ResumeBuilder() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Full Name
                       </label>
                       <input
@@ -1230,11 +1230,11 @@ export default function ResumeBuilder() {
                             fullName: e.target.value,
                           })
                         }
-                        className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                        className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900"
                       />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Email
                       </label>
                       <input
@@ -1247,13 +1247,13 @@ export default function ResumeBuilder() {
                             email: e.target.value,
                           })
                         }
-                        className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                        className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Phone
                       </label>
                       <PhoneInput
@@ -1335,7 +1335,7 @@ export default function ResumeBuilder() {
                       />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Location
                       </label>
                       <input
@@ -1348,12 +1348,12 @@ export default function ResumeBuilder() {
                             location: e.target.value,
                           })
                         }
-                        className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                        className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900"
                       />
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Professional Summary
                     </label>
                     <textarea
@@ -1366,13 +1366,13 @@ export default function ResumeBuilder() {
                           summary: e.target.value,
                         })
                       }
-                      className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white resize-none"
+                      className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900 resize-none"
                     />
                   </div>
 
                   {/* Social Links Section */}
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                  <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
                       Professional Links
                     </h3>
                     <LinksSection
@@ -1381,10 +1381,10 @@ export default function ResumeBuilder() {
                     />
                   </div>
 
-                  <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <button
                       onClick={handleCancel}
-                      className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                      className="px-6 py-3 bg-transparent text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all duration-200"
                     >
                       Cancel
                     </button>
@@ -1400,10 +1400,10 @@ export default function ResumeBuilder() {
 
               {activeSection === 'experience' && (
                 <div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-4">
                     <div className="flex items-start gap-3">
                       <svg
-                        className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1414,10 +1414,10 @@ export default function ResumeBuilder() {
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-900">
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-400">
                           Please enter valid and accurate data
                         </p>
-                        <p className="text-xs text-blue-700 mt-1">
+                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
                           Your email templates and CV will be created based on
                           this information.
                         </p>
@@ -1428,17 +1428,17 @@ export default function ResumeBuilder() {
                     experiences={workExperiences}
                     onUpdate={setWorkExperiences}
                   />
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <button
                       onClick={handlePreviousStep}
-                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                      className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       Previous
                     </button>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleCancel}
-                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                        className="px-6 py-3 bg-transparent text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all duration-200"
                       >
                         Cancel
                       </button>
@@ -1455,10 +1455,10 @@ export default function ResumeBuilder() {
 
               {activeSection === 'education' && (
                 <div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-4">
                     <div className="flex items-start gap-3">
                       <svg
-                        className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1469,10 +1469,10 @@ export default function ResumeBuilder() {
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-900">
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-400">
                           Please enter valid and accurate data
                         </p>
-                        <p className="text-xs text-blue-700 mt-1">
+                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
                           Your email templates and CV will be created based on
                           this information.
                         </p>
@@ -1483,17 +1483,17 @@ export default function ResumeBuilder() {
                     educations={educations}
                     onUpdate={setEducations}
                   />
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <button
                       onClick={handlePreviousStep}
-                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                      className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       Previous
                     </button>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleCancel}
-                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                        className="px-6 py-3 bg-transparent text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all duration-200"
                       >
                         Cancel
                       </button>
@@ -1510,10 +1510,10 @@ export default function ResumeBuilder() {
 
               {activeSection === 'projects' && (
                 <div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-4">
                     <div className="flex items-start gap-3">
                       <svg
-                        className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1524,10 +1524,10 @@ export default function ResumeBuilder() {
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-900">
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-400">
                           Please enter valid and accurate data
                         </p>
-                        <p className="text-xs text-blue-700 mt-1">
+                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
                           Your email templates and CV will be created based on
                           this information.
                         </p>
@@ -1535,17 +1535,17 @@ export default function ResumeBuilder() {
                     </div>
                   </div>
                   <ProjectSection projects={projects} onUpdate={setProjects} />
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <button
                       onClick={handlePreviousStep}
-                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                      className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       Previous
                     </button>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleCancel}
-                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                        className="px-6 py-3 bg-transparent text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all duration-200"
                       >
                         Cancel
                       </button>
@@ -1562,10 +1562,10 @@ export default function ResumeBuilder() {
 
               {activeSection === 'skills' && (
                 <div className="flex flex-col gap-5">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-4">
                     <div className="flex items-start gap-3">
                       <svg
-                        className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1576,17 +1576,17 @@ export default function ResumeBuilder() {
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-900">
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-400">
                           Please enter valid and accurate data
                         </p>
-                        <p className="text-xs text-blue-700 mt-1">
+                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
                           Your email templates and CV will be created based on
                           this information.
                         </p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Enter your target position to get relevant skill
                     suggestions, or add custom skills.
                   </p>
@@ -1595,7 +1595,7 @@ export default function ResumeBuilder() {
                     className="flex flex-col gap-2"
                     style={{ position: 'relative' }}
                   >
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Target Position
                     </label>
                     <input
@@ -1616,17 +1616,17 @@ export default function ResumeBuilder() {
                           setShowPositionSuggestions(suggestions.length > 0);
                         }
                       }}
-                      className="px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white"
+                      className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900"
                     />
                     {showPositionSuggestions &&
                       positionSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
+                        <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
                           {positionSuggestions.map((suggestion, index) => (
                             <div
                               key={index}
-                              className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 text-gray-700 text-sm last:border-b-0 ${
+                              className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 text-sm last:border-b-0 ${
                                 index === selectedSuggestionIndex
-                                  ? 'bg-blue-50 text-[#3b3be3]'
+                                  ? 'bg-blue-50 dark:bg-blue-500/10 text-[#3b3be3] dark:text-[#818cf8]'
                                   : ''
                               }`}
                               onMouseEnter={() =>
@@ -1644,15 +1644,15 @@ export default function ResumeBuilder() {
                       )}
                     {isLoadingSkills && (
                       <div className="text-center py-8">
-                        <div className="w-10 h-10 mx-auto mb-4 border-3 border-gray-200 border-t-[#3b3be3] rounded-full animate-spin"></div>
-                        <p className="text-sm text-[#3b3be3] my-2 text-center font-medium">
+                        <div className="w-10 h-10 mx-auto mb-4 border-3 border-gray-200 dark:border-gray-700 border-t-[#3b3be3] dark:border-t-[#818cf8] rounded-full animate-spin"></div>
+                        <p className="text-sm text-[#3b3be3] dark:text-[#818cf8] my-2 text-center font-medium">
                           Loading skills from API...
                         </p>
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
                             <div
                               key={i}
-                              className="h-[38px] bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%] animate-shimmer rounded-lg"
+                              className="h-[38px] bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 bg-[length:200%_100%] animate-shimmer rounded-lg"
                             ></div>
                           ))}
                         </div>
@@ -1662,7 +1662,7 @@ export default function ResumeBuilder() {
 
                   {suggestedSkills.length > 0 && (
                     <div className="mt-6">
-                      <h4 className="text-[15px] font-semibold mb-4 text-gray-700">
+                      <h4 className="text-[15px] font-semibold mb-4 text-gray-700 dark:text-gray-300">
                         Suggested Skills (Select up to 50)
                       </h4>
                       <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
@@ -1676,7 +1676,7 @@ export default function ResumeBuilder() {
                             } ${
                               selectedSkills.length >= 50 &&
                               !selectedSkills.includes(skill)
-                                ? 'opacity-50 cursor-not-allowed hover:transform-none hover:border-gray-200 hover:bg-gray-50'
+                                ? 'opacity-50 cursor-not-allowed hover:transform-none hover:border-gray-200 dark:hover:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/60'
                                 : ''
                             }`}
                             onClick={() => toggleSkill(skill)}
@@ -1703,7 +1703,7 @@ export default function ResumeBuilder() {
                     className="flex flex-col gap-2"
                     style={{ position: 'relative' }}
                   >
-                    <label className="text-sm font-medium text-gray-700">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Add Custom Skill
                     </label>
                     <div className="flex gap-3">
@@ -1728,10 +1728,10 @@ export default function ResumeBuilder() {
                           }
                         }}
                         disabled={selectedSkills.length >= 50}
-                        className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] focus:ring-3 focus:ring-blue-100 focus:bg-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="flex-1 px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
                       />
                       <button
-                        className="px-6 py-2.5 bg-transparent text-gray-600 border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        className="px-6 py-2.5 bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         onClick={addCustomSkill}
                         disabled={
                           !customSkill.trim() || selectedSkills.length >= 50
@@ -1742,13 +1742,13 @@ export default function ResumeBuilder() {
                     </div>
                     {showCustomSkillSuggestions &&
                       customSkillSuggestions.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
+                        <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg mt-1 max-h-[300px] overflow-y-auto shadow-lg z-[1000]">
                           {customSkillSuggestions.map((suggestion, index) => (
                             <div
                               key={index}
-                              className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 text-gray-700 text-sm last:border-b-0 ${
+                              className={`px-4 py-3 cursor-pointer transition-all duration-200 border-b border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 text-sm last:border-b-0 ${
                                 index === selectedCustomSkillIndex
-                                  ? 'bg-blue-50 text-[#3b3be3]'
+                                  ? 'bg-blue-50 dark:bg-blue-500/10 text-[#3b3be3] dark:text-[#818cf8]'
                                   : ''
                               }`}
                               onMouseEnter={() =>
@@ -1768,7 +1768,7 @@ export default function ResumeBuilder() {
 
                   {selectedSkills.length > 0 && (
                     <div className="mt-6">
-                      <h4 className="text-[15px] font-semibold mb-4 text-gray-700">
+                      <h4 className="text-[15px] font-semibold mb-4 text-gray-700 dark:text-gray-300">
                         Selected Skills ({selectedSkills.length}/50)
                       </h4>
                       <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
@@ -1800,17 +1800,17 @@ export default function ResumeBuilder() {
                   )}
 
                   {/* Navigation Buttons */}
-                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <button
                       onClick={handlePreviousStep}
-                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200"
+                      className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       Previous
                     </button>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleCancel}
-                        className="px-6 py-3 bg-transparent text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
+                        className="px-6 py-3 bg-transparent text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all duration-200"
                       >
                         Cancel
                       </button>

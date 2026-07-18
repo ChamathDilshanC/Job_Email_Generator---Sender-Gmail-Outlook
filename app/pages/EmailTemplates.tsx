@@ -77,6 +77,14 @@ export default function EmailTemplates() {
       companyName: 'Example Company',
       position: 'Software Developer',
       recipientEmail: 'hr@example.com',
+      recruiterName: 'Jordan Lee',
+      referralName: 'Sam Perera',
+      referralRole: 'Senior Engineer',
+      interviewerName: 'Priya Nair',
+      interviewDate: 'July 15',
+      daysSinceApplied: '2 weeks',
+      offerDeadline: 'Friday',
+      decision: 'accept' as const,
     };
 
     const generatedEmail = generateEmailFromTemplate(
@@ -103,21 +111,22 @@ export default function EmailTemplates() {
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] bg-clip-text text-transparent">
             Email Templates
           </h1>
-          <p className="text-gray-500">
-            Choose from 5 professional job application email templates
+          <p className="text-gray-500 dark:text-gray-400">
+            Choose from {TEMPLATE_METADATA.length} professional job
+            application email templates
           </p>
           {isLoadingResume && (
-            <p className="text-sm text-blue-600 mt-2">
+            <p className="text-sm text-blue-600 dark:text-[#a5b4fc] mt-2">
               Loading your resume data...
             </p>
           )}
           {!isLoadingResume && !resumeData && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
+            <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-300">
                 ⚠️ No resume data found. Please complete your{' '}
                 <a
                   href="/resume-builder"
-                  className="font-semibold underline hover:text-yellow-900"
+                  className="font-semibold underline hover:text-yellow-900 dark:hover:text-yellow-100"
                 >
                   Resume Builder
                 </a>{' '}
@@ -134,16 +143,16 @@ export default function EmailTemplates() {
             return (
               <div
                 key={template.id}
-                className={`bg-white border rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                className={`bg-white dark:bg-gray-900 border rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/40 ${
                   isSelected
                     ? 'border-[#22c55e] shadow-lg ring-2 ring-[#22c55e] ring-opacity-50'
-                    : 'border-gray-200 hover:border-[#3b3be3]'
+                    : 'border-gray-200 dark:border-gray-800 hover:border-[#3b3be3] dark:hover:border-[#818cf8]'
                 }`}
               >
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="inline-block px-3 py-1 bg-blue-50 text-[#3b3be3] rounded-full text-xs font-semibold">
+                      <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-[#818cf8]/15 text-[#3b3be3] dark:text-[#a5b4fc] rounded-full text-xs font-semibold">
                         Template {template.id}
                       </span>
                       {template.id === TemplateType.COMPREHENSIVE_PROFILE && (
@@ -168,19 +177,19 @@ export default function EmailTemplates() {
                       </div>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold my-2">
+                  <h3 className="text-xl font-semibold my-2 text-gray-900 dark:text-gray-100">
                     {template.name}
                   </h3>
                 </div>
 
                 <div className="mb-6">
-                  <p className="text-sm mb-2 text-gray-600">
+                  <p className="text-sm mb-2 text-gray-600 dark:text-gray-400">
                     <strong>Subject:</strong> {template.subject}
                   </p>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
                     {template.preview}
                   </p>
-                  <p className="text-xs text-gray-400 italic">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 italic">
                     {template.description}
                   </p>
                 </div>
@@ -219,8 +228,8 @@ export default function EmailTemplates() {
                     disabled={!resumeData}
                     className={`w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
                       resumeData
-                        ? 'border-[#3b3be3] text-[#3b3be3] hover:bg-blue-50'
-                        : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                        ? 'border-[#3b3be3] text-[#3b3be3] dark:border-[#818cf8] dark:text-[#a5b4fc] hover:bg-blue-50 dark:hover:bg-[#818cf8]/10'
+                        : 'border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
                     }`}
                   >
                     Preview with My Resume
@@ -258,22 +267,22 @@ export default function EmailTemplates() {
           onClick={closePreview}
         >
           <div
-            className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+            className="bg-white dark:bg-gray-900 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {TEMPLATE_METADATA.find(t => t.id === previewTemplate)?.name}{' '}
                   Preview
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Generated with your resume data
                 </p>
               </div>
               <button
                 onClick={closePreview}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
               >
                 <svg
                   className="w-6 h-6"
@@ -292,21 +301,21 @@ export default function EmailTemplates() {
             </div>
 
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-              <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm font-semibold text-gray-700 mb-1">
+              <div className="mb-4 p-4 bg-blue-50 dark:bg-[#818cf8]/10 rounded-lg">
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Subject:
                 </p>
-                <p className="text-gray-900">{previewEmail.subject}</p>
+                <p className="text-gray-900 dark:text-gray-100">{previewEmail.subject}</p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-6">
-                <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800 leading-relaxed">
+              <div className="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-6">
+                <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
                   {previewEmail.bodyText}
                 </pre>
               </div>
 
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-xs text-yellow-800">
+              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50 rounded-lg">
+                <p className="text-xs text-yellow-800 dark:text-yellow-300">
                   💡 This preview uses sample company details (Example Company,
                   Software Developer). When you send an email, it will use your
                   actual job application details.
@@ -314,10 +323,10 @@ export default function EmailTemplates() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
               <button
                 onClick={closePreview}
-                className="px-6 py-2.5 rounded-lg font-medium text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                className="px-6 py-2.5 rounded-lg font-medium text-sm bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
               >
                 Close
               </button>

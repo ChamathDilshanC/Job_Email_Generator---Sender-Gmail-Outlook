@@ -17,13 +17,13 @@ export default function EmailHistoryCard({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'sent':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800/50';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/50';
       case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400 border-red-200 dark:border-red-800/50';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -41,14 +41,14 @@ export default function EmailHistoryCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg dark:hover:shadow-black/40 transition-all duration-300"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
             {email.companyName}
           </h3>
-          <p className="text-sm text-gray-600">{email.position}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{email.position}</p>
         </div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
@@ -60,7 +60,7 @@ export default function EmailHistoryCard({
       </div>
 
       <div className="space-y-2 mb-4">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <svg
             className="w-4 h-4"
             fill="none"
@@ -77,7 +77,7 @@ export default function EmailHistoryCard({
           <span className="truncate">{email.recipientEmail}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <svg
             className="w-4 h-4"
             fill="none"
@@ -94,7 +94,7 @@ export default function EmailHistoryCard({
           <span>{formatDate(email.sentDate)}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <svg
             className="w-4 h-4"
             fill="none"
@@ -112,8 +112,8 @@ export default function EmailHistoryCard({
         </div>
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-3 mb-4">
-        <p className="text-xs text-gray-600 line-clamp-2">
+      <div className="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-3 mb-4">
+        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
           {email.emailPreview}
         </p>
       </div>
@@ -127,7 +127,7 @@ export default function EmailHistoryCard({
         </button>
         <button
           onClick={() => onDelete(email.id)}
-          className="px-4 py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
+          className="px-4 py-2 border border-red-300 dark:border-red-800/60 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
         >
           Delete
         </button>

@@ -1,0 +1,37 @@
+name: Deploy to Azure App Service
+
+# ---------------------------------------------------------------------------
+# One-time setup required before this workflow can deploy:
+#
+# 1. Create an Azure App Service (Linux, Node 20) to host the app.
+# 2. In the App Service -> Configuration -> Application settings, add:
+#      NEXT_PUBLIC_GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, MONGODB_URI,
+#      NEXT_PUBLIC_SKILLS_API_KEY, NEXT_PUBLIC_SKILLS_API_BASE_URL
+#    and set SCM_DO_BUILD_DURING_DEPLOYMENT = true so Azure runs
+#    `npm install && npm run build` itself using those settings.
+# 3. App Service -> Overview -> "Download publish profile", then add its
+#    contents as a GitHub Actions secret named AZURE_WEBAPP_PUBLISH_PROFILE
+#    (Repo Settings -> Secrets and variables -> Actions -> New repository secret).
+# 4. Replace CHANGE_ME_AZURE_WEBAPP_NAME below with your App Service's name.
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: CHANGE_ME_AZURE_WEBAPP_NAME
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          # Placeholder values so the build can complete (they're only baked
+          # into this throwaway CI build, never used to serve real traffic).
+          # The real values live in Azure App Service's Application Settings.
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ci-placeholder.apps.googleusercontent.com
+          GOOGLE_CLIENT_SECRET: ci-placeholder
+          MONGODB_URI: mongodb://placeholder:27017/ci
+          NEXT_PUBLIC_SKILLS_API_KEY: ci-placeholder
+          NEXT_PUBLIC_SKILLS_API_BASE_URL: https://job-potal-skill-api.vercel.app

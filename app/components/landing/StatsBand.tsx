@@ -12,10 +12,7 @@ const stats = [
 
 export function StatsBand() {
   return (
-    <section
-      id="stats"
-      className="scroll-mt-20 border-t border-border px-6 py-24"
-    >
+    <section id="stats" className="scroll-mt-20 px-6 py-24">
       <div className="mx-auto max-w-6xl">
         <motion.div
           variants={fadeInUp}
@@ -27,7 +24,7 @@ export function StatsBand() {
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">
             How it works
           </p>
-          <h2 className="mt-3 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+          <h2 className="mt-3 font-heading text-4xl font-semibold tracking-tight text-white md:text-5xl">
             One resume. Countless applications.
           </h2>
         </motion.div>
@@ -45,12 +42,10 @@ export function StatsBand() {
               variants={fadeInUp}
               className="border-l-2 border-primary/40 pl-5"
             >
-              <p className="font-heading text-4xl font-semibold text-foreground">
+              <p className="font-heading text-4xl font-semibold text-white">
                 {stat.value}
               </p>
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                {stat.label}
-              </p>
+              <p className="mt-1.5 text-sm text-neutral-400">{stat.label}</p>
             </motion.div>
           ))}
         </motion.div>

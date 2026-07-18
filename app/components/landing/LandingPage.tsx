@@ -34,7 +34,6 @@ export function LandingPage() {
         <FeatureGrid />
         <TemplatesShowcase />
         <Testimonial />
-        <StatsBand />
       </main>
       <div className="relative w-full overflow-hidden">
         <div
@@ -46,6 +45,7 @@ export function LandingPage() {
           }}
         />
         <div className="relative z-10">
+          <StatsBand />
           <CTABand onGetStarted={onGetStarted} isSigningIn={isSigningIn} />
         </div>
       </div>

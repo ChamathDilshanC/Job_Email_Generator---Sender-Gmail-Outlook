@@ -1,32 +1,40 @@
 'use client';
 
-import { EmailHistory } from '@/app/models/EmailHistory';
+import {
+  APPLICATION_STATUS_LABELS,
+  ApplicationStatus,
+  EmailHistory,
+} from '@/app/models/EmailHistory';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  formatDeliveryStatusLabel,
+  getApplicationStatusClasses,
+  getDeliveryStatusClasses,
+} from '@/lib/emailHistoryStatus';
 import { fadeInUp } from '@/lib/motion';
 import { motion } from 'framer-motion';
+import { Eye } from 'lucide-react';
 
 interface EmailHistoryCardProps {
   email: EmailHistory;
   onDelete: (id: string) => void;
   onViewDetails: (email: EmailHistory) => void;
+  onStatusChange?: (id: string, status: ApplicationStatus) => void;
 }
 
 export default function EmailHistoryCard({
   email,
   onDelete,
   onViewDetails,
+  onStatusChange,
 }: EmailHistoryCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'sent':
-        return 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800/50';
-      case 'pending':
-        return 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/50';
-      case 'failed':
-        return 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400 border-red-200 dark:border-red-800/50';
-      default:
-        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
-    }
-  };
+  const getStatusColor = getDeliveryStatusClasses;
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -57,9 +65,56 @@ export default function EmailHistoryCard({
             email.status
           )}`}
         >
-          {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
+          {formatDeliveryStatusLabel(email.status)}
         </span>
       </div>
+
+      {email.status === 'sent' && (
+        <div className="mb-4 flex items-center gap-2">
+          <span
+            className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getApplicationStatusClasses(
+              email.applicationStatus
+            )}`}
+          >
+            {email.applicationStatus
+              ? APPLICATION_STATUS_LABELS[email.applicationStatus]
+              : 'Applied'}
+          </span>
+          {onStatusChange && (
+            <Select
+              value={email.applicationStatus || 'applied'}
+              onValueChange={value =>
+                onStatusChange(email.id, value as ApplicationStatus)
+              }
+            >
+              <SelectTrigger className="h-7 flex-1 text-xs">
+                <SelectValue placeholder="Update stage" />
+              </SelectTrigger>
+              <SelectContent>
+                {(
+                  Object.keys(APPLICATION_STATUS_LABELS) as ApplicationStatus[]
+                ).map(status => (
+                  <SelectItem key={status} value={status}>
+                    {APPLICATION_STATUS_LABELS[status]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {typeof email.openCount === 'number' && email.openCount > 0 && (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-blue-50 dark:bg-[#818cf8]/10 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:text-[#a5b4fc]"
+              title={
+                email.lastOpenedAt
+                  ? `Last opened ${formatDate(new Date(email.lastOpenedAt))}`
+                  : undefined
+              }
+            >
+              <Eye className="h-3 w-3" /> Opened
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">

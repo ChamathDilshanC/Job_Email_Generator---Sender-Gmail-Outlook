@@ -1,5 +1,13 @@
 import type { ElementType } from 'react';
 
+export type PageType =
+  | 'send-email'
+  | 'templates'
+  | 'resume'
+  | 'history'
+  | 'scheduled'
+  | 'profile';
+
 export interface NavItem {
   id: string;
   title: string;

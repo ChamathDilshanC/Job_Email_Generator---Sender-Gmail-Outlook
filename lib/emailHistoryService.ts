@@ -1,4 +1,4 @@
-import { EmailHistory } from '@/app/models/EmailHistory';
+import { ApplicationStatus, EmailHistory } from '@/app/models/EmailHistory';
 
 /**
  * Save sent email to history
@@ -73,6 +73,35 @@ export async function loadEmailHistory(
   } catch (error) {
     console.error('Error loading email history:', error);
     return [];
+  }
+}
+
+/**
+ * Update the application pipeline stage (Applied / Interview Scheduled /
+ * Rejected / Offered / No Response) for a history entry.
+ */
+export async function updateApplicationStatus(
+  emailId: string,
+  applicationStatus: ApplicationStatus,
+  note?: string
+): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/email-history?emailId=${emailId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ applicationStatus, note }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update application status');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating application status:', error);
+    return false;
   }
 }
 

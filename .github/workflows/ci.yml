@@ -30,6 +30,9 @@ jobs:
           # The real values live in Vercel's Environment Variables settings.
           NEXT_PUBLIC_GOOGLE_CLIENT_ID: ci-placeholder.apps.googleusercontent.com
           GOOGLE_CLIENT_SECRET: ci-placeholder
+          TOKEN_ENCRYPTION_KEY: ci-placeholder
+          CRON_SECRET: ci-placeholder
+          APP_BASE_URL: https://ci-placeholder.example
           MONGODB_URI: mongodb://placeholder:27017/ci
           NEXT_PUBLIC_SKILLS_API_KEY: ci-placeholder
           NEXT_PUBLIC_SKILLS_API_BASE_URL: https://job-potal-skill-api.vercel.app

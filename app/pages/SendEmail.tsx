@@ -1,9 +1,12 @@
 'use client';
 
 import EmailSendingLoader from '@/app/components/EmailSendingLoader';
+import SendPreviewModal from '@/app/components/SendPreviewModal';
 import { AlertDialog } from '@/components/alert-dialog';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
+import type { PageType } from '@/components/sidebar-01/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
 import { saveEmailToHistory } from '@/lib/emailHistoryService';
@@ -15,7 +18,13 @@ import {
   type GmailAttachment,
 } from '@/lib/gmailClient';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
-import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
+import {
+  listResumeProfiles,
+  loadResumeData,
+  ResumeData,
+  ResumeProfileSummary,
+} from '@/lib/resumeDataService';
+import { scheduleEmail } from '@/lib/scheduledEmailService';
 import {
   JobDetails,
   TEMPLATE_METADATA,
@@ -35,7 +44,20 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { ChangeEvent, FormEvent, ReactNode, useEffect, useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+const EmailBodyEditor = dynamic(
+  () => import('@/app/components/EmailBodyEditor'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[200px] animate-pulse rounded-lg border border-border bg-muted/30" />
+    ),
+  }
+);
 
 type AdditionalDetails = Omit<
   JobDetails,
@@ -52,8 +74,6 @@ const EMPTY_ADDITIONAL_DETAILS: AdditionalDetails = {
   offerDeadline: '',
   decision: 'accept',
 };
-
-type PageType = 'send-email' | 'templates' | 'resume' | 'history' | 'profile';
 
 interface SendEmailProps {
   onNavigate?: (page: PageType) => void;
@@ -113,6 +133,23 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   );
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [isLoadingResume, setIsLoadingResume] = useState(false);
+  const [resumeProfiles, setResumeProfiles] = useState<ResumeProfileSummary[]>(
+    []
+  );
+  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
+
+  // Auto-fill from job URL
+  const [jobUrl, setJobUrl] = useState('');
+  const [isParsingJobUrl, setIsParsingJobUrl] = useState(false);
+
+  // Rich text body editing + preview-before-send
+  const [editedBodyHtml, setEditedBodyHtml] = useState<string | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+
+  // Send now vs schedule for later (Gmail only)
+  const [sendMode, setSendMode] = useState<'now' | 'schedule'>('now');
+  const [scheduledFor, setScheduledFor] = useState<Date | null>(null);
 
   // Alert Dialog State
   const [alertDialog, setAlertDialog] = useState<{
@@ -148,13 +185,21 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       // Only load resume data if user is authenticated
       if (!isAuthenticated) {
         setResumeData(null); // Clear resume data when not authenticated
+        setResumeProfiles([]);
+        setSelectedProfileId('');
         setIsLoadingResume(false);
         return;
       }
 
       setIsLoadingResume(true);
       try {
-        const data = await loadResumeData(user?.uid);
+        const profiles = await listResumeProfiles(user?.uid);
+        setResumeProfiles(profiles);
+        const defaultProfileId =
+          profiles.find(p => p.isDefault)?.profileId || profiles[0]?.profileId;
+        setSelectedProfileId(defaultProfileId || '');
+
+        const data = await loadResumeData(user?.uid, defaultProfileId);
         setResumeData(data);
       } catch (error) {
         console.error('Error loading resume data:', error);
@@ -171,6 +216,69 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
     fetchResumeData();
   }, [isAuthenticated, user?.uid]); // Added isAuthenticated to dependency array
+
+  const handleProfileChange = async (profileId: string) => {
+    setSelectedProfileId(profileId);
+    setIsLoadingResume(true);
+    try {
+      const data = await loadResumeData(user?.uid, profileId);
+      setResumeData(data);
+    } catch (error) {
+      console.error('Error loading resume profile:', error);
+    } finally {
+      setIsLoadingResume(false);
+    }
+  };
+
+  const handleAutoFillFromUrl = async () => {
+    if (!jobUrl.trim()) return;
+
+    setIsParsingJobUrl(true);
+    try {
+      const response = await fetch('/api/job-url/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: jobUrl.trim() }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || (!data.position && !data.companyName)) {
+        setAlertDialog({
+          open: true,
+          title: "Couldn't Auto-fill",
+          description:
+            data.error ||
+            "We couldn't detect the company/position from that page. LinkedIn's login-walled listings often block this — please fill the fields in manually.",
+          type: 'warning',
+        });
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        companyName: data.companyName || prev.companyName,
+        position: data.position || prev.position,
+      }));
+
+      setAlertDialog({
+        open: true,
+        title: 'Auto-filled',
+        description:
+          'Company/position were filled in from the job posting — double check them before sending.',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Error auto-filling from job URL:', error);
+      setAlertDialog({
+        open: true,
+        title: 'Error',
+        description: 'Failed to read that job URL. Please fill the fields in manually.',
+        type: 'error',
+      });
+    } finally {
+      setIsParsingJobUrl(false);
+    }
+  };
 
   // Show alert when page loads if user is not signed in
   useEffect(() => {
@@ -223,7 +331,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  // Validate the form, then open the preview modal instead of sending
+  // immediately — the actual send happens from the modal's confirm action.
+  const handleOpenPreview = (e: FormEvent) => {
     e.preventDefault();
 
     if (
@@ -267,37 +377,46 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       return;
     }
 
+    if (
+      sendMode === 'schedule' &&
+      (!scheduledFor || scheduledFor.getTime() <= Date.now())
+    ) {
+      setAlertDialog({
+        open: true,
+        title: 'Pick a Future Date & Time',
+        description:
+          'Please choose when this email should be sent — it must be in the future.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    setShowPreviewModal(true);
+  };
+
+  const handleConfirmSend = async () => {
+    if (!generatedEmail) return;
+
+    const subject = generatedEmail.subject;
+    const plainTextFallback =
+      'bodyText' in generatedEmail
+        ? generatedEmail.bodyText
+        : generatedEmail.body;
+
     setIsSending(true);
 
     try {
-      // Generate email using selected template and resume data
-      let subject: string, bodyHtml: string, body: string;
-
-      if (resumeData) {
-        const jobDetails = {
-          companyName: formData.companyName,
-          position: formData.position,
-          recipientEmail: formData.recipientEmail,
-          ...additionalDetails,
-        };
-        const generated = generateEmailFromTemplate(
-          selectedTemplate,
-          resumeData,
-          jobDetails
-        );
-        subject = generated.subject;
-        bodyHtml = generated.bodyHtml;
-        body = generated.bodyText;
-      } else {
-        // Fallback to old template if no resume data
-        const generated = generateEmail(formData);
-        subject = generated.subject;
-        bodyHtml = generated.bodyHtml;
-        body = generated.body;
-      }
-
       if (emailClient === 'outlook') {
-        // For Outlook, use mailto: link (opens default email client)
+        // For Outlook, use mailto: link (opens default email client). Strip
+        // HTML from the (possibly user-edited) rich text body so manual
+        // edits carry over into the plain-text mailto body too.
+        const plainBody =
+          displayedBodyHtml
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim() || plainTextFallback;
+
         const attachmentText =
           attachments.cv || attachments.coverLetter
             ? '\n\nNote: Please attach your files manually:\n' +
@@ -310,11 +429,12 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         const mailtoLink = `mailto:${
           formData.recipientEmail
         }?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-          body + attachmentText
+          plainBody + attachmentText
         )}`;
 
         window.location.href = mailtoLink;
 
+        setShowPreviewModal(false);
         setAlertDialog({
           open: true,
           title: 'Opening Outlook...',
@@ -326,8 +446,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         return;
       }
 
-      // Gmail API sending (existing logic)
-      // Check if user is authenticated for Gmail API
+      // Gmail API sending
       if (!isAuthenticated || !accessToken) {
         setAlertDialog({
           open: true,
@@ -360,12 +479,18 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         });
       }
 
+      // Embed a hidden open-tracking pixel. Only possible for Gmail sends —
+      // Outlook's mailto: hands off to the user's own mail client, which we
+      // never see again.
+      const trackingId = crypto.randomUUID();
+      const bodyWithTracking = `${displayedBodyHtml}<img src="${window.location.origin}/api/track/${trackingId}" width="1" height="1" style="display:none" alt="" />`;
+
       // Send email via Gmail API
       const result = await sendEmailWithAttachments(
         {
           to: formData.recipientEmail,
           subject,
-          body: bodyHtml,
+          body: bodyWithTracking,
           attachments: attachmentsList.length > 0 ? attachmentsList : undefined,
         },
         accessToken
@@ -395,9 +520,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             coverLetter: attachments.coverLetter?.name,
           },
           emailSubject: subject,
-          emailPreview: body.substring(0, 200) + '...',
+          emailPreview: plainTextFallback.substring(0, 200) + '...',
+          trackingId,
         });
 
+        setShowPreviewModal(false);
         setAlertDialog({
           open: true,
           title: 'Email Sent Successfully!',
@@ -448,30 +575,95 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     }
   };
 
-  const handleCopyEmail = async () => {
-    let subject: string, body: string;
+  const handleConfirmSchedule = async () => {
+    if (!generatedEmail || !scheduledFor || !user?.uid) return;
 
-    if (resumeData) {
-      const jobDetails = {
+    setIsSending(true);
+    try {
+      const attachmentsList: GmailAttachment[] = [];
+
+      if (attachments.cv) {
+        const cvBase64 = await fileToBase64(attachments.cv);
+        attachmentsList.push({
+          filename: attachments.cv.name,
+          mimeType: attachments.cv.type,
+          data: cvBase64,
+        });
+      }
+
+      if (attachments.coverLetter) {
+        const clBase64 = await fileToBase64(attachments.coverLetter);
+        attachmentsList.push({
+          filename: attachments.coverLetter.name,
+          mimeType: attachments.coverLetter.type,
+          data: clBase64,
+        });
+      }
+
+      const templateName =
+        TEMPLATE_METADATA.find(t => t.id === selectedTemplate)?.name ||
+        'Custom Template';
+
+      const result = await scheduleEmail({
+        userId: user.uid,
+        to: formData.recipientEmail,
+        subject: generatedEmail.subject,
+        bodyHtml: displayedBodyHtml,
+        attachments: attachmentsList,
+        attachmentNames: {
+          cv: attachments.cv?.name,
+          coverLetter: attachments.coverLetter?.name,
+        },
+        scheduledFor: scheduledFor.toISOString(),
         companyName: formData.companyName,
         position: formData.position,
-        recipientEmail: formData.recipientEmail,
-        ...additionalDetails,
-      };
-      const generated = generateEmailFromTemplate(
-        selectedTemplate,
-        resumeData,
-        jobDetails
-      );
-      subject = generated.subject;
-      body = generated.bodyText;
-    } else {
-      const generated = generateEmail(formData);
-      subject = generated.subject;
-      body = generated.body;
-    }
+        templateId: selectedTemplate,
+        templateName,
+      });
 
-    const fullEmail = `Subject: ${subject}\n\n${body}`;
+      if (result.success) {
+        setShowPreviewModal(false);
+        setAlertDialog({
+          open: true,
+          title: 'Email Scheduled!',
+          description: `This email will be sent to ${formData.recipientEmail} on ${scheduledFor.toLocaleString()}. Manage it from the Scheduled page.`,
+          type: 'success',
+        });
+        setSendMode('now');
+        setScheduledFor(null);
+      } else {
+        throw new Error(result.error || 'Failed to schedule email');
+      }
+    } catch (error) {
+      console.error('Error scheduling email:', error);
+      setAlertDialog({
+        open: true,
+        title: 'Failed to Schedule Email',
+        description:
+          error instanceof Error ? error.message : 'An unknown error occurred',
+        type: 'error',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleCopyEmail = async () => {
+    if (!generatedEmail) return;
+
+    // Reflect manual Quill edits if the user made any, otherwise fall back
+    // to the freshly-generated plain text.
+    const body = editedBodyHtml
+      ? editedBodyHtml
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+      : 'bodyText' in generatedEmail
+        ? generatedEmail.bodyText
+        : generatedEmail.body;
+
+    const fullEmail = `Subject: ${generatedEmail.subject}\n\n${body}`;
 
     const success = await copyToClipboard(fullEmail);
     if (success) {
@@ -527,6 +719,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         })
       : generateEmail(formData)
     : null;
+
+  // The actual body that gets edited/sent: the user's manual Quill edits
+  // once they've made any, otherwise whatever the template generator
+  // currently produces (so it stays live as company/position/etc. change).
+  const displayedBodyHtml = editedBodyHtml ?? generatedEmail?.bodyHtml ?? '';
 
   const requiredBadge = (
     <span className="badge text-[10px] uppercase tracking-wide">
@@ -694,17 +891,47 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 whileHover={{ scale: canSendEmail ? 1.03 : 1 }}
                 whileTap={{ scale: canSendEmail ? 0.97 : 1 }}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                onClick={handleSubmit}
+                onClick={handleOpenPreview}
                 disabled={isSending}
               >
                 <Send className="h-4 w-4" />
                 {isSending
                   ? 'Sending...'
-                  : emailClient === 'gmail'
-                    ? 'Send via Gmail'
-                    : 'Send via Outlook'}
+                  : sendMode === 'schedule' && emailClient === 'gmail'
+                    ? 'Review & Schedule'
+                    : emailClient === 'gmail'
+                      ? 'Review & Send via Gmail'
+                      : 'Review & Send via Outlook'}
               </motion.button>
             </div>
+          </div>
+
+          {/* Auto-fill from Job URL */}
+          <div className="px-6 pt-6">
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              Paste Job URL (optional)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                className="form-input flex-1"
+                placeholder="e.g., https://boards.greenhouse.io/company/jobs/12345"
+                value={jobUrl}
+                onChange={e => setJobUrl(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={handleAutoFillFromUrl}
+                disabled={!jobUrl.trim() || isParsingJobUrl}
+                className="whitespace-nowrap rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isParsingJobUrl ? 'Reading…' : 'Auto-fill'}
+              </button>
+            </div>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Works best on Greenhouse/Lever/Workday and similar job boards.
+              LinkedIn&apos;s login-walled listings may not auto-fill reliably.
+            </p>
           </div>
 
           {/* Fields */}
@@ -764,13 +991,33 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               />
             </Field>
 
+            {resumeProfiles.length > 1 && (
+              <Field label="Resume Profile">
+                <select
+                  className="form-select"
+                  value={selectedProfileId}
+                  onChange={e => handleProfileChange(e.target.value)}
+                >
+                  {resumeProfiles.map(profile => (
+                    <option key={profile.profileId} value={profile.profileId}>
+                      {profile.profileName}
+                      {profile.isDefault ? ' (Default)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
+
             <Field label="Send Via">
               <div className="inline-flex rounded-lg border border-border p-1">
                 {(['gmail', 'outlook'] as const).map(client => (
                   <button
                     key={client}
                     type="button"
-                    onClick={() => setEmailClient(client)}
+                    onClick={() => {
+                      setEmailClient(client);
+                      if (client === 'outlook') setSendMode('now');
+                    }}
                     className={`flex-1 rounded-md px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
                       emailClient === client
                         ? 'bg-primary text-primary-foreground shadow-sm'
@@ -782,6 +1029,48 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 ))}
               </div>
             </Field>
+
+            {emailClient === 'gmail' && (
+              <Field label="When to Send">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="inline-flex rounded-lg border border-border p-1">
+                    {(['now', 'schedule'] as const).map(mode => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setSendMode(mode)}
+                        className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+                          sendMode === mode
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {mode === 'now' ? 'Send Now' : 'Schedule for Later'}
+                      </button>
+                    ))}
+                  </div>
+                  {sendMode === 'schedule' && (
+                    <DatePicker
+                      selected={scheduledFor}
+                      onChange={date => setScheduledFor(date)}
+                      showTimeSelect
+                      timeIntervals={15}
+                      dateFormat="MMM d, yyyy h:mm aa"
+                      minDate={new Date()}
+                      placeholderText="Pick a date & time"
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-[#818cf8]/30 hover:border-[#3b3be3] dark:hover:border-[#818cf8]"
+                    />
+                  )}
+                </div>
+                {sendMode === 'schedule' && (
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    Sent automatically at the scheduled time, even if this
+                    browser is closed — as long as your Google account has
+                    background sending enabled (see the Scheduled page).
+                  </p>
+                )}
+              </Field>
+            )}
 
             <Field
               label="Email Template"
@@ -1074,7 +1363,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </div>
           </div>
 
-          {/* Email Preview - mirrors the mock card on the landing page */}
+          {/* Email Body - editable rich text, mirrors the mock card on the landing page */}
           <AnimatePresence>
             {isFormValid && generatedEmail && (
               <motion.div
@@ -1083,13 +1372,24 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 exit={{ opacity: 0 }}
                 className="mx-6 mb-6 overflow-hidden rounded-xl border border-border"
               >
-                <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
-                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Preview
-                  </span>
+                <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Email Body{editedBodyHtml !== null ? ' (edited)' : ''}
+                    </span>
+                  </div>
+                  {editedBodyHtml !== null && (
+                    <button
+                      type="button"
+                      onClick={() => setShowRegenerateConfirm(true)}
+                      className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                    >
+                      Regenerate from template
+                    </button>
+                  )}
                 </div>
-                <div className="space-y-2 px-4 py-4 text-sm">
+                <div className="space-y-2 border-b border-border px-4 py-4 text-sm">
                   <div className="flex gap-3">
                     <span className="w-16 shrink-0 font-medium text-muted-foreground">
                       To
@@ -1107,12 +1407,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     </span>
                   </div>
                 </div>
-                <div className="border-t border-border px-4 py-4">
-                  <pre className="whitespace-pre-wrap font-sans text-[13px] leading-relaxed text-foreground">
-                    {'bodyText' in generatedEmail
-                      ? generatedEmail.bodyText
-                      : generatedEmail.body}
-                  </pre>
+                <div className="p-4">
+                  <EmailBodyEditor
+                    value={displayedBodyHtml}
+                    onChange={html => setEditedBodyHtml(html)}
+                  />
                 </div>
                 {(attachments.cv || attachments.coverLetter) && (
                   <div className="flex items-center gap-1.5 border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
@@ -1127,6 +1426,38 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </AnimatePresence>
         </motion.div>
       </motion.div>
+
+      {/* Preview-before-send Modal */}
+      <SendPreviewModal
+        open={showPreviewModal}
+        onOpenChange={setShowPreviewModal}
+        to={formData.recipientEmail}
+        subject={generatedEmail?.subject || ''}
+        bodyHtml={displayedBodyHtml}
+        attachmentNames={[attachments.cv?.name, attachments.coverLetter?.name].filter(
+          (name): name is string => !!name
+        )}
+        isSending={isSending}
+        emailClient={emailClient}
+        sendMode={sendMode}
+        scheduledFor={scheduledFor}
+        onConfirm={
+          sendMode === 'schedule' && emailClient === 'gmail'
+            ? handleConfirmSchedule
+            : handleConfirmSend
+        }
+      />
+
+      {/* Regenerate-from-template confirmation */}
+      <ConfirmDialog
+        open={showRegenerateConfirm}
+        onOpenChange={setShowRegenerateConfirm}
+        title="Regenerate Email Body?"
+        description="This discards your manual edits and rebuilds the body from the selected template. This cannot be undone."
+        confirmText="Regenerate"
+        type="warning"
+        onConfirm={() => setEditedBodyHtml(null)}
+      />
 
       {/* Alert Dialog */}
       <AlertDialog

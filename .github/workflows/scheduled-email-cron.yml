@@ -1,0 +1,22 @@
+name: Process Scheduled Emails
+
+# Vercel's built-in Cron only allows 5-minute intervals on the Pro plan
+# (Hobby is capped at once/day), so this workflow is the actual cron trigger
+# for /api/cron/process-scheduled-emails on Hobby. Note GitHub's schedule
+# trigger is best-effort — during periods of high load, runs can be
+# delayed by several minutes past their scheduled time. That's an
+# acceptable trade-off for "send around this time," not "send at this
+# exact second."
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call scheduled-email cron endpoint
+        run: |
+          curl --fail-with-body -sS -X GET "https://www.jobemail.me/api/cron/process-scheduled-emails" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

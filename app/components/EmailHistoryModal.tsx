@@ -1,7 +1,13 @@
 'use client';
 
-import { EmailHistory } from '@/app/models/EmailHistory';
+import { APPLICATION_STATUS_LABELS, EmailHistory } from '@/app/models/EmailHistory';
+import {
+  formatDeliveryStatusLabel,
+  getApplicationStatusClasses,
+  getDeliveryStatusClasses,
+} from '@/lib/emailHistoryStatus';
 import { motion } from 'framer-motion';
+import { Eye } from 'lucide-react';
 
 interface EmailHistoryModalProps {
   email: EmailHistory | null;
@@ -92,18 +98,75 @@ export default function EmailHistoryModal({
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</p>
               <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                  email.status === 'sent'
-                    ? 'bg-green-100 dark:bg-green-500/10 text-green-800 dark:text-green-400'
-                    : email.status === 'pending'
-                    ? 'bg-yellow-100 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400'
-                    : 'bg-red-100 dark:bg-red-500/10 text-red-800 dark:text-red-400'
-                }`}
+                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getDeliveryStatusClasses(
+                  email.status
+                )}`}
               >
-                {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
+                {formatDeliveryStatusLabel(email.status)}
               </span>
             </div>
+            {email.status === 'sent' && (
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                  Application Stage
+                </p>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getApplicationStatusClasses(
+                    email.applicationStatus
+                  )}`}
+                >
+                  {email.applicationStatus
+                    ? APPLICATION_STATUS_LABELS[email.applicationStatus]
+                    : 'Applied'}
+                </span>
+              </div>
+            )}
+            {typeof email.openCount === 'number' && (
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                  Email Opens
+                </p>
+                <p className="flex items-center gap-1.5 text-gray-900 dark:text-gray-100 font-medium">
+                  <Eye className="h-4 w-4 text-blue-600 dark:text-[#a5b4fc]" />
+                  {email.openCount > 0
+                    ? `Opened ${email.openCount}x${
+                        email.lastOpenedAt
+                          ? ` · last ${formatDate(new Date(email.lastOpenedAt))}`
+                          : ''
+                      }`
+                    : 'Not opened yet'}
+                </p>
+              </div>
+            )}
           </div>
+
+          {/* Status History Timeline */}
+          {email.statusHistory && email.statusHistory.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                Status History
+              </p>
+              <ol className="space-y-2 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+                {[...email.statusHistory]
+                  .reverse()
+                  .map((entry, idx) => (
+                    <li key={idx} className="text-sm">
+                      <span className="font-medium text-gray-800 dark:text-gray-200">
+                        {APPLICATION_STATUS_LABELS[entry.status]}
+                      </span>{' '}
+                      <span className="text-gray-500 dark:text-gray-400">
+                        &mdash; {formatDate(new Date(entry.changedAt))}
+                      </span>
+                      {entry.note && (
+                        <p className="text-gray-500 dark:text-gray-400">
+                          {entry.note}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+              </ol>
+            </div>
+          )}
 
           {/* Attachments */}
           <div className="mb-6">

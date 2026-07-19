@@ -41,6 +41,10 @@ next-env.d.ts
 .env.local
 .env.production.local
 
+# graphify-out
+graphify-out/
+
+
 # vertex
 Vertex.pdf
 

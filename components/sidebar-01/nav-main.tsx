@@ -9,9 +9,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Lock } from 'lucide-react';
 import { useState } from 'react';
-import type { NavItem } from './types';
-
-type PageType = 'send-email' | 'templates' | 'resume' | 'history' | 'profile';
+import type { NavItem, PageType } from './types';
 
 interface NavMainProps {
   items: NavItem[];

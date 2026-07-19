@@ -1,6 +1,7 @@
 'use client';
 
 import { AppSidebar } from '@/components/sidebar-01/app-sidebar';
+import type { PageType } from '@/components/sidebar-01/types';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   SidebarInset,
@@ -13,9 +14,8 @@ import EmailTemplates from '../pages/EmailTemplates';
 import History from '../pages/History';
 import Profile from '../pages/Profile';
 import ResumeBuilder from '../pages/ResumeBuilder';
+import Scheduled from '../pages/Scheduled';
 import SendEmail from '../pages/SendEmail';
-
-type PageType = 'send-email' | 'templates' | 'resume' | 'history' | 'profile';
 
 export function Dashboard() {
   const [activePage, setActivePage] = useState<PageType>('send-email');
@@ -30,6 +30,8 @@ export function Dashboard() {
         return <ResumeBuilder />;
       case 'history':
         return <History />;
+      case 'scheduled':
+        return <Scheduled />;
       case 'profile':
         return <Profile />;
       default:

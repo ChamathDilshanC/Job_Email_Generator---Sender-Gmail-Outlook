@@ -6,6 +6,8 @@ declare module 'react-datepicker' {
     onChange: (date: Date | null) => void;
     dateFormat?: string;
     showMonthYearPicker?: boolean;
+    showTimeSelect?: boolean;
+    timeIntervals?: number;
     placeholderText?: string;
     className?: string;
     maxDate?: Date;

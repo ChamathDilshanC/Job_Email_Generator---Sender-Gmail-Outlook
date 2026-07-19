@@ -108,51 +108,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  // Auth-code flow (rather than the simpler implicit flow) so the server can
+  // exchange the code for a refresh token and store it for background
+  // sending (scheduled emails). Note: @react-oauth/google's code-client
+  // config has no `prompt` override and ignores `redirect_uri` in popup
+  // mode — Google only guarantees a refresh_token on a user's first-ever
+  // consent for this client+scope combination; see storeRefreshTokenIfPresent
+  // in lib/googleAuth.ts for how a missing one on later logins is handled.
   const login = useGoogleLogin({
-    onSuccess: async tokenResponse => {
+    flow: 'auth-code',
+    onSuccess: async codeResponse => {
       try {
-        const accessToken = tokenResponse.access_token;
+        const exchangeResponse = await fetch('/api/auth/google/exchange', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: codeResponse.code }),
+        });
 
-        const userInfoResponse = await fetch(
-          'https://www.googleapis.com/oauth2/v3/userinfo',
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-
-        if (!userInfoResponse.ok) {
-          throw new Error('Failed to fetch Google account info');
+        if (!exchangeResponse.ok) {
+          const errorData = await exchangeResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to complete Google sign-in');
         }
 
-        const userInfo = await userInfoResponse.json();
-
-        const user: AuthUser = {
-          uid: userInfo.sub,
-          email: userInfo.email,
-          displayName: userInfo.name || userInfo.email,
-          photoURL: userInfo.picture || '',
-        };
+        const { accessToken, expiresIn, user } = await exchangeResponse.json();
+        const authUser: AuthUser = user;
 
         localStorage.setItem(TOKEN_KEY, accessToken);
         localStorage.setItem(TOKEN_TIMESTAMP_KEY, Date.now().toString());
-        localStorage.setItem(
-          TOKEN_EXPIRES_IN_KEY,
-          String(tokenResponse.expires_in || 3600)
-        );
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
+        localStorage.setItem(TOKEN_EXPIRES_IN_KEY, String(expiresIn || 3600));
+        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
 
         setAuthState({
           isAuthenticated: true,
           accessToken,
-          userEmail: user.email,
-          user,
+          userEmail: authUser.email,
+          user: authUser,
           isLoading: false,
         });
 
-        console.log('✅ Successfully signed in:', user.email);
+        console.log('✅ Successfully signed in:', authUser.email);
 
         pendingSignIn.current?.resolve({
           success: true,
           token: accessToken,
-          email: user.email,
+          email: authUser.email,
         });
       } catch (error) {
         console.error('Sign in error:', error);
@@ -174,6 +173,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     },
     scope:
       'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
+    select_account: true,
   });
 
   const handleSignIn = (): Promise<SignInResult> => {

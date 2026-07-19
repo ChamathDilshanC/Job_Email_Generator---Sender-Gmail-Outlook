@@ -2,6 +2,7 @@
 
 import EducationSection from '@/app/components/EducationSection';
 import LinksSection from '@/app/components/LinksSection';
+import ResumeProfileSwitcher from '@/app/components/ResumeProfileSwitcher';
 import { useTypewriter } from '@/app/components/TypewriterText';
 import WorkExperienceSection from '@/app/components/WorkExperienceSection';
 import { Education } from '@/app/models/Education';
@@ -12,7 +13,17 @@ import { AlertDialog } from '@/components/alert-dialog';
 import { Loader } from '@/components/ui/loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { EASE } from '@/lib/motion';
-import { autoSaveResumeData, loadResumeData } from '@/lib/resumeDataService';
+import {
+  autoSaveResumeData,
+  deleteResumeProfile,
+  listResumeProfiles,
+  loadResumeData,
+  renameResumeProfile,
+  ResumeData,
+  ResumeProfileSummary,
+  saveResumeData,
+  setDefaultResumeProfile,
+} from '@/lib/resumeDataService';
 import {
   fetchSkillsForPosition,
   getPositionSuggestions,
@@ -86,6 +97,91 @@ export default function ResumeBuilder() {
     projects: false,
     skills: false,
   });
+
+  // Multiple resume profiles
+  const [profiles, setProfiles] = useState<ResumeProfileSummary[]>([]);
+  const [activeProfileId, setActiveProfileId] = useState<string>('default');
+  const lastSavedSnapshotRef = useRef<string>('');
+
+  const getCurrentContent = useCallback(
+    () => ({
+      personalInfo,
+      socialLinks,
+      workExperiences,
+      education: educations,
+      projects,
+      skills: { position, selectedSkills },
+    }),
+    [
+      personalInfo,
+      socialLinks,
+      workExperiences,
+      educations,
+      projects,
+      position,
+      selectedSkills,
+    ]
+  );
+
+  const hasUnsavedChanges =
+    JSON.stringify(getCurrentContent()) !== lastSavedSnapshotRef.current;
+
+  // Populate all wizard state from a loaded (or newly-created empty)
+  // resume profile, and record a snapshot so `hasUnsavedChanges` starts false.
+  const applyLoadedData = useCallback((data: ResumeData | null) => {
+    if (data) {
+      const phoneValue = data.personalInfo?.phone || '+94';
+      const isValidPhone = phoneValue.match(/^\+\d+$/);
+
+      setPersonalInfo({
+        fullName: data.personalInfo?.fullName || '',
+        email: data.personalInfo?.email || '',
+        phone: isValidPhone ? phoneValue : '+94',
+        location: data.personalInfo?.location || '',
+        summary: data.personalInfo?.summary || '',
+      });
+      setWorkExperiences(data.workExperiences || []);
+      setEducations(data.education || []);
+      setProjects(data.projects || []);
+      setPosition(data.skills?.position || '');
+      setSelectedSkills(data.skills?.selectedSkills || []);
+      setSocialLinks(data.socialLinks || createEmptySocialLinks());
+    } else {
+      setPersonalInfo({
+        fullName: '',
+        email: '',
+        phone: '+94',
+        location: '',
+        summary: '',
+      });
+      setSocialLinks(createEmptySocialLinks());
+      setWorkExperiences([]);
+      setEducations([]);
+      setProjects([]);
+      setPosition('');
+      setSelectedSkills([]);
+    }
+
+    setStepsCompleted({
+      personal: !!(data?.personalInfo?.fullName && data?.personalInfo?.email),
+      experience: !!(data?.workExperiences && data.workExperiences.length > 0),
+      education: !!(data?.education && data.education.length > 0),
+      projects: !!(data?.projects && data.projects.length > 0),
+      skills: !!(
+        data?.skills?.position && data?.skills?.selectedSkills?.length
+      ),
+    });
+    setActiveSection('personal');
+
+    lastSavedSnapshotRef.current = JSON.stringify({
+      personalInfo: data?.personalInfo || {},
+      socialLinks: data?.socialLinks || createEmptySocialLinks(),
+      workExperiences: data?.workExperiences || [],
+      education: data?.education || [],
+      projects: data?.projects || [],
+      skills: data?.skills || { position: '', selectedSkills: [] },
+    });
+  }, []);
 
   // Validation functions for each step - memoized for performance
   const validatePersonalInfo = useMemo(() => {
@@ -409,7 +505,8 @@ export default function ResumeBuilder() {
     setSelectedSkills(prev => prev.filter(s => s !== skill));
   }, []);
 
-  // Load resume data from MongoDB when user logs in
+  // Load resume profiles (and the active one's data) from MongoDB when the
+  // user logs in.
   useEffect(() => {
     // Wait until the auth session has been resolved (restored from
     // localStorage or not) before deciding whether to show the sign-in alert
@@ -421,70 +518,26 @@ export default function ResumeBuilder() {
       setIsLoading(true);
       if (user) {
         try {
-          console.log('User logged in, loading resume data...');
-          const data = await loadResumeData(user.uid);
+          const profileList = await listResumeProfiles(user.uid);
+          setProfiles(profileList);
 
-          console.log('=== FULL DATA FROM MONGODB ===');
-          console.log(JSON.stringify(data, null, 2));
-          console.log('=== END DATA ===');
+          const targetProfileId =
+            profileList.find(p => p.isDefault)?.profileId ||
+            profileList[0]?.profileId ||
+            'default';
+          setActiveProfileId(targetProfileId);
 
-          if (data) {
-            // Load personal info
-            console.log('Personal Info from DB:', data.personalInfo);
-            if (data.personalInfo) {
-              // Validate phone number - must start with + and contain only digits and +
-              const phoneValue = data.personalInfo.phone || '+94';
-              const isValidPhone = phoneValue.match(/^\+\d+$/);
-
-              setPersonalInfo({
-                fullName: data.personalInfo.fullName || '',
-                email: data.personalInfo.email || '',
-                phone: isValidPhone ? phoneValue : '+94',
-                location: data.personalInfo.location || '',
-                summary: data.personalInfo.summary || '',
-              });
-            }
-
-            // Load work experiences
-            console.log('Work Experiences from DB:', data.workExperiences);
-            if (data.workExperiences) {
-              setWorkExperiences(data.workExperiences);
-            }
-
-            // Load education
-            console.log('Education from DB:', data.education);
-            if (data.education) {
-              setEducations(data.education);
-            }
-
-            // Load projects
-            console.log('Projects from DB:', data.projects);
-            if (data.projects) {
-              setProjects(data.projects);
-            }
-
-            // Load skills
-            console.log('Skills from DB:', data.skills);
-            if (data.skills) {
-              setPosition(data.skills.position || '');
-              setSelectedSkills(data.skills.selectedSkills || []);
-            }
-
-            // Load social links
-            console.log('Social Links from DB:', data.socialLinks);
-            if (data.socialLinks) {
-              setSocialLinks(data.socialLinks);
-            }
-
-            console.log('Resume data loaded successfully!');
-          }
+          const data = await loadResumeData(
+            user.uid,
+            profileList.length ? targetProfileId : undefined
+          );
+          applyLoadedData(data);
         } catch (error) {
           console.error('Error loading resume data:', error);
         } finally {
           setIsLoading(false);
         }
       } else {
-        console.log('User logged out, clearing data...');
         setIsLoading(false);
 
         // Show alert only once when user is not signed in
@@ -498,36 +551,14 @@ export default function ResumeBuilder() {
         }
 
         // Clear all data when user logs out
-        setPersonalInfo({
-          fullName: '',
-          email: '',
-          phone: '+94',
-          location: '',
-          summary: '',
-        });
-        setSocialLinks(createEmptySocialLinks());
-        setWorkExperiences([]);
-        setEducations([]);
-        setProjects([]);
-        setPosition('');
-        setSelectedSkills([]);
-
-        // Reset steps
-        setStepsCompleted({
-          personal: false,
-          experience: false,
-          education: false,
-          projects: false,
-          skills: false,
-        });
-
-        // Reset active section to personal
-        setActiveSection('personal');
+        setProfiles([]);
+        setActiveProfileId('default');
+        applyLoadedData(null);
       }
     };
 
     syncResumeData();
-  }, [user, authLoading]);
+  }, [user, authLoading, applyLoadedData]);
 
   // Helper function to show alert dialog
   const showAlert = useCallback(
@@ -542,6 +573,117 @@ export default function ResumeBuilder() {
     []
   );
 
+  const refreshProfiles = useCallback(() => {
+    if (!user) return;
+    listResumeProfiles(user.uid)
+      .then(setProfiles)
+      .catch(err => console.error('Error refreshing resume profiles:', err));
+  }, [user]);
+
+  const handleSwitchProfile = useCallback(
+    async (profileId: string) => {
+      if (!user) return;
+      setIsLoading(true);
+      try {
+        setActiveProfileId(profileId);
+        const data = await loadResumeData(user.uid, profileId);
+        applyLoadedData(data);
+      } catch (error) {
+        console.error('Error switching resume profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user, applyLoadedData]
+  );
+
+  const handleCreateProfile = useCallback(
+    async (name: string) => {
+      if (!user) return;
+      try {
+        const profile = await saveResumeData(
+          user.uid,
+          {
+            personalInfo: {
+              fullName: '',
+              email: '',
+              phone: '+94',
+              location: '',
+              summary: '',
+            },
+            socialLinks: createEmptySocialLinks(),
+            workExperiences: [],
+            education: [],
+            projects: [],
+            skills: { position: '', selectedSkills: [] },
+          },
+          { profileName: name }
+        );
+        const updated = await listResumeProfiles(user.uid);
+        setProfiles(updated);
+        setActiveProfileId(profile.profileId);
+        applyLoadedData(null);
+        showAlert('Profile Created', `"${name}" is ready to fill in.`, 'success');
+      } catch (error) {
+        console.error('Error creating resume profile:', error);
+        showAlert('Error', 'Failed to create the new profile.', 'error');
+      }
+    },
+    [user, applyLoadedData, showAlert]
+  );
+
+  const handleRenameProfile = useCallback(
+    async (profileId: string, name: string) => {
+      if (!user) return;
+      try {
+        await renameResumeProfile(user.uid, profileId, name);
+        refreshProfiles();
+      } catch (error) {
+        console.error('Error renaming resume profile:', error);
+        showAlert('Error', 'Failed to rename the profile.', 'error');
+      }
+    },
+    [user, refreshProfiles, showAlert]
+  );
+
+  const handleSetDefaultProfile = useCallback(
+    async (profileId: string) => {
+      if (!user) return;
+      try {
+        await setDefaultResumeProfile(user.uid, profileId);
+        refreshProfiles();
+      } catch (error) {
+        console.error('Error setting default resume profile:', error);
+      }
+    },
+    [user, refreshProfiles]
+  );
+
+  const handleDeleteProfile = useCallback(
+    async (profileId: string) => {
+      if (!user) return;
+      try {
+        await deleteResumeProfile(user.uid, profileId);
+        const updated = await listResumeProfiles(user.uid);
+        setProfiles(updated);
+
+        if (profileId === activeProfileId) {
+          const next = updated.find(p => p.isDefault) || updated[0];
+          if (next) {
+            await handleSwitchProfile(next.profileId);
+          } else {
+            setActiveProfileId('default');
+            applyLoadedData(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting resume profile:', error);
+        showAlert('Error', 'Failed to delete the profile.', 'error');
+      }
+    },
+    [user, activeProfileId, handleSwitchProfile, applyLoadedData, showAlert]
+  );
+
   // Handle Save & Continue for each step
   const handleSaveStep = useCallback(async () => {
     let isValid = false;
@@ -554,17 +696,22 @@ export default function ResumeBuilder() {
 
           // Save data when moving forward
           if (user) {
-            await autoSaveResumeData(user.uid, {
-              personalInfo,
-              socialLinks,
-              workExperiences,
-              education: educations,
-              projects,
-              skills: {
-                position,
-                selectedSkills,
+            await autoSaveResumeData(
+              user.uid,
+              {
+                personalInfo,
+                socialLinks,
+                workExperiences,
+                education: educations,
+                projects,
+                skills: {
+                  position,
+                  selectedSkills,
+                },
               },
-            });
+              { profileId: activeProfileId }
+            );
+            refreshProfiles();
           }
 
           setActiveSection('experience');
@@ -577,17 +724,22 @@ export default function ResumeBuilder() {
 
           // Save data when moving forward
           if (user) {
-            await autoSaveResumeData(user.uid, {
-              personalInfo,
-              socialLinks,
-              workExperiences,
-              education: educations,
-              projects,
-              skills: {
-                position,
-                selectedSkills,
+            await autoSaveResumeData(
+              user.uid,
+              {
+                personalInfo,
+                socialLinks,
+                workExperiences,
+                education: educations,
+                projects,
+                skills: {
+                  position,
+                  selectedSkills,
+                },
               },
-            });
+              { profileId: activeProfileId }
+            );
+            refreshProfiles();
           }
 
           setActiveSection('education');
@@ -600,17 +752,22 @@ export default function ResumeBuilder() {
 
           // Save data when moving forward
           if (user) {
-            await autoSaveResumeData(user.uid, {
-              personalInfo,
-              socialLinks,
-              workExperiences,
-              education: educations,
-              projects,
-              skills: {
-                position,
-                selectedSkills,
+            await autoSaveResumeData(
+              user.uid,
+              {
+                personalInfo,
+                socialLinks,
+                workExperiences,
+                education: educations,
+                projects,
+                skills: {
+                  position,
+                  selectedSkills,
+                },
               },
-            });
+              { profileId: activeProfileId }
+            );
+            refreshProfiles();
           }
 
           setActiveSection('projects');
@@ -623,17 +780,22 @@ export default function ResumeBuilder() {
 
           // Save data when moving forward
           if (user) {
-            await autoSaveResumeData(user.uid, {
-              personalInfo,
-              socialLinks,
-              workExperiences,
-              education: educations,
-              projects,
-              skills: {
-                position,
-                selectedSkills,
+            await autoSaveResumeData(
+              user.uid,
+              {
+                personalInfo,
+                socialLinks,
+                workExperiences,
+                education: educations,
+                projects,
+                skills: {
+                  position,
+                  selectedSkills,
+                },
               },
-            });
+              { profileId: activeProfileId }
+            );
+            refreshProfiles();
           }
 
           setActiveSection('skills');
@@ -646,17 +808,22 @@ export default function ResumeBuilder() {
 
           // Save resume data to MongoDB when skills section is completed
           if (user) {
-            await autoSaveResumeData(user.uid, {
-              personalInfo,
-              socialLinks,
-              workExperiences,
-              education: educations,
-              projects,
-              skills: {
-                position,
-                selectedSkills,
+            await autoSaveResumeData(
+              user.uid,
+              {
+                personalInfo,
+                socialLinks,
+                workExperiences,
+                education: educations,
+                projects,
+                skills: {
+                  position,
+                  selectedSkills,
+                },
               },
-            });
+              { profileId: activeProfileId }
+            );
+            refreshProfiles();
           }
 
           showAlert(
@@ -690,6 +857,8 @@ export default function ResumeBuilder() {
     selectedSkills,
     showAlert,
     user,
+    activeProfileId,
+    refreshProfiles,
   ]);
 
   // Handle Previous Step
@@ -774,6 +943,19 @@ export default function ResumeBuilder() {
 
       {/* Main Content */}
       <div className="p-4 md:p-6 lg:p-8">
+        {user && (
+          <ResumeProfileSwitcher
+            profiles={profiles}
+            activeProfileId={activeProfileId}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onSwitch={handleSwitchProfile}
+            onCreate={handleCreateProfile}
+            onRename={handleRenameProfile}
+            onDelete={handleDeleteProfile}
+            onSetDefault={handleSetDefaultProfile}
+          />
+        )}
+
         {/* Desktop Header */}
         <div className="mb-6 md:mb-8 hidden lg:block">
           <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">

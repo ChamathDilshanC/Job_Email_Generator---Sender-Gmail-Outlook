@@ -2,17 +2,27 @@
 
 import EmailHistoryCard from '@/app/components/EmailHistoryCard';
 import EmailHistoryModal from '@/app/components/EmailHistoryModal';
-import { EmailHistory } from '@/app/models/EmailHistory';
+import { ApplicationStatus, EmailHistory } from '@/app/models/EmailHistory';
 import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
   loadEmailHistory,
+  updateApplicationStatus,
 } from '@/lib/emailHistoryService';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { motion } from 'framer-motion';
-import { Building2, CheckCircle2, Clock, Search, XCircle } from 'lucide-react';
+import {
+  Building2,
+  CalendarClock,
+  CheckCircle2,
+  Clock,
+  Search,
+  ThumbsDown,
+  ThumbsUp,
+  XCircle,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function History() {
@@ -72,6 +82,31 @@ export default function History() {
   const totalPending = emailHistory.filter(e => e.status === 'pending').length;
   const totalFailed = emailHistory.filter(e => e.status === 'failed').length;
   const uniqueCompanies = new Set(emailHistory.map(e => e.companyName)).size;
+
+  const handleStatusChange = async (
+    emailId: string,
+    newStatus: ApplicationStatus
+  ) => {
+    const previous = emailHistory;
+    setEmailHistory(prev =>
+      prev.map(email =>
+        email.id === emailId
+          ? { ...email, applicationStatus: newStatus }
+          : email
+      )
+    );
+
+    const success = await updateApplicationStatus(emailId, newStatus);
+    if (!success) {
+      setEmailHistory(previous);
+      setAlertDialog({
+        open: true,
+        title: 'Error',
+        description: 'Failed to update application status. Please try again.',
+        type: 'error',
+      });
+    }
+  };
 
   const handleDelete = (emailId: string) => {
     setConfirmDialog({
@@ -154,6 +189,37 @@ export default function History() {
     },
   ];
 
+  // Application pipeline stats (mini-CRM view) — only meaningful for
+  // successfully sent emails, since pending/failed rows have no
+  // applicationStatus set.
+  const pipelineStats = [
+    {
+      label: 'Interview Scheduled',
+      value: emailHistory.filter(
+        e => e.applicationStatus === 'interview_scheduled'
+      ).length,
+      icon: CalendarClock,
+      iconClass: 'text-purple-500',
+      bgClass: 'bg-purple-50 dark:bg-purple-500/10',
+    },
+    {
+      label: 'Offered',
+      value: emailHistory.filter(e => e.applicationStatus === 'offered')
+        .length,
+      icon: ThumbsUp,
+      iconClass: 'text-green-500',
+      bgClass: 'bg-green-50 dark:bg-green-500/10',
+    },
+    {
+      label: 'Rejected',
+      value: emailHistory.filter(e => e.applicationStatus === 'rejected')
+        .length,
+      icon: ThumbsDown,
+      iconClass: 'text-red-500',
+      bgClass: 'bg-red-50 dark:bg-red-500/10',
+    },
+  ];
+
   return (
     <>
       <motion.div
@@ -201,6 +267,38 @@ export default function History() {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Application Pipeline Stats */}
+        {totalSent > 0 && (
+          <motion.div
+            variants={staggerContainer(0.06)}
+            className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3"
+          >
+            {pipelineStats.map(stat => (
+              <motion.div
+                key={stat.label}
+                variants={fadeInUp}
+                whileHover={{ y: -3 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm hover:shadow-lg dark:hover:shadow-black/40"
+              >
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.bgClass}`}
+                >
+                  <stat.icon className={`h-5 w-5 ${stat.iconClass}`} />
+                </div>
+                <div className="flex-1">
+                  <div className="mb-0.5 text-2xl font-semibold leading-none text-foreground">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {stat.label}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         {/* Search Bar */}
         <motion.div variants={fadeInUp} className="mb-6">
@@ -274,6 +372,7 @@ export default function History() {
                     email={email}
                     onDelete={handleDelete}
                     onViewDetails={handleViewDetails}
+                    onStatusChange={handleStatusChange}
                   />
                 ))}
               </motion.div>

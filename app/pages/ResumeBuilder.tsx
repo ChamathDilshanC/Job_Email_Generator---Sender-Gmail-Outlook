@@ -516,7 +516,7 @@ export default function ResumeBuilder() {
     let hasShownAlert = false; // Flag to prevent showing alert multiple times
 
     const syncResumeData = async () => {
-      const cacheKey = `resume:${user?.uid}`;
+      const cacheKey = `resume-builder:${user?.uid}`;
       const cached = getCachedData<{
         profileList: ResumeProfileSummary[];
         data: ResumeData | null;

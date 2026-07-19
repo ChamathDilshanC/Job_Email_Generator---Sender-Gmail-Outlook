@@ -202,7 +202,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         return;
       }
 
-      const cacheKey = `resume:${user?.uid}`;
+      const cacheKey = `send-email-resume:${user?.uid}`;
       const cached = getCachedData<{
         profiles: ResumeProfileSummary[];
         data: ResumeData | null;
@@ -449,6 +449,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         ? generatedEmail.bodyText
         : generatedEmail.body;
 
+    // Close the preview so the sending animation (rendered in the page
+    // behind it) is actually visible instead of sitting under the dialog.
+    setShowPreviewModal(false);
     setIsSending(true);
 
     try {
@@ -480,7 +483,6 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
         window.location.href = mailtoLink;
 
-        setShowPreviewModal(false);
         setAlertDialog({
           open: true,
           title: 'Opening Outlook...',
@@ -570,7 +572,6 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           trackingId,
         });
 
-        setShowPreviewModal(false);
         setAlertDialog({
           open: true,
           title: 'Email Sent Successfully!',
@@ -624,6 +625,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const handleConfirmSchedule = async () => {
     if (!generatedEmail || !scheduledFor || !user?.uid) return;
 
+    // Close the preview so the sending animation (rendered in the page
+    // behind it) is actually visible instead of sitting under the dialog.
+    setShowPreviewModal(false);
     setIsSending(true);
     try {
       const attachmentsList: GmailAttachment[] = [];
@@ -668,7 +672,6 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       });
 
       if (result.success) {
-        setShowPreviewModal(false);
         setAlertDialog({
           open: true,
           title: 'Email Scheduled!',

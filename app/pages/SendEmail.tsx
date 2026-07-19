@@ -144,6 +144,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
   // Rich text body editing + preview-before-send
   const [editedBodyHtml, setEditedBodyHtml] = useState<string | null>(null);
+  const [isEditingBody, setIsEditingBody] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
 
@@ -1031,7 +1032,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </Field>
 
             {emailClient === 'gmail' && (
-              <Field label="When to Send">
+              <Field label="When to Send" className="sm:col-span-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="inline-flex rounded-lg border border-border p-1">
                     {(['now', 'schedule'] as const).map(mode => (
@@ -1363,33 +1364,61 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </div>
           </div>
 
-          {/* Email Body - editable rich text, mirrors the mock card on the landing page */}
+          {/* Email Body - real rendered preview by default; edit mode is opt-in */}
           <AnimatePresence>
             {isFormValid && generatedEmail && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="mx-6 mb-6 overflow-hidden rounded-xl border border-border"
+                className="mx-6 mb-6 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm"
               >
-                <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+                <div className="flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-5 py-3">
                   <div className="flex items-center gap-2">
-                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      Email Body{editedBodyHtml !== null ? ' (edited)' : ''}
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">
+                      Email Body
                     </span>
+                    {editedBodyHtml !== null && (
+                      <span className="rounded-full bg-blue-100 dark:bg-[#818cf8]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:text-[#a5b4fc]">
+                        Edited
+                      </span>
+                    )}
                   </div>
-                  {editedBodyHtml !== null && (
-                    <button
+                  <div className="flex items-center gap-3">
+                    {isEditingBody && editedBodyHtml !== null && (
+                      <button
+                        type="button"
+                        onClick={() => setShowRegenerateConfirm(true)}
+                        className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                      >
+                        Regenerate from template
+                      </button>
+                    )}
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
                       type="button"
-                      onClick={() => setShowRegenerateConfirm(true)}
-                      className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                      onClick={() => setIsEditingBody(v => !v)}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        isEditingBody
+                          ? 'bg-primary text-primary-foreground'
+                          : 'border border-border text-foreground hover:bg-accent'
+                      }`}
                     >
-                      Regenerate from template
-                    </button>
-                  )}
+                      {isEditingBody ? (
+                        <>
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Done Editing
+                        </>
+                      ) : (
+                        <>
+                          <Pencil className="h-3.5 w-3.5" /> Edit
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
                 </div>
-                <div className="space-y-2 border-b border-border px-4 py-4 text-sm">
+                <div className="space-y-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 text-sm">
                   <div className="flex gap-3">
                     <span className="w-16 shrink-0 font-medium text-muted-foreground">
                       To
@@ -1407,14 +1436,21 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     </span>
                   </div>
                 </div>
-                <div className="p-4">
-                  <EmailBodyEditor
-                    value={displayedBodyHtml}
-                    onChange={html => setEditedBodyHtml(html)}
-                  />
+                <div className="bg-white dark:bg-gray-900 p-5">
+                  {isEditingBody ? (
+                    <EmailBodyEditor
+                      value={displayedBodyHtml}
+                      onChange={html => setEditedBodyHtml(html)}
+                    />
+                  ) : (
+                    <div
+                      className="max-h-[420px] overflow-y-auto rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/30 p-4 text-sm leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: displayedBodyHtml }}
+                    />
+                  )}
                 </div>
                 {(attachments.cv || attachments.coverLetter) && (
-                  <div className="flex items-center gap-1.5 border-t border-border px-4 py-2.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-2.5 text-xs text-muted-foreground">
                     <Paperclip className="h-3.5 w-3.5" />
                     {[attachments.cv?.name, attachments.coverLetter?.name]
                       .filter(Boolean)

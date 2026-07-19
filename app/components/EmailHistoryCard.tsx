@@ -189,10 +189,10 @@ export default function EmailHistoryCard({
         </p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex items-center justify-center gap-3">
         <button
           onClick={() => onViewDetails(email)}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#3b3be3] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2f2fb8]"
+          className="flex items-center justify-center gap-1.5 rounded-lg bg-[#3b3be3] px-8 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2f2fb8]"
         >
           View Details
           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -200,7 +200,7 @@ export default function EmailHistoryCard({
         <button
           onClick={() => onDelete(email.id)}
           title="Delete"
-          className="rounded-lg border border-red-300 p-2 text-red-600 transition-colors hover:bg-red-50 dark:border-red-800/60 dark:text-red-400 dark:hover:bg-red-950/30"
+          className="rounded-lg border border-red-300 p-2.5 text-red-600 transition-colors hover:bg-red-50 dark:border-red-800/60 dark:text-red-400 dark:hover:bg-red-950/30"
         >
           <Trash2 className="h-4 w-4" />
         </button>

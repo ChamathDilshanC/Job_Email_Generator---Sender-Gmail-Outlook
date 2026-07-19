@@ -109,9 +109,12 @@ export async function POST(request: NextRequest) {
       { userId, profileId },
       {
         $set: setFields,
+        // Mongo rejects an update that touches the same path in both $set
+        // and $setOnInsert, so only fall back to a default name here when
+        // $set isn't already writing one.
         $setOnInsert: {
           createdAt: new Date(),
-          profileName: profileName || 'Default',
+          ...(setFields.profileName ? {} : { profileName: 'Default' }),
           ...(makeDefault ? {} : { isDefault: false }),
         },
       },

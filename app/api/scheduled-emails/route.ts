@@ -38,8 +38,11 @@ export async function GET(request: NextRequest) {
     }
 
     const collection = await getCollection();
+    // The list view only ever renders company/position/status/date — skip
+    // shipping the full email body and (often multi-MB, base64) attachment
+    // payloads over the wire for every row.
     const scheduled = await collection
-      .find({ userId })
+      .find({ userId }, { projection: { bodyHtml: 0, attachments: 0 } })
       .sort({ scheduledFor: 1 })
       .toArray();
 

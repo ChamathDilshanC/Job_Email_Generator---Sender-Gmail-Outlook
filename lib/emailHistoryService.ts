@@ -77,6 +77,29 @@ export async function loadEmailHistory(
 }
 
 /**
+ * Load just the sent/pending/total counts for a user, without pulling down
+ * every history document (used by the Profile page's stat tiles).
+ */
+export async function loadEmailHistoryStats(
+  userId: string | undefined | null
+): Promise<{ total: number; sent: number; pending: number }> {
+  const empty = { total: 0, sent: 0, pending: 0 };
+  if (!userId) return empty;
+
+  try {
+    const response = await fetch(
+      `/api/email-history?userId=${userId}&stats=true`
+    );
+    if (!response.ok) throw new Error('Failed to load email history stats');
+    const data = await response.json();
+    return data.stats || empty;
+  } catch (error) {
+    console.error('Error loading email history stats:', error);
+    return empty;
+  }
+}
+
+/**
  * Update the application pipeline stage (Applied / Interview Scheduled /
  * Rejected / Offered / No Response) for a history entry.
  */

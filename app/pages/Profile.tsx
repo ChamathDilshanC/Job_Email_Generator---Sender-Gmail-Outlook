@@ -7,8 +7,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
   loadEmailHistory,
+  loadEmailHistoryStats,
 } from '@/lib/emailHistoryService';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
+import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import { loadResumeData } from '@/lib/resumeDataService';
 import { motion } from 'framer-motion';
 import {
@@ -52,14 +54,18 @@ export default function Profile() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (isAuthenticated) {
+      if (isAuthenticated && user?.uid) {
+        const cacheKey = `email-stats:${user.uid}`;
+        const cached = getCachedData<typeof emailStats>(cacheKey);
+        if (cached) {
+          setEmailStats(cached);
+          setIsLoading(false);
+        }
+
         try {
-          const history = await loadEmailHistory(user?.uid);
-          setEmailStats({
-            total: history.length,
-            sent: history.filter(e => e.status === 'sent').length,
-            pending: history.filter(e => e.status === 'pending').length,
-          });
+          const stats = await loadEmailHistoryStats(user.uid);
+          setEmailStats(stats);
+          setCachedData(cacheKey, stats);
         } catch (error) {
           console.error('Error loading email stats:', error);
         } finally {

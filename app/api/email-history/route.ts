@@ -11,6 +11,7 @@ async function ensureIndexes(collection: import('mongodb').Collection) {
     await Promise.all([
       collection.createIndex({ userId: 1, sentDate: -1 }),
       collection.createIndex({ userId: 1, applicationStatus: 1 }),
+      collection.createIndex({ userId: 1, status: 1 }),
       collection.createIndex({ trackingId: 1 }),
     ]);
   } catch (error) {
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const statsOnly = searchParams.get('stats') === 'true';
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -34,6 +36,18 @@ export async function GET(request: NextRequest) {
     const db = client.db('job_email_generator');
     const collection = db.collection('email_history');
     await ensureIndexes(collection);
+
+    if (statsOnly) {
+      // Just three counts — avoid pulling every full history doc (incl.
+      // statusHistory arrays and email previews) over the wire just to
+      // tally them client-side.
+      const [total, sent, pending] = await Promise.all([
+        collection.countDocuments({ userId }),
+        collection.countDocuments({ userId, status: 'sent' }),
+        collection.countDocuments({ userId, status: 'pending' }),
+      ]);
+      return NextResponse.json({ stats: { total, sent, pending } });
+    }
 
     const history = await collection
       .find({ userId })

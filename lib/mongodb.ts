@@ -5,26 +5,26 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI;
-const options = {};
+const options = {
+  maxPoolSize: 10,
+  minPoolSize: 1,
+};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
-if (process.env.NODE_ENV === 'development') {
-  // In development, use a global variable to preserve the client across module reloads
-  let globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
+// Cache the connection on `global` in every environment, not just dev.
+// Serverless functions reuse their module scope across warm invocations,
+// so caching here means most requests reuse an already-open pooled
+// connection instead of paying a fresh TLS handshake to Atlas every time.
+let globalWithMongo = global as typeof globalThis & {
+  _mongoClientPromise?: Promise<MongoClient>;
+};
 
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect();
-  }
-  clientPromise = globalWithMongo._mongoClientPromise;
-} else {
-  // In production, create a new client for each request
+if (!globalWithMongo._mongoClientPromise) {
   client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  globalWithMongo._mongoClientPromise = client.connect();
 }
+clientPromise = globalWithMongo._mongoClientPromise;
 
 export default clientPromise;

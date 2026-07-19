@@ -19,6 +19,7 @@ import {
   type GmailAttachment,
 } from '@/lib/gmailClient';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
+import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import {
   listResumeProfiles,
   loadResumeData,
@@ -201,16 +202,38 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         return;
       }
 
-      setIsLoadingResume(true);
+      const cacheKey = `resume:${user?.uid}`;
+      const cached = getCachedData<{
+        profiles: ResumeProfileSummary[];
+        data: ResumeData | null;
+      }>(cacheKey);
+      if (cached) {
+        setResumeProfiles(cached.profiles);
+        setSelectedProfileId(
+          cached.profiles.find(p => p.isDefault)?.profileId ||
+            cached.profiles[0]?.profileId ||
+            ''
+        );
+        setResumeData(cached.data);
+        setIsLoadingResume(false);
+      } else {
+        setIsLoadingResume(true);
+      }
+
       try {
-        const profiles = await listResumeProfiles(user?.uid);
+        // The default profile's data can be resolved server-side without
+        // knowing its id first, so fetch the list and the data in parallel
+        // instead of waiting on the list before requesting the data.
+        const [profiles, data] = await Promise.all([
+          listResumeProfiles(user?.uid),
+          loadResumeData(user?.uid),
+        ]);
         setResumeProfiles(profiles);
         const defaultProfileId =
           profiles.find(p => p.isDefault)?.profileId || profiles[0]?.profileId;
         setSelectedProfileId(defaultProfileId || '');
-
-        const data = await loadResumeData(user?.uid, defaultProfileId);
         setResumeData(data);
+        setCachedData(cacheKey, { profiles, data });
       } catch (error) {
         console.error('Error loading resume data:', error);
       } finally {

@@ -13,6 +13,7 @@ import { AlertDialog } from '@/components/alert-dialog';
 import { Loader } from '@/components/ui/loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { EASE } from '@/lib/motion';
+import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import {
   autoSaveResumeData,
   deleteResumeProfile,
@@ -515,10 +516,33 @@ export default function ResumeBuilder() {
     let hasShownAlert = false; // Flag to prevent showing alert multiple times
 
     const syncResumeData = async () => {
-      setIsLoading(true);
+      const cacheKey = `resume:${user?.uid}`;
+      const cached = getCachedData<{
+        profileList: ResumeProfileSummary[];
+        data: ResumeData | null;
+      }>(cacheKey);
+      if (cached && user) {
+        setProfiles(cached.profileList);
+        const cachedTargetId =
+          cached.profileList.find(p => p.isDefault)?.profileId ||
+          cached.profileList[0]?.profileId ||
+          'default';
+        setActiveProfileId(cachedTargetId);
+        applyLoadedData(cached.data);
+        setIsLoading(false);
+      } else {
+        setIsLoading(true);
+      }
+
       if (user) {
         try {
-          const profileList = await listResumeProfiles(user.uid);
+          // The default profile's data can be resolved server-side without
+          // knowing its id first, so fetch the list and the data in
+          // parallel instead of waiting on the list to pick a target id.
+          const [profileList, data] = await Promise.all([
+            listResumeProfiles(user.uid),
+            loadResumeData(user.uid),
+          ]);
           setProfiles(profileList);
 
           const targetProfileId =
@@ -526,12 +550,8 @@ export default function ResumeBuilder() {
             profileList[0]?.profileId ||
             'default';
           setActiveProfileId(targetProfileId);
-
-          const data = await loadResumeData(
-            user.uid,
-            profileList.length ? targetProfileId : undefined
-          );
           applyLoadedData(data);
+          setCachedData(cacheKey, { profileList, data });
         } catch (error) {
           console.error('Error loading resume data:', error);
         } finally {

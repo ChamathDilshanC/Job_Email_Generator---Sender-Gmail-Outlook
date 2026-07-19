@@ -24,8 +24,16 @@ async function ensureIndexes(collection: Collection) {
  * `profileId`. Lazily fold any such document into the new shape the first
  * time it's touched, so old single-profile users keep their data without a
  * manual migration script.
+ *
+ * Memoized per userId for the lifetime of this warm serverless instance —
+ * once a user has been checked (migrated or never needed it), skip the
+ * extra findOne on every subsequent request from them.
  */
+const migrationChecked = new Set<string>();
 async function migrateLegacyProfile(collection: Collection, userId: string) {
+  if (migrationChecked.has(userId)) return;
+  migrationChecked.add(userId);
+
   const legacyDoc = await collection.findOne({
     userId,
     profileId: { $exists: false },

@@ -12,6 +12,7 @@ import {
   updateApplicationStatus,
 } from '@/lib/emailHistoryService';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
+import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import { motion } from 'framer-motion';
 import {
   Building2,
@@ -54,11 +55,27 @@ export default function History() {
 
   // Load email history on mount
   useEffect(() => {
+    if (!user?.uid) {
+      setEmailHistory([]);
+      setIsLoading(false);
+      return;
+    }
+    const cacheKey = `history:${user.uid}`;
+
     const fetchHistory = async () => {
-      setIsLoading(true);
+      const cached = getCachedData<EmailHistory[]>(cacheKey);
+      if (cached) {
+        // Show what we already have instantly, then quietly refresh.
+        setEmailHistory(cached);
+        setIsLoading(false);
+      } else {
+        setIsLoading(true);
+      }
+
       try {
-        const history = await loadEmailHistory(user?.uid);
+        const history = await loadEmailHistory(user.uid);
         setEmailHistory(history);
+        setCachedData(cacheKey, history);
       } catch (error) {
         console.error('Error loading email history:', error);
       } finally {

@@ -11,6 +11,7 @@ import {
   listScheduledEmails,
   ScheduledEmail,
 } from '@/lib/scheduledEmailService';
+import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -47,12 +48,22 @@ export default function Scheduled() {
         setIsLoading(false);
         return;
       }
-      setIsLoading(true);
+
+      const cacheKey = `scheduled:${user.uid}`;
+      const cached = getCachedData<ScheduledEmail[]>(cacheKey);
+      if (cached) {
+        setScheduled(cached);
+        setIsLoading(false);
+      } else {
+        setIsLoading(true);
+      }
+
       const [list, backgroundSendOk] = await Promise.all([
         listScheduledEmails(user.uid),
         checkGoogleBackgroundSendStatus(user.uid),
       ]);
       setScheduled(list);
+      setCachedData(cacheKey, list);
       setHasBackgroundSend(backgroundSendOk);
       setIsLoading(false);
     };

@@ -5,8 +5,10 @@ export interface ScheduledEmail {
   userId: string;
   to: string;
   subject: string;
-  bodyHtml: string;
-  attachments: GmailSendAttachment[];
+  // Omitted by the list endpoint (/api/scheduled-emails GET) to keep the
+  // list payload small — only present if fetched individually elsewhere.
+  bodyHtml?: string;
+  attachments?: GmailSendAttachment[];
   attachmentNames: { cv?: string; coverLetter?: string };
   scheduledFor: string;
   status: 'pending' | 'sent' | 'failed' | 'cancelled';

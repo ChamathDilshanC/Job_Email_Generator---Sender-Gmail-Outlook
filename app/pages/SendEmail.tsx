@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
 import type { PageType } from '@/components/sidebar-01/types';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
 import { saveEmailToHistory } from '@/lib/emailHistoryService';
@@ -45,7 +46,14 @@ import {
   XCircle,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { ChangeEvent, FormEvent, ReactNode, useEffect, useState } from 'react';
+import {
+  ChangeEvent,
+  FormEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -147,6 +155,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [isEditingBody, setIsEditingBody] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const emailBodySectionRef = useRef<HTMLDivElement>(null);
 
   // Send now vs schedule for later (Gmail only)
   const [sendMode, setSendMode] = useState<'now' | 'schedule'>('now');
@@ -393,6 +402,19 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     }
 
     setShowPreviewModal(true);
+  };
+
+  // Called when the user clicks "Edit" inside the Preview modal — closes the
+  // modal (handled by the modal itself) and drops the main page straight
+  // into the Email Body edit mode so they can make changes.
+  const handleEditFromPreview = () => {
+    setIsEditingBody(true);
+    setTimeout(() => {
+      emailBodySectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 150);
   };
 
   const handleConfirmSend = async () => {
@@ -936,7 +958,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* Fields */}
-          <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2">
             <Field
               label="Company Name"
               action={
@@ -1121,28 +1143,33 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* Cover Letter Requirement Toggle */}
-          <div className="px-6">
-            <div className="flex items-center gap-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
-              <label className="flex items-center gap-3 cursor-pointer text-[0.95rem] font-medium text-gray-800 dark:text-gray-200">
-                <input
-                  type="checkbox"
-                  checked={requireCoverLetter}
-                  onChange={e => setRequireCoverLetter(e.target.checked)}
-                  className="h-[18px] w-[18px] cursor-pointer accent-primary"
-                />
-                <span>Require Cover Letter</span>
-              </label>
-              <span className="text-sm italic text-gray-500 dark:text-gray-400">
-                {requireCoverLetter
-                  ? '✓ Cover letter is required'
-                  : 'Cover letter is optional'}
-              </span>
+          <div className="mt-6 px-6">
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
+              <div>
+                <label
+                  htmlFor="require-cover-letter"
+                  className="cursor-pointer text-[0.95rem] font-medium text-gray-800 dark:text-gray-200"
+                >
+                  Require Cover Letter
+                </label>
+                <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                  {requireCoverLetter
+                    ? 'Cover letter is required before sending'
+                    : 'Cover letter is optional'}
+                </p>
+              </div>
+              <Switch
+                id="require-cover-letter"
+                checked={requireCoverLetter}
+                onCheckedChange={setRequireCoverLetter}
+                aria-label="Require Cover Letter"
+              />
             </div>
           </div>
 
           {/* Additional Details for scenario templates (cold outreach, referral,
               interview thank-you, follow-up, networking, offer response) */}
-          <div className="mt-4 px-6">
+          <div className="mt-6 px-6">
             <button
               type="button"
               onClick={() => setShowAdditionalDetails(v => !v)}
@@ -1285,7 +1312,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* File Upload Sections */}
-          <div className="mt-4 px-6 pb-6">
+          <div className="mt-6 px-6 pb-6">
             <JobFileUpload
               onFilesChange={setAttachments}
               onAlert={(title, description, type) => {
@@ -1368,10 +1395,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           <AnimatePresence>
             {isFormValid && generatedEmail && (
               <motion.div
+                ref={emailBodySectionRef}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="mx-6 mb-6 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm"
+                className="mx-6 mb-6 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm scroll-mt-6"
               >
                 <div className="flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-5 py-3">
                   <div className="flex items-center gap-2">
@@ -1482,6 +1510,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             ? handleConfirmSchedule
             : handleConfirmSend
         }
+        onEdit={handleEditFromPreview}
       />
 
       {/* Regenerate-from-template confirmation */}

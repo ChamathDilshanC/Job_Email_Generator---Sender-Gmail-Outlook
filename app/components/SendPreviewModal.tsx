@@ -22,6 +22,7 @@ interface SendPreviewModalProps {
   sendMode: 'now' | 'schedule';
   scheduledFor: Date | null;
   onConfirm: () => void;
+  onEdit: () => void;
 }
 
 export default function SendPreviewModal({
@@ -36,6 +37,7 @@ export default function SendPreviewModal({
   sendMode,
   scheduledFor,
   onConfirm,
+  onEdit,
 }: SendPreviewModalProps) {
   const isScheduling = sendMode === 'schedule' && emailClient === 'gmail';
   return (
@@ -91,7 +93,10 @@ export default function SendPreviewModal({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onOpenChange(false);
+              onEdit();
+            }}
             disabled={isSending}
           >
             <Pencil className="h-3.5 w-3.5" /> Edit

@@ -103,7 +103,7 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <div className="mb-1.5 flex items-center justify-between gap-2">
+      <div className="mb-1.5 flex min-h-6 items-center justify-between gap-2">
         <label className="text-xs font-medium text-muted-foreground">
           {label}
         </label>

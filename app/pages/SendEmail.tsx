@@ -855,8 +855,18 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
         <motion.div
           variants={fadeInUp}
-          className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+          className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
         >
+          {/* macOS-style window titlebar */}
+          <div className="relative flex items-center gap-1.5 border-b border-border bg-muted/40 px-5 py-3.5">
+            <span className="h-3 w-3 rounded-full bg-red-400/80" />
+            <span className="h-3 w-3 rounded-full bg-amber-400/80" />
+            <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
+            <span className="absolute left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground">
+              Send Application Email
+            </span>
+          </div>
+
           {/* Header */}
           <div className="flex flex-col gap-4 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-foreground">

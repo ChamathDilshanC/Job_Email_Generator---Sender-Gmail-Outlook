@@ -22,6 +22,15 @@ const nextConfig = {
           }
         : false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

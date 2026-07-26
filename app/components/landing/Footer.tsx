@@ -25,13 +25,13 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="bg-neutral-950 px-6 pb-10 pt-6 text-neutral-400">
+    <footer className="relative z-10 bg-[#0c0c0c] px-6 pb-10 pt-6 text-neutral-400">
       <motion.div
         variants={fadeIn}
         initial="hidden"
         whileInView="visible"
         viewport={viewportOnce}
-        className="mx-auto max-w-6xl border-t border-neutral-800 pt-12"
+        className="mx-auto max-w-6xl border-t border-white/10 pt-12"
       >
         <div className="flex flex-col justify-between gap-10 sm:flex-row">
           <div className="max-w-xs">
@@ -82,7 +82,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-neutral-800 pt-6 text-xs text-neutral-500 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-neutral-500 sm:flex-row">
           <p>&copy; {new Date().getFullYear()} JobMail. All rights reserved.</p>
           <p>
             Built with ❤️ by{' '}

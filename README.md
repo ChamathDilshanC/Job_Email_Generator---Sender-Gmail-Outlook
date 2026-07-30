@@ -14,6 +14,7 @@ A modern, feature-rich Next.js application for creating and sending professional
 ## 📑 Table of Contents
 
 - [Overview](#-overview)
+- [Screenshots](#-screenshots)
 - [Architecture](#-architecture)
 - [Key Features](#-key-features)
 - [Technology Stack](#️-technology-stack)
@@ -31,6 +32,36 @@ A modern, feature-rich Next.js application for creating and sending professional
 JobMail lets a job seeker fill in their profile once — either by hand or by uploading an existing resume and letting AI fill it in — then generate and send tailored job-application emails through their own Gmail account, with attachments, in a couple of clicks. Emails can go out immediately or be scheduled for later and still send in the background, even if the browser is closed. Everything runs on a small stack: **Next.js** for the app, **Google OAuth** (server-side auth-code flow) for sign-in, Gmail access, and background sending, **Google Gemini** for AI resume parsing, and **MongoDB** (Azure Cosmos DB for MongoDB) for storage.
 
 Signed-out visitors land on a marketing landing page; signing in switches to the app shell (sidebar + pages), all rendered client-side at `/`.
+
+## 📸 Screenshots
+
+**Landing page** — what signed-out visitors see at [jobemail.me](https://www.jobemail.me)
+
+![Landing page](docs/screenshots/landing-page.png)
+
+**Send Email** — compose, auto-fill from a job URL, pick a template, send via Gmail or Outlook
+
+![Send Email](docs/screenshots/send-email.png)
+
+**Resume Builder** — the 5-step wizard (shown here fully completed, all steps green)
+
+![Resume Builder](docs/screenshots/resume-builder.png)
+
+**Email Templates** — all 12 built-in templates, with a live preview against your own resume data
+
+![Email Templates](docs/screenshots/email-templates.png)
+
+**Email History** — stats, application pipeline, and every sent email in one place
+
+![Email History](docs/screenshots/email-history.png)
+
+**Scheduled Emails** — queued and sent-in-the-background applications
+
+![Scheduled Emails](docs/screenshots/scheduled-emails.png)
+
+**Profile** — account info, cache/export controls, sign out, delete account
+
+![Profile](docs/screenshots/profile.png)
 
 ## 🏗 Architecture
 

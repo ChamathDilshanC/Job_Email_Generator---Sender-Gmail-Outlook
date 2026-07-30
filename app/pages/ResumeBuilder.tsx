@@ -1267,17 +1267,20 @@ export default function ResumeBuilder() {
           />
         )}
 
-        {/* Mobile: Stack vertically, Desktop: 3-column grid */}
-        <div className="flex flex-col lg:grid lg:grid-cols-[200px_1fr_300px] gap-4 lg:gap-6 lg:h-[calc(100vh-200px)]">
+        {/* Mobile: Stack vertically, Desktop: 2-column grid. Items stretch
+            (grid default) so the sticky sidebar's containing block spans the
+            full row height, letting it stay pinned while the taller content
+            column scrolls. */}
+        <div className="flex flex-col lg:grid lg:grid-cols-[220px_1fr] gap-4 lg:gap-6">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
-            className={`fixed lg:relative inset-y-0 left-0 w-64 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
+            className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:inset-auto lg:top-6 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
               isMobileSidebarOpen
                 ? 'translate-x-0'
                 : '-translate-x-full lg:translate-x-0'
             }`}
           >
-            <div className="h-full flex flex-col gap-2 p-4 lg:p-0 overflow-y-auto">
+            <div className="h-full flex flex-col gap-2 p-4 lg:p-0 overflow-y-auto lg:overflow-visible">
               {/* Mobile Close Button */}
               <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -1510,7 +1513,7 @@ export default function ResumeBuilder() {
           </div>
 
           {/* Main Content Area */}
-          <div className="overflow-y-auto max-h-[calc(100vh-300px)] lg:max-h-full">
+          <div className="min-w-0">
             <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}

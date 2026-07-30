@@ -189,10 +189,10 @@ export default function EmailHistoryCard({
         </p>
       </div>
 
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center justify-end gap-2">
         <button
           onClick={() => onViewDetails(email)}
-          className="flex items-center justify-center gap-1.5 rounded-lg bg-[#3b3be3] px-8 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2f2fb8]"
+          className="flex items-center justify-center gap-1.5 rounded-lg bg-[#3b3be3] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2f2fb8]"
         >
           View Details
           <ArrowUpRight className="h-3.5 w-3.5" />

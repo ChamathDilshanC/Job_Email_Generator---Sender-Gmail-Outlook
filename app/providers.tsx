@@ -2,8 +2,9 @@
 
 import { GoogleAuthProvider } from '@/components/google-auth-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { GooeyToaster } from 'goey-toast';
+import 'goey-toast/styles.css';
 import { ThemeProvider, useTheme } from 'next-themes';
-import { Toaster } from 'sonner';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -12,10 +13,11 @@ interface ProvidersProps {
 function ThemedToaster() {
   const { resolvedTheme } = useTheme();
   return (
-    <Toaster
+    <GooeyToaster
       theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
       position="top-center"
-      richColors
+      closeButton
+      showProgress
     />
   );
 }

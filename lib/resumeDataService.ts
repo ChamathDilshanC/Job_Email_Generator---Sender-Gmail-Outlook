@@ -35,6 +35,20 @@ export interface ResumeProfileSummary {
   lastUpdated: any;
 }
 
+// The CV file tagged to a resume profile — stored separately from the
+// wizard fields above (see app/api/resume/cv) so loading resumeData never
+// has to pull a multi-MB base64 blob along with it.
+export interface CvFileMeta {
+  fileName: string;
+  mimeType: string;
+  size: number;
+  uploadedAt: string;
+}
+
+export interface CvFileWithData extends CvFileMeta {
+  data: string; // base64
+}
+
 export type ResumeContent = Omit<
   ResumeData,
   'userId' | 'lastUpdated' | 'createdAt' | 'profileId' | 'profileName' | 'isDefault'
@@ -228,4 +242,75 @@ export function autoSaveResumeData(
       .then(() => console.log('Auto-saved resume data'))
       .catch(err => console.error('Auto-save failed:', err));
   }, delay);
+}
+
+/**
+ * Tag a resume file (the CV) to a specific resume profile. Stored
+ * separately from the wizard content — see app/api/resume/cv.
+ */
+export async function saveResumeCvFile(
+  userId: string,
+  profileId: string,
+  file: { fileName: string; mimeType: string; data: string }
+): Promise<CvFileMeta> {
+  const response = await fetch('/api/resume/cv', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, profileId, ...file }),
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || 'Failed to save resume file');
+  }
+
+  const data = await response.json();
+  return data.cvFile;
+}
+
+/**
+ * Load the CV file tagged to a resume profile. Pass `metaOnly: true` to
+ * fetch just the filename/size/date (e.g. for display in the Resume
+ * Builder) without pulling the full base64 payload over the wire.
+ */
+export async function loadResumeCvFile(
+  userId: string | undefined | null,
+  profileId: string,
+  options: { metaOnly?: boolean } = {}
+): Promise<CvFileMeta | CvFileWithData | null> {
+  if (!userId || !profileId) return null;
+
+  try {
+    const query = new URLSearchParams({ userId, profileId });
+    if (options.metaOnly) query.set('meta', 'true');
+
+    const response = await fetch(`/api/resume/cv?${query.toString()}`);
+    if (!response.ok) {
+      throw new Error('Failed to load resume file');
+    }
+    const data = await response.json();
+    return data.cvFile || null;
+  } catch (error) {
+    console.error('Error loading resume CV file:', error);
+    return null;
+  }
+}
+
+/**
+ * Remove the CV tagged to a resume profile.
+ */
+export async function deleteResumeCvFile(
+  userId: string,
+  profileId: string
+): Promise<boolean> {
+  try {
+    const response = await fetch(
+      `/api/resume/cv?userId=${userId}&profileId=${encodeURIComponent(profileId)}`,
+      { method: 'DELETE' }
+    );
+    return response.ok;
+  } catch (error) {
+    console.error('Error deleting resume CV file:', error);
+    return false;
+  }
 }

@@ -29,6 +29,24 @@ export async function fileToBase64(file: File): Promise<string> {
 }
 
 /**
+ * Convert a base64 string back into a File object (the inverse of
+ * fileToBase64) — used to re-hydrate a stored CV into an attachable File.
+ */
+export function base64ToFile(
+  base64: string,
+  fileName: string,
+  mimeType: string
+): File {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new File([byteArray], fileName, { type: mimeType });
+}
+
+/**
  * Create MIME message for Gmail API
  */
 export function createMimeMessage(params: SendEmailParams): string {

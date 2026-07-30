@@ -3,21 +3,24 @@
 import EducationSection from '@/app/components/EducationSection';
 import LinksSection from '@/app/components/LinksSection';
 import ResumeProfileSwitcher from '@/app/components/ResumeProfileSwitcher';
+import ResumeUploadSection from '@/app/components/ResumeUploadSection';
 import { useTypewriter } from '@/app/components/TypewriterText';
 import WorkExperienceSection from '@/app/components/WorkExperienceSection';
 import { Education } from '@/app/models/Education';
 import { Project } from '@/app/models/Project';
 import { SocialLinks, createEmptySocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
-import { AlertDialog } from '@/components/alert-dialog';
 import { Loader } from '@/components/ui/loader';
 import { useAuth } from '@/contexts/AuthContext';
 import { EASE } from '@/lib/motion';
 import { getCachedData, setCachedData } from '@/lib/pageDataCache';
+import { ParsedResumeContent } from '@/lib/resumeAiParser';
 import {
   autoSaveResumeData,
+  CvFileMeta,
   deleteResumeProfile,
   listResumeProfiles,
+  loadResumeCvFile,
   loadResumeData,
   renameResumeProfile,
   ResumeData,
@@ -29,6 +32,7 @@ import {
   fetchSkillsForPosition,
   getPositionSuggestions,
 } from '@/lib/skillsApiClient';
+import { showToast } from '@/lib/toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PhoneInput from 'react-phone-number-input';
@@ -42,13 +46,10 @@ export default function ResumeBuilder() {
   const [activeSection, setActiveSection] = useState('personal');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Alert dialog state
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertConfig, setAlertConfig] = useState({
-    title: '',
-    description: '',
-    type: 'info' as 'success' | 'error' | 'info' | 'warning',
-  });
+  // Resume file tagged to the active profile (used to auto-fill and to
+  // attach the CV on Send Email — see ResumeUploadSection).
+  const [cvFile, setCvFile] = useState<CvFileMeta | null>(null);
+  const [isLoadingCv, setIsLoadingCv] = useState(false);
 
   // Work Experience State
   const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
@@ -172,7 +173,10 @@ export default function ResumeBuilder() {
         data?.skills?.position && data?.skills?.selectedSkills?.length
       ),
     });
-    setActiveSection('personal');
+    // Point brand-new (empty) profiles at the resume-upload tab first, since
+    // that's the fastest way to fill everything in; profiles that already
+    // have data go straight to Personal like before.
+    setActiveSection(data?.personalInfo?.fullName ? 'personal' : 'resume');
 
     lastSavedSnapshotRef.current = JSON.stringify({
       personalInfo: data?.personalInfo || {},
@@ -183,6 +187,71 @@ export default function ResumeBuilder() {
       skills: data?.skills || { position: '', selectedSkills: [] },
     });
   }, []);
+
+  const hasExistingWizardData =
+    !!personalInfo.fullName.trim() ||
+    !!personalInfo.email.trim() ||
+    workExperiences.length > 0 ||
+    educations.length > 0 ||
+    projects.length > 0 ||
+    selectedSkills.length > 0;
+
+  const withGeneratedIds = <T extends object>(items: T[]): (T & { id: string })[] =>
+    items.map((item, index) => ({
+      ...item,
+      id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+    }));
+
+  // Applies AI-parsed resume content into the wizard. Only touches local
+  // component state — the user still saves each step (exactly like manual
+  // entry) so nothing hits MongoDB until they click Save & Continue.
+  const applyParsedResumeData = useCallback(
+    (parsed: ParsedResumeContent) => {
+      if (
+        hasExistingWizardData &&
+        !window.confirm(
+          'This will replace your current Resume Builder details with information extracted from the uploaded resume. Continue?'
+        )
+      ) {
+        return;
+      }
+
+      const phoneValue = parsed.personalInfo?.phone || '+94';
+      const isValidPhone = phoneValue.match(/^\+\d+$/);
+
+      setPersonalInfo({
+        fullName: parsed.personalInfo?.fullName || '',
+        email: parsed.personalInfo?.email || '',
+        phone: isValidPhone ? phoneValue : '+94',
+        location: parsed.personalInfo?.location || '',
+        summary: parsed.personalInfo?.summary || '',
+      });
+      setSocialLinks(parsed.socialLinks || createEmptySocialLinks());
+      setWorkExperiences(withGeneratedIds(parsed.workExperiences || []));
+      setEducations(withGeneratedIds(parsed.education || []));
+      setProjects(withGeneratedIds(parsed.projects || []));
+      setPosition(parsed.skills?.position || '');
+      setSelectedSkills(parsed.skills?.selectedSkills || []);
+
+      setStepsCompleted({
+        personal: !!(parsed.personalInfo?.fullName && parsed.personalInfo?.email),
+        experience: (parsed.workExperiences || []).length > 0,
+        education: (parsed.education || []).length > 0,
+        projects: (parsed.projects || []).length > 0,
+        skills: !!(
+          parsed.skills?.position && parsed.skills?.selectedSkills?.length
+        ),
+      });
+
+      setActiveSection('personal');
+      showToast(
+        'info',
+        'Review Your Details',
+        'Go through each step and click Save & Continue to store the auto-filled information.'
+      );
+    },
+    [hasExistingWizardData]
+  );
 
   // Validation functions for each step - memoized for performance
   const validatePersonalInfo = useMemo(() => {
@@ -209,6 +278,8 @@ export default function ResumeBuilder() {
   const canAccessSection = useCallback(
     (section: string) => {
       switch (section) {
+        case 'resume':
+          return true; // Always accessible — utility tab, not part of the step flow
         case 'personal':
           return true; // Always accessible
         case 'experience':
@@ -529,6 +600,7 @@ export default function ResumeBuilder() {
           'default';
         setActiveProfileId(cachedTargetId);
         applyLoadedData(cached.data);
+        refreshCvFile(cachedTargetId);
         setIsLoading(false);
       } else {
         setIsLoading(true);
@@ -551,6 +623,7 @@ export default function ResumeBuilder() {
             'default';
           setActiveProfileId(targetProfileId);
           applyLoadedData(data);
+          refreshCvFile(targetProfileId);
           setCachedData(cacheKey, { profileList, data });
         } catch (error) {
           console.error('Error loading resume data:', error);
@@ -574,21 +647,22 @@ export default function ResumeBuilder() {
         setProfiles([]);
         setActiveProfileId('default');
         applyLoadedData(null);
+        setCvFile(null);
       }
     };
 
     syncResumeData();
   }, [user, authLoading, applyLoadedData]);
 
-  // Helper function to show alert dialog
+  // Helper function to show a notification (title/description/type stayed
+  // the same at every call site; only the presentation moved to a toast).
   const showAlert = useCallback(
     (
       title: string,
       description: string,
       type: 'success' | 'error' | 'info' | 'warning' = 'info'
     ) => {
-      setAlertConfig({ title, description, type });
-      setAlertOpen(true);
+      showToast(type, title, description);
     },
     []
   );
@@ -600,6 +674,25 @@ export default function ResumeBuilder() {
       .catch(err => console.error('Error refreshing resume profiles:', err));
   }, [user]);
 
+  // Load (metadata only) the CV file tagged to a profile, if any.
+  const refreshCvFile = useCallback(
+    (profileId: string) => {
+      if (!user?.uid) {
+        setCvFile(null);
+        return;
+      }
+      setIsLoadingCv(true);
+      loadResumeCvFile(user.uid, profileId, { metaOnly: true })
+        .then(cv => setCvFile((cv as CvFileMeta) || null))
+        .catch(err => {
+          console.error('Error loading resume CV file:', err);
+          setCvFile(null);
+        })
+        .finally(() => setIsLoadingCv(false));
+    },
+    [user?.uid]
+  );
+
   const handleSwitchProfile = useCallback(
     async (profileId: string) => {
       if (!user) return;
@@ -608,13 +701,14 @@ export default function ResumeBuilder() {
         setActiveProfileId(profileId);
         const data = await loadResumeData(user.uid, profileId);
         applyLoadedData(data);
+        refreshCvFile(profileId);
       } catch (error) {
         console.error('Error switching resume profile:', error);
       } finally {
         setIsLoading(false);
       }
     },
-    [user, applyLoadedData]
+    [user, applyLoadedData, refreshCvFile]
   );
 
   const handleCreateProfile = useCallback(
@@ -643,6 +737,7 @@ export default function ResumeBuilder() {
         setProfiles(updated);
         setActiveProfileId(profile.profileId);
         applyLoadedData(null);
+        setCvFile(null);
         showAlert('Profile Created', `"${name}" is ready to fill in.`, 'success');
       } catch (error) {
         console.error('Error creating resume profile:', error);
@@ -694,6 +789,7 @@ export default function ResumeBuilder() {
           } else {
             setActiveProfileId('default');
             applyLoadedData(null);
+            setCvFile(null);
           }
         }
       } catch (error) {
@@ -1206,6 +1302,37 @@ export default function ResumeBuilder() {
               </div>
               <div
                 className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
+                  activeSection === 'resume'
+                    ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
+                    : 'text-gray-700 dark:text-gray-300 font-medium hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:bg-blue-50 dark:hover:bg-blue-500/10'
+                }`}
+                onClick={() => {
+                  setActiveSection('resume');
+                  setIsMobileSidebarOpen(false);
+                }}
+              >
+                <svg
+                  className={`w-[18px] h-[18px] ${
+                    activeSection === 'resume'
+                      ? 'opacity-100 text-[#3b3be3] dark:text-[#818cf8]'
+                      : 'opacity-60'
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Resume
+                {cvFile && (
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-green-500" />
+                )}
+              </div>
+              <div
+                className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'personal'
                     ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
                     : 'text-gray-700 dark:text-gray-300 font-medium hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:bg-blue-50 dark:hover:bg-blue-500/10'
@@ -1394,12 +1521,24 @@ export default function ResumeBuilder() {
               className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 md:p-6 lg:p-8 shadow-sm"
             >
               <h2 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6">
+                {activeSection === 'resume' && 'Resume'}
                 {activeSection === 'personal' && 'Personal Information'}
                 {activeSection === 'experience' && 'Work Experience'}
                 {activeSection === 'education' && 'Education'}
                 {activeSection === 'projects' && 'Projects'}
                 {activeSection === 'skills' && 'Skills & Expertise'}
               </h2>
+
+              {activeSection === 'resume' && (
+                <ResumeUploadSection
+                  userId={user?.uid}
+                  profileId={activeProfileId}
+                  existingCv={cvFile}
+                  isLoadingCv={isLoadingCv}
+                  onParsed={applyParsedResumeData}
+                  onCvChange={setCvFile}
+                />
+              )}
 
               {activeSection === 'personal' && (
                 <div className="flex flex-col gap-5">
@@ -2041,15 +2180,6 @@ export default function ResumeBuilder() {
           </div>
         </div>
       </div>
-
-      {/* Alert Dialog */}
-      <AlertDialog
-        open={alertOpen}
-        onOpenChange={setAlertOpen}
-        title={alertConfig.title}
-        description={alertConfig.description}
-        type={alertConfig.type}
-      />
     </div>
   );
 }

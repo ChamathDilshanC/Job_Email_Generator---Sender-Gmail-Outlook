@@ -1549,6 +1549,752 @@ ${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
 }
 
 /**
+ * Template 13: Entry-Level / Internship Application
+ * Teal accent - leads with education and projects instead of work history.
+ */
+function generateEntryLevelApplication(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, education, projects, socialLinks } = resumeData;
+  const { companyName, position } = jobDetails;
+  const accent = '#0d9488';
+  const bg = '#f0fdfa';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const topSkills = skills.selectedSkills.slice(0, 6);
+  const latestEducation = education[0];
+  const topProjects = projects.slice(0, 2);
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear Hiring Manager,
+
+I am excited to apply for the ${position} position at ${companyName}. As a motivated ${
+    skills.position || 'candidate'
+  } early in my career, I'm eager to bring fresh energy and a strong foundation to your team.
+
+${
+  latestEducation
+    ? `Education:
+${latestEducation.degree} in ${latestEducation.fieldOfStudy}
+${latestEducation.institution} | ${formatDateRange(
+        latestEducation.startDate,
+        latestEducation.endDate,
+        latestEducation.currentlyStudying
+      )}${latestEducation.gpa ? ` | GPA: ${latestEducation.gpa}` : ''}`
+    : ''
+}
+
+${
+  topProjects.length > 0
+    ? `Relevant Projects:
+${topProjects
+  .map(p => `• ${p.name} - ${p.description || p.role}`)
+  .join('\n')}`
+    : ''
+}
+
+Key skills I bring: ${
+    topSkills.length > 0 ? topSkills.join(', ') : 'a strong, adaptable skill set'
+  }.
+
+I would welcome the opportunity to grow with ${companyName} and contribute wherever I'm needed. Thank you for considering my application.
+
+Sincerely,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear Hiring Manager,</p>
+
+<p>I am excited to apply for the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. As a motivated ${
+    skills.position || 'candidate'
+  } early in my career, I'm eager to bring fresh energy and a strong foundation to your team.</p>
+
+${
+  latestEducation
+    ? `<p style="font-weight:700; margin-top:22px; margin-bottom:4px; color:#111827;">Education</p>
+<p style="margin:0;"><strong>${latestEducation.degree} in ${
+        latestEducation.fieldOfStudy
+      }</strong><br>
+<span style="color:#6b7280; font-size:13px;">${
+        latestEducation.institution
+      } &middot; ${formatDateRange(
+        latestEducation.startDate,
+        latestEducation.endDate,
+        latestEducation.currentlyStudying
+      )}${latestEducation.gpa ? ` &middot; GPA: ${latestEducation.gpa}` : ''}</span></p>`
+    : ''
+}
+
+${
+  topProjects.length > 0
+    ? `<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Relevant Projects</p>
+<ul style="margin:0; padding-left:18px;">
+${topProjects
+  .map(
+    p =>
+      `<li style="margin-bottom:6px;"><strong>${p.name}</strong> - ${
+        p.description || p.role
+      }</li>`
+  )
+  .join('')}
+</ul>`
+    : ''
+}
+
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Skills</p>
+<div>${
+    topSkills.length > 0
+      ? topSkills.map(s => renderPill(s, accent, bg)).join('')
+      : renderPill('A strong, adaptable skill set', accent, bg)
+  }</div>
+
+<p style="margin-top:18px;">I would welcome the opportunity to grow with <strong style="color:${accent};">${companyName}</strong> and contribute wherever I'm needed. Thank you for considering my application.</p>
+
+${renderClosingHtml(fullName, 'Sincerely', accent, bg)}`);
+
+  return {
+    subject: `Application for ${position} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 14: Remote Position Application
+ * Indigo accent - emphasizes async communication and remote-work readiness.
+ */
+function generateRemotePositionApplication(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, workExperiences, socialLinks } = resumeData;
+  const { companyName, position } = jobDetails;
+  const accent = '#4f46e5';
+  const bg = '#eef2ff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const topSkills = skills.selectedSkills.slice(0, 6);
+  const latestExperience = workExperiences[0];
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear Hiring Manager,
+
+I'm writing to apply for the remote ${position} position at ${companyName}. I have extensive experience working independently in distributed teams, and I thrive in async-first, results-driven environments.
+
+${
+  latestExperience
+    ? `Most recently, I worked as a ${latestExperience.position} at ${latestExperience.company}, where I ${
+        latestExperience.description ||
+        'delivered consistent results while managing my own schedule and priorities'
+      }.`
+    : ''
+}
+
+What I bring to a remote team:
+• Clear, proactive written communication
+• Comfort with async collaboration tools and workflows
+• Strong self-management and ownership of deliverables
+${topSkills.length > 0 ? `• Technical strengths in ${topSkills.join(', ')}` : ''}
+
+I'd welcome the chance to discuss how I can contribute to ${companyName}'s remote team. Thank you for your consideration.
+
+Best regards,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear Hiring Manager,</p>
+
+<p>I'm writing to apply for the remote <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. I have extensive experience working independently in distributed teams, and I thrive in async-first, results-driven environments.</p>
+
+${
+  latestExperience
+    ? `<p>Most recently, I worked as a <strong>${latestExperience.position}</strong> at <strong>${latestExperience.company}</strong>, where I ${
+        latestExperience.description ||
+        'delivered consistent results while managing my own schedule and priorities'
+      }.</p>`
+    : ''
+}
+
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">What I Bring to a Remote Team</p>
+<ul style="margin:0; padding-left:18px;">
+  <li style="margin-bottom:6px;">Clear, proactive written communication</li>
+  <li style="margin-bottom:6px;">Comfort with async collaboration tools and workflows</li>
+  <li style="margin-bottom:6px;">Strong self-management and ownership of deliverables</li>
+</ul>
+${
+  topSkills.length > 0
+    ? `<div style="margin-top:12px;">${topSkills
+        .map(s => renderPill(s, accent, bg))
+        .join('')}</div>`
+    : ''
+}
+
+<p style="margin-top:18px;">I'd welcome the chance to discuss how I can contribute to <strong style="color:${accent};">${companyName}</strong>'s remote team. Thank you for your consideration.</p>
+
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
+
+  return {
+    subject: `Application for Remote ${position} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 15: Portfolio & Work Samples Submission
+ * Pink accent - opens with a portfolio-link banner for design/dev/creative roles.
+ */
+function generatePortfolioSubmission(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, projects, skills, socialLinks } = resumeData;
+  const { companyName, position } = jobDetails;
+  const accent = '#db2777';
+  const bg = '#fdf2f8';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const portfolioUrl = socialLinks?.portfolio || socialLinks?.website;
+  const topProjects = projects.slice(0, 3);
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear Hiring Manager,
+
+I'm applying for the ${position} role at ${companyName} and wanted to lead with my work rather than a list of job titles.
+
+${portfolioUrl ? `Portfolio: ${portfolioUrl}` : ''}
+
+Selected work samples:
+${topProjects
+  .map(
+    p =>
+      `• ${p.name} - ${p.description || p.role}${
+        p.projectUrl ? ` (${p.projectUrl})` : ''
+      }`
+  )
+  .join('\n')}
+
+Tools and skills: ${skills.selectedSkills.slice(0, 8).join(', ')}.
+
+I'd love to walk you through any of these in more detail. Thank you for taking a look.
+
+Best regards,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear Hiring Manager,</p>
+
+<p>I'm applying for the <strong>${position}</strong> role at <strong style="color:${accent};">${companyName}</strong> and wanted to lead with my work rather than a list of job titles.</p>
+
+${
+  portfolioUrl
+    ? renderBannerHtml(
+        `&#127912;&nbsp; <a href="${portfolioUrl}" style="color:${accent}; text-decoration:none; font-weight:700;">View My Portfolio &rarr;</a>`,
+        accent,
+        bg
+      )
+    : ''
+}
+
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Selected Work Samples</p>
+<ul style="margin:0; padding-left:18px;">
+${topProjects
+  .map(
+    p => `<li style="margin-bottom:8px;"><strong>${p.name}</strong> - ${
+      p.description || p.role
+    }${
+      p.projectUrl
+        ? ` &middot; <a href="${p.projectUrl}" style="color:${accent}; text-decoration:none; font-weight:600;">View &rarr;</a>`
+        : ''
+    }</li>`
+  )
+  .join('')}
+</ul>
+
+<div style="margin-top:14px;">${skills.selectedSkills
+    .slice(0, 8)
+    .map(s => renderPill(s, accent, bg))
+    .join('')}</div>
+
+<p style="margin-top:18px;">I'd love to walk you through any of these in more detail. Thank you for taking a look.</p>
+
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
+
+  return {
+    subject: `Application for ${position} - Work Samples Included`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 16: Interview Availability & Confirmation
+ * Sky accent - replies to an interview invite confirming date/time and logistics.
+ */
+function generateInterviewAvailability(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, socialLinks } = resumeData;
+  const { companyName, position, interviewerName, interviewDate } = jobDetails;
+  const accent = '#0284c7';
+  const bg = '#f0f9ff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = interviewerName || 'Hiring Team';
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear ${greetingName},
+
+Thank you for the invitation to interview for the ${position} position at ${companyName}. I'm glad to confirm${
+    interviewDate ? ` that ${interviewDate} works well for me` : ' my availability'
+  }, and I'm looking forward to our conversation.
+
+Could you please let me know the interview format (video call, phone, or in-person) and share any details I should prepare in advance? I want to make sure I'm fully ready.
+
+Thank you again, and I look forward to speaking soon.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+<p>Thank you for the invitation to interview for the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. I'm glad to confirm${
+    interviewDate
+      ? ` that <span style="background-color:${bg}; color:${accent}; font-weight:700; padding:2px 8px; border-radius:6px;">${interviewDate}</span> works well for me`
+      : ' my availability'
+  }, and I'm looking forward to our conversation.</p>
+
+<p>Could you please let me know the interview format (video call, phone, or in-person) and share any details I should prepare in advance? I want to make sure I'm fully ready.</p>
+
+<p>Thank you again, and I look forward to speaking soon.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Re: Interview for ${position} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 17: Interview Reschedule Request
+ * Orange accent - politely asks to move an interview time.
+ */
+function generateInterviewReschedule(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, socialLinks } = resumeData;
+  const { companyName, position, interviewerName, interviewDate } = jobDetails;
+  const accent = '#ea580c';
+  const bg = '#fff7ed';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = interviewerName || 'Hiring Team';
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear ${greetingName},
+
+Thank you again for scheduling my interview for the ${position} position at ${companyName}${
+    interviewDate ? ` on ${interviewDate}` : ''
+  }. Due to an unexpected conflict, I would like to ask if it might be possible to reschedule.
+
+I remain very enthusiastic about this opportunity, and I'm happy to work around your team's availability - please let me know a few alternative times that would suit you, and I'll do my best to accommodate.
+
+I apologize for any inconvenience this may cause, and I appreciate your understanding.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+<p>Thank you again for scheduling my interview for the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>${
+    interviewDate ? ` on ${interviewDate}` : ''
+  }. Due to an unexpected conflict, I would like to ask if it might be possible to reschedule.</p>
+
+<p>I remain very enthusiastic about this opportunity, and I'm happy to work around your team's availability - please let me know a few alternative times that would suit you, and I'll do my best to accommodate.</p>
+
+<p>I apologize for any inconvenience this may cause, and I appreciate your understanding.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Rescheduling Request - ${position} Interview`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 18: Post-Interview Additional Information
+ * Purple accent - sends extra materials or a fuller answer after an interview.
+ */
+function generatePostInterviewAdditionalInfo(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, socialLinks } = resumeData;
+  const { companyName, position, interviewerName, interviewDate } = jobDetails;
+  const accent = '#7e22ce';
+  const bg = '#faf5ff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = interviewerName || 'Hiring Team';
+  const topSkills = skills.selectedSkills.slice(0, 5).join(', ');
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear ${greetingName},
+
+Following up on our conversation${
+    interviewDate ? ` on ${interviewDate}` : ''
+  } about the ${position} role at ${companyName}, I wanted to share some additional information that may be helpful.
+
+${
+  topSkills
+    ? `As discussed, my background includes ${topSkills}, which I believe directly addresses the points we covered.`
+    : ''
+}
+
+Please don't hesitate to reach out if any further detail would be useful as you continue the process. Thank you again for the thoughtful conversation.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+<p>Following up on our conversation${
+    interviewDate ? ` on ${interviewDate}` : ''
+  } about the <strong>${position}</strong> role at <strong style="color:${accent};">${companyName}</strong>, I wanted to share some additional information that may be helpful.</p>
+
+${
+  topSkills
+    ? `<p>As discussed, my background includes <strong>${topSkills}</strong>, which I believe directly addresses the points we covered.</p>`
+    : ''
+}
+
+<p>Please don't hesitate to reach out if any further detail would be useful as you continue the process. Thank you again for the thoughtful conversation.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Following Up With Additional Information - ${position}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 19: LinkedIn Connection Follow-Up
+ * LinkedIn-blue accent - short, warm note after a connection request is accepted.
+ */
+function generateLinkedinConnectionFollowUp(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, socialLinks } = resumeData;
+  const { companyName, position, recruiterName } = jobDetails;
+  const accent = '#0a66c2';
+  const bg = '#f0f7ff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = recruiterName ? ` ${recruiterName}` : '';
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Hi${greetingName},
+
+Thanks for connecting on LinkedIn! I've been following ${companyName}'s work and wanted to reach out directly, since I'm very interested in ${position} opportunities on your team.
+
+A bit about me: I'm a ${
+    skills.position || 'professional'
+  } with a background in ${skills.selectedSkills.slice(0, 4).join(', ') || 'a range of relevant skills'}.
+
+No pressure at all - I'd just love to stay on your radar, or hear any advice you might have. Thanks again for connecting!
+
+Best,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Hi${greetingName},</p>
+
+<p>Thanks for connecting on LinkedIn! I've been following <strong style="color:${accent};">${companyName}</strong>'s work and wanted to reach out directly, since I'm very interested in <strong>${position}</strong> opportunities on your team.</p>
+
+<p>A bit about me: I'm a <strong>${
+    skills.position || 'professional'
+  }</strong> with a background in ${
+    skills.selectedSkills.slice(0, 4).join(', ') || 'a range of relevant skills'
+  }.</p>
+
+<p>No pressure at all - I'd just love to stay on your radar, or hear any advice you might have. Thanks again for connecting!</p>
+
+${renderSimpleClosingHtml(fullName, 'Best', accent)}`);
+
+  return {
+    subject: `Great Connecting - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 20: Ask for a Referral
+ * Amber accent - directly asks an existing contact to refer you for a role.
+ */
+function generateReferralRequest(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, socialLinks } = resumeData;
+  const { companyName, position, recruiterName } = jobDetails;
+  const accent = '#b45309';
+  const bg = '#fffbeb';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = recruiterName || 'there';
+  const topSkills = skills.selectedSkills.slice(0, 5).join(', ') || 'my background';
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Hi ${greetingName},
+
+I hope you're doing well. I saw that ${companyName} has an opening for a ${position} role, and I'm really interested in applying. Since you're on the inside, I wanted to ask - would you be comfortable referring me?
+
+For context, my background includes ${topSkills}. I'd be happy to send over my resume and answer any questions to make this as easy as possible for you.
+
+No worries at all if the timing isn't right or you're not comfortable doing so - I really appreciate you considering it either way.
+
+Thank you so much,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Hi ${greetingName},</p>
+
+<p>I hope you're doing well. I saw that <strong style="color:${accent};">${companyName}</strong> has an opening for a <strong>${position}</strong> role, and I'm really interested in applying. Since you're on the inside, I wanted to ask - would you be comfortable referring me?</p>
+
+<p>For context, my background includes <strong>${topSkills}</strong>. I'd be happy to send over my resume and answer any questions to make this as easy as possible for you.</p>
+
+<p>No worries at all if the timing isn't right or you're not comfortable doing so - I really appreciate you considering it either way.</p>
+
+${renderClosingHtml(fullName, 'Thank you so much', accent, bg)}`);
+
+  return {
+    subject: `Quick Favor - Referral for ${position} at ${companyName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 21: Offer Negotiation
+ * Navy accent - requests a discussion on compensation/start date before accepting.
+ */
+function generateOfferNegotiation(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, socialLinks } = resumeData;
+  const { companyName, position, recruiterName, offerDeadline } = jobDetails;
+  const accent = '#1e40af';
+  const bg = '#eff6ff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = recruiterName || 'Hiring Team';
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear ${greetingName},
+
+Thank you so much for the offer for the ${position} position at ${companyName}. I'm very excited about the opportunity and everything I've learned about the team so far.
+
+Before I formally accept${
+    offerDeadline ? ` ahead of the ${offerDeadline} deadline` : ''
+  }, I'd like to schedule a short conversation to discuss a few points of the offer, particularly around compensation and start date. I'm confident we can find something that works well for both sides.
+
+Please let me know a good time to connect. Thank you again for this opportunity - I'm looking forward to it.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+<p>Thank you so much for the offer for the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. I'm very excited about the opportunity and everything I've learned about the team so far.</p>
+
+<p>Before I formally accept${
+    offerDeadline ? ` ahead of the ${offerDeadline} deadline` : ''
+  }, I'd like to schedule a short conversation to discuss a few points of the offer, particularly around compensation and start date. I'm confident we can find something that works well for both sides.</p>
+
+<p>Please let me know a good time to connect. Thank you again for this opportunity - I'm looking forward to it.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Re: Offer for ${position} at ${companyName} - A Quick Discussion`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 22: Onboarding & Start-Date Confirmation
+ * Green accent - confirms logistics after formally accepting an offer.
+ */
+function generateOnboardingConfirmation(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, socialLinks } = resumeData;
+  const { companyName, position, recruiterName, offerDeadline } = jobDetails;
+  const accent = '#15803d';
+  const bg = '#f0fdf4';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const greetingName = recruiterName || 'Hiring Team';
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }
+
+Dear ${greetingName},
+
+Thank you again for having me on board as the new ${position} at ${companyName}. I'm looking forward to getting started${
+    offerDeadline ? ` on ${offerDeadline}` : ''
+  }.
+
+Could you please confirm the start date and share any onboarding steps I should complete beforehand - paperwork, equipment setup, or anything else? I want to make sure I hit the ground running.
+
+Thank you, and I'm excited to join the team.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear ${greetingName},</p>
+
+<p>Thank you again for having me on board as the new <strong>${position}</strong> at <strong style="color:${accent};">${companyName}</strong>. I'm looking forward to getting started${
+    offerDeadline ? ` on ${offerDeadline}` : ''
+  }.</p>
+
+${renderBannerHtml('🚀 Excited to Join the Team', accent, bg)}
+
+<p>Could you please confirm the start date and share any onboarding steps I should complete beforehand - paperwork, equipment setup, or anything else? I want to make sure I hit the ground running.</p>
+
+<p>Thank you, and I'm excited to join the team.</p>
+
+${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
+
+  return {
+    subject: `Confirming Start Date - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
  * Main function to generate email from template
  */
 export function generateEmailFromTemplate(
@@ -1581,6 +2327,26 @@ export function generateEmailFromTemplate(
       return generateNetworkingInformational(resumeData, jobDetails);
     case TemplateType.OFFER_RESPONSE:
       return generateOfferResponse(resumeData, jobDetails);
+    case TemplateType.ENTRY_LEVEL_APPLICATION:
+      return generateEntryLevelApplication(resumeData, jobDetails);
+    case TemplateType.REMOTE_POSITION_APPLICATION:
+      return generateRemotePositionApplication(resumeData, jobDetails);
+    case TemplateType.PORTFOLIO_SUBMISSION:
+      return generatePortfolioSubmission(resumeData, jobDetails);
+    case TemplateType.INTERVIEW_AVAILABILITY:
+      return generateInterviewAvailability(resumeData, jobDetails);
+    case TemplateType.INTERVIEW_RESCHEDULE:
+      return generateInterviewReschedule(resumeData, jobDetails);
+    case TemplateType.POST_INTERVIEW_ADDITIONAL_INFO:
+      return generatePostInterviewAdditionalInfo(resumeData, jobDetails);
+    case TemplateType.LINKEDIN_CONNECTION_FOLLOW_UP:
+      return generateLinkedinConnectionFollowUp(resumeData, jobDetails);
+    case TemplateType.REFERRAL_REQUEST:
+      return generateReferralRequest(resumeData, jobDetails);
+    case TemplateType.OFFER_NEGOTIATION:
+      return generateOfferNegotiation(resumeData, jobDetails);
+    case TemplateType.ONBOARDING_CONFIRMATION:
+      return generateOnboardingConfirmation(resumeData, jobDetails);
     default:
       return generateProfessionalIntroduction(resumeData, jobDetails);
   }

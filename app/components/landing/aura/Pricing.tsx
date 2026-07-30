@@ -34,7 +34,7 @@ const plans: Plan[] = [
     features: [
       '100 AI-generated emails per month',
       'Gmail + Outlook sending',
-      'All 12 templates',
+      'All 22 templates',
       'Unlimited application history',
       'Priority email support',
     ],

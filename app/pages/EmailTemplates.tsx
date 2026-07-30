@@ -3,14 +3,24 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
-import { TEMPLATE_METADATA, TemplateType } from '@/lib/templateTypes';
+import {
+  TEMPLATE_CATEGORY_LABELS,
+  TEMPLATE_METADATA,
+  TemplateCategory,
+  TemplateType,
+} from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+const CATEGORY_TABS = Object.values(TemplateCategory);
 
 export default function EmailTemplates() {
   const { user } = useAuth();
   const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateType>(
     TemplateType.PROFESSIONAL_INTRO
+  );
+  const [activeCategory, setActiveCategory] = useState<TemplateCategory>(
+    TemplateCategory.APPLICATION
   );
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [isLoadingResume, setIsLoadingResume] = useState(false);
@@ -46,6 +56,11 @@ export default function EmailTemplates() {
 
     fetchResumeData();
   }, [user?.uid]);
+
+  const visibleTemplates = useMemo(
+    () => TEMPLATE_METADATA.filter(template => template.category === activeCategory),
+    [activeCategory]
+  );
 
   const handleSelectTemplate = (templateId: TemplateType) => {
     setSelectedTemplateId(templateId);
@@ -127,8 +142,37 @@ export default function EmailTemplates() {
           )}
         </div>
 
+        <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-800 pb-3">
+          {CATEGORY_TABS.map(category => {
+            const count = TEMPLATE_METADATA.filter(
+              t => t.category === category
+            ).length;
+            const isActive = category === activeCategory;
+            return (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[#3b3be3] text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                {TEMPLATE_CATEGORY_LABELS[category]}
+                <span
+                  className={`ml-1.5 ${
+                    isActive ? 'text-white/80' : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {TEMPLATE_METADATA.map(template => {
+          {visibleTemplates.map(template => {
             const isSelected = template.id === selectedTemplateId;
 
             return (
@@ -146,7 +190,7 @@ export default function EmailTemplates() {
                       <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-[#818cf8]/15 text-[#3b3be3] dark:text-[#a5b4fc] rounded-full text-xs font-semibold">
                         Template {template.id}
                       </span>
-                      {template.id === TemplateType.COMPREHENSIVE_PROFILE && (
+                      {template.recommended && (
                         <span className="inline-block px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-xs font-semibold shadow-md">
                           ⭐ Recommended for Jobs
                         </span>

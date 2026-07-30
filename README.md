@@ -47,7 +47,7 @@ Signed-out visitors land on a marketing landing page; signing in switches to the
 
 ![Resume Builder](docs/screenshots/resume-builder.png)
 
-**Email Templates** — all 12 built-in templates, with a live preview against your own resume data
+**Email Templates** — all 22 built-in templates organized into 4 category tabs, with a live preview against your own resume data
 
 ![Email Templates](docs/screenshots/email-templates.png)
 
@@ -249,12 +249,17 @@ erDiagram
 
 ### 📧 Email Management
 
-- **12 built-in templates** — Professional Intro, Skills Highlight, Experience Focused, Project Showcase, Career Transition, Comprehensive Profile, Cold Outreach, Referral Application, Interview Thank You, Follow-up Check-in, Networking/Informational, Offer Response
+- **22 built-in templates across 4 categories**, browsable as switchable tabs in the Email Templates page:
+  - **Application** (9) — Professional Intro, Skills Highlight, Experience Focused, Project Showcase, Career Transition, Comprehensive Profile, Entry-Level/Internship, Remote Position, Portfolio & Work Samples
+  - **Interview & Follow-Up** (5) — Interview Thank You, Interview Availability & Confirmation, Interview Reschedule Request, Post-Interview Additional Info, Application Follow-Up
+  - **Networking & Referral** (5) — Cold Outreach, Referral Application, Ask for a Referral, Networking Request, LinkedIn Connection Follow-Up
+  - **Offer & Onboarding** (3) — Offer Response, Offer Negotiation, Onboarding & Start-Date Confirmation
+  - Templates best suited to a first application carry a data-driven **"⭐ Recommended for Jobs"** badge
 - **Job URL auto-fill** — paste a posting link (Greenhouse/Lever/Workday-style boards work best) and company/position are extracted via JSON-LD → OpenGraph → title-parsing, in that order
 - **Rich text body editor** — live-rendered preview by default, with an opt-in Quill editor (edit → regenerate-from-template → preview-before-send loop)
 - **Gmail API direct send** with attachments, or an Outlook `mailto:` fallback for everyone else
 - **Schedule for later (Gmail)** — pick a future date/time; a GitHub Actions cron job hits a protected endpoint every 5 minutes and sends due emails even if you're not signed in at that moment
-- **Open tracking (opt-in)** — a "Track Email Opens" toggle (off by default) embeds an invisible pixel that records open count and first/last-opened time, for both immediate and scheduled sends. Off by default because a hidden tracking pixel is a well-known spam-filter signal — for a job application, landing in the inbox matters more than knowing if it was opened.
+- **Open tracking (opt-in, on by default)** — a "Track Email Opens" toggle embeds an invisible pixel that records open count and first/last-opened time, for both immediate and scheduled sends. Still user-toggleable per send, since a hidden tracking pixel is a known spam-filter signal some senders prefer to avoid.
 - **Email History with live open-status updates** — stats (sent/pending/failed/companies) plus a small application "pipeline" view (interview scheduled/offered/rejected). While the History page is open, it silently re-checks for new opens every 15 seconds (paused when the tab isn't visible) and updates the "Opened" badge on a card automatically — no manual refresh needed to see when a recruiter opens your email.
 
 ### 👤 Resume Builder
@@ -339,7 +344,7 @@ Job_Email_Generator/
     ├── scheduledEmailService.ts            # Scheduled-email API client
     ├── googleAuth.ts                       # OAuth2 client, token encryption, refresh
     ├── sendGmail.ts                        # Gmail send helper (used by the cron route)
-    ├── emailTemplateGenerator.ts           # Template engine (12 templates)
+    ├── emailTemplateGenerator.ts           # Template engine (22 templates)
     ├── toast.ts                            # Shared showToast() wrapper (goey-toast)
     └── mongodb.ts                          # MongoDB client singleton
 ```
@@ -457,8 +462,9 @@ Three workflows under `.github/workflows/`:
 
 ## 📝 Recent Updates
 
+- ✅ Grew to 22 email templates across 4 category tabs (Application, Interview & Follow-Up, Networking & Referral, Offer & Onboarding), with a data-driven "Recommended for Jobs" badge
 - ✅ Live-updating Email History — the "Opened" status on each card refreshes automatically (15s polling) with no manual reload
-- ✅ Open tracking made opt-in (off by default) — an always-on invisible pixel was a spam-filter red flag; now it's a toggle on Send Email
+- ✅ Open tracking made opt-in (now on by default) — an always-on invisible pixel was a spam-filter red flag; it's a toggle on Send Email, defaulting to on since knowing whether a recruiter opened the email is usually worth more than the small deliverability risk
 - ✅ AI-powered resume parsing (Google Gemini) — upload a PDF/DOC/DOCX and auto-fill the entire Resume Builder wizard
 - ✅ Tagged CV storage — the uploaded resume file is kept per-profile and auto-attached in Send Email
 - ✅ App-wide toast notifications (`goey-toast`), replacing a custom alert-dialog system for one-way notices

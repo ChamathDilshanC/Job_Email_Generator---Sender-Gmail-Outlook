@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { showToast } from '@/lib/toast';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { FinalCTA } from './aura/FinalCTA';
 import { Hero } from './aura/Hero';
 import { InboxMockup } from './aura/InboxMockup';
@@ -27,7 +27,10 @@ export function LandingPage() {
     setIsSigningIn(false);
 
     if (!result.success) {
-      toast.error(result.error || 'Sign in failed. Please try again.');
+      showToast(
+        'error',
+        result.error || 'Sign in failed. Please try again.'
+      );
     }
   };
 

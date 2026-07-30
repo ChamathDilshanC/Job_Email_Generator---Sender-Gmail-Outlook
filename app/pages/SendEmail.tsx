@@ -2,7 +2,6 @@
 
 import EmailSendingLoader from '@/app/components/EmailSendingLoader';
 import SendPreviewModal from '@/app/components/SendPreviewModal';
-import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
@@ -14,6 +13,7 @@ import { saveEmailToHistory } from '@/lib/emailHistoryService';
 import { generateEmail, type EmailData } from '@/lib/emailTemplate';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import {
+  base64ToFile,
   fileToBase64,
   sendEmailWithAttachments,
   type GmailAttachment,
@@ -22,6 +22,7 @@ import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import {
   listResumeProfiles,
+  loadResumeCvFile,
   loadResumeData,
   ResumeData,
   ResumeProfileSummary,
@@ -32,6 +33,7 @@ import {
   TEMPLATE_METADATA,
   TemplateType,
 } from '@/lib/templateTypes';
+import { showToast } from '@/lib/toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -146,6 +148,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     []
   );
   const [selectedProfileId, setSelectedProfileId] = useState<string>('');
+  const [isCvAutoLoaded, setIsCvAutoLoaded] = useState(false);
 
   // Auto-fill from job URL
   const [jobUrl, setJobUrl] = useState('');
@@ -162,23 +165,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [sendMode, setSendMode] = useState<'now' | 'schedule'>('now');
   const [scheduledFor, setScheduledFor] = useState<Date | null>(null);
 
-  // Alert Dialog State
-  const [alertDialog, setAlertDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-    onConfirm?: () => void;
-    cancelText?: string;
-    confirmText?: string;
-    variant?:
-      | 'default'
-      | 'destructive'
-      | 'outline'
-      | 'secondary'
-      | 'ghost'
-      | 'link';
-  }>({ open: false, title: '', description: '', type: 'info' });
+  // Sign-out confirmation (the only real yes/no confirmation on this page —
+  // everything else is a toast notification)
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   // Use Auth Context
   const {
@@ -189,6 +178,27 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     handleSignOut,
     isLoading: authLoading,
   } = useAuth();
+
+  // Load the CV file tagged to a resume profile (if any) and drop it
+  // straight into the attachment slot, so picking a profile is enough to
+  // attach its resume — no manual upload needed unless the user wants to
+  // override it for this particular send.
+  const applyCvForProfile = async (profileId: string) => {
+    if (!user?.uid || !profileId) return;
+    try {
+      const cv = await loadResumeCvFile(user.uid, profileId);
+      if (cv && 'data' in cv && cv.data) {
+        const file = base64ToFile(cv.data, cv.fileName, cv.mimeType);
+        setAttachments(prev => ({ ...prev, cv: file }));
+        setIsCvAutoLoaded(true);
+      } else {
+        setAttachments(prev => ({ ...prev, cv: null }));
+        setIsCvAutoLoaded(false);
+      }
+    } catch (error) {
+      console.error('Error auto-loading resume CV file:', error);
+    }
+  };
 
   // Load resume data and selected template on mount and when auth changes
   useEffect(() => {
@@ -208,14 +218,15 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         data: ResumeData | null;
       }>(cacheKey);
       if (cached) {
-        setResumeProfiles(cached.profiles);
-        setSelectedProfileId(
+        const cachedProfileId =
           cached.profiles.find(p => p.isDefault)?.profileId ||
-            cached.profiles[0]?.profileId ||
-            ''
-        );
+          cached.profiles[0]?.profileId ||
+          '';
+        setResumeProfiles(cached.profiles);
+        setSelectedProfileId(cachedProfileId);
         setResumeData(cached.data);
         setIsLoadingResume(false);
+        if (cachedProfileId) applyCvForProfile(cachedProfileId);
       } else {
         setIsLoadingResume(true);
       }
@@ -234,6 +245,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         setSelectedProfileId(defaultProfileId || '');
         setResumeData(data);
         setCachedData(cacheKey, { profiles, data });
+        if (defaultProfileId) applyCvForProfile(defaultProfileId);
       } catch (error) {
         console.error('Error loading resume data:', error);
       } finally {
@@ -256,6 +268,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     try {
       const data = await loadResumeData(user?.uid, profileId);
       setResumeData(data);
+      await applyCvForProfile(profileId);
     } catch (error) {
       console.error('Error loading resume profile:', error);
     } finally {
@@ -276,14 +289,12 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       const data = await response.json();
 
       if (!response.ok || (!data.position && !data.companyName)) {
-        setAlertDialog({
-          open: true,
-          title: "Couldn't Auto-fill",
-          description:
-            data.error ||
-            "We couldn't detect the company/position from that page. LinkedIn's login-walled listings often block this — please fill the fields in manually.",
-          type: 'warning',
-        });
+        showToast(
+          'warning',
+          "Couldn't Auto-fill",
+          data.error ||
+            "We couldn't detect the company/position from that page. LinkedIn's login-walled listings often block this — please fill the fields in manually."
+        );
         return;
       }
 
@@ -293,21 +304,18 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         position: data.position || prev.position,
       }));
 
-      setAlertDialog({
-        open: true,
-        title: 'Auto-filled',
-        description:
-          'Company/position were filled in from the job posting — double check them before sending.',
-        type: 'success',
-      });
+      showToast(
+        'success',
+        'Auto-filled',
+        'Company/position were filled in from the job posting — double check them before sending.'
+      );
     } catch (error) {
       console.error('Error auto-filling from job URL:', error);
-      setAlertDialog({
-        open: true,
-        title: 'Error',
-        description: 'Failed to read that job URL. Please fill the fields in manually.',
-        type: 'error',
-      });
+      showToast(
+        'error',
+        'Error',
+        'Failed to read that job URL. Please fill the fields in manually.'
+      );
     } finally {
       setIsParsingJobUrl(false);
     }
@@ -317,13 +325,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   useEffect(() => {
     // Wait for auth to finish loading
     if (!authLoading && !isAuthenticated) {
-      setAlertDialog({
-        open: true,
-        title: 'Sign In Required',
-        description:
-          'Please sign in with Google to send emails via Gmail and use all features. You can still use Outlook without signing in.',
-        type: 'warning',
-      });
+      showToast(
+        'warning',
+        'Sign In Required',
+        'Please sign in with Google to send emails via Gmail and use all features. You can still use Outlook without signing in.'
+      );
     }
   }, [authLoading, isAuthenticated]);
 
@@ -349,19 +355,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   };
 
   const handleSignOutClick = () => {
-    setAlertDialog({
-      open: true,
-      title: 'Sign Out',
-      description: 'Are you sure you want to sign out?',
-      type: 'warning',
-      confirmText: 'Sign Out',
-      cancelText: 'Cancel',
-      variant: 'destructive',
-      onConfirm: async () => {
-        await handleSignOut();
-        setAlertDialog(prev => ({ ...prev, open: false }));
-      },
-    });
+    setShowSignOutConfirm(true);
   };
 
   // Validate the form, then open the preview modal instead of sending
@@ -374,39 +368,33 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       !formData.position ||
       !formData.recipientEmail
     ) {
-      setAlertDialog({
-        open: true,
-        title: 'Missing Information',
-        description:
-          'Please fill in all required fields: Company Name, Position, and Recipient Email.',
-        type: 'warning',
-      });
+      showToast(
+        'warning',
+        'Missing Information',
+        'Please fill in all required fields: Company Name, Position, and Recipient Email.'
+      );
       return;
     }
 
     // Check if files are uploaded
     if (!isFileUploadValid()) {
-      setAlertDialog({
-        open: true,
-        title: 'Missing Files',
-        description:
-          'Please upload your CV ' +
+      showToast(
+        'warning',
+        'Missing Files',
+        'Please upload your CV ' +
           (requireCoverLetter ? 'and Cover Letter ' : '') +
-          'before sending.',
-        type: 'warning',
-      });
+          'before sending.'
+      );
       return;
     }
 
     // Check if user is authenticated for Gmail API
     if (!isAuthenticated || !accessToken) {
-      setAlertDialog({
-        open: true,
-        title: 'Authentication Required',
-        description:
-          'Please sign in with Google to send emails with attachments.',
-        type: 'warning',
-      });
+      showToast(
+        'warning',
+        'Authentication Required',
+        'Please sign in with Google to send emails with attachments.'
+      );
       return;
     }
 
@@ -414,13 +402,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       sendMode === 'schedule' &&
       (!scheduledFor || scheduledFor.getTime() <= Date.now())
     ) {
-      setAlertDialog({
-        open: true,
-        title: 'Pick a Future Date & Time',
-        description:
-          'Please choose when this email should be sent — it must be in the future.',
-        type: 'warning',
-      });
+      showToast(
+        'warning',
+        'Pick a Future Date & Time',
+        'Please choose when this email should be sent — it must be in the future.'
+      );
       return;
     }
 
@@ -483,12 +469,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
         window.location.href = mailtoLink;
 
-        setAlertDialog({
-          open: true,
-          title: 'Opening Outlook...',
-          description: `Your default email client is opening. Please attach your files manually if needed.`,
-          type: 'info',
-        });
+        showToast(
+          'info',
+          'Opening Outlook...',
+          'Your default email client is opening. Please attach your files manually if needed.'
+        );
 
         setIsSending(false);
         return;
@@ -496,12 +481,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
       // Gmail API sending
       if (!isAuthenticated || !accessToken) {
-        setAlertDialog({
-          open: true,
-          title: 'Authentication Required',
-          description: 'Please sign in with Google to send emails via Gmail.',
-          type: 'warning',
-        });
+        showToast(
+          'warning',
+          'Authentication Required',
+          'Please sign in with Google to send emails via Gmail.'
+        );
         setIsSending(false);
         return;
       }
@@ -572,25 +556,22 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           trackingId,
         });
 
-        setAlertDialog({
-          open: true,
-          title: 'Email Sent Successfully!',
-          description: `Your email has been sent via Gmail to ${formData.recipientEmail}.${attachmentText}`,
-          type: 'success',
-        });
+        showToast(
+          'success',
+          'Email Sent Successfully!',
+          `Your email has been sent via Gmail to ${formData.recipientEmail}.${attachmentText}`
+        );
       } else {
         // Check if it's an authentication error
         if ((result as any).authError) {
           // Sign out the user to clear expired token
           await handleSignOut();
 
-          setAlertDialog({
-            open: true,
-            title: 'Authentication Expired',
-            description:
-              'Your session has expired. Please sign in again to send emails.',
-            type: 'warning',
-          });
+          showToast(
+            'warning',
+            'Authentication Expired',
+            'Your session has expired. Please sign in again to send emails.'
+          );
         } else {
           throw new Error(result.error || 'Failed to send email');
         }
@@ -609,14 +590,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         await handleSignOut();
       }
 
-      setAlertDialog({
-        open: true,
-        title: isAuthError ? 'Authentication Expired' : 'Failed to Send Email',
-        description: isAuthError
+      showToast(
+        isAuthError ? 'warning' : 'error',
+        isAuthError ? 'Authentication Expired' : 'Failed to Send Email',
+        isAuthError
           ? 'Your session has expired. Please sign in again to send emails.'
-          : errorMessage,
-        type: isAuthError ? 'warning' : 'error',
-      });
+          : errorMessage
+      );
     } finally {
       setIsSending(false);
     }
@@ -672,12 +652,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       });
 
       if (result.success) {
-        setAlertDialog({
-          open: true,
-          title: 'Email Scheduled!',
-          description: `This email will be sent to ${formData.recipientEmail} on ${scheduledFor.toLocaleString()}. Manage it from the Scheduled page.`,
-          type: 'success',
-        });
+        showToast(
+          'success',
+          'Email Scheduled!',
+          `This email will be sent to ${formData.recipientEmail} on ${scheduledFor.toLocaleString()}. Manage it from the Scheduled page.`
+        );
         setSendMode('now');
         setScheduledFor(null);
       } else {
@@ -685,13 +664,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       }
     } catch (error) {
       console.error('Error scheduling email:', error);
-      setAlertDialog({
-        open: true,
-        title: 'Failed to Schedule Email',
-        description:
-          error instanceof Error ? error.message : 'An unknown error occurred',
-        type: 'error',
-      });
+      showToast(
+        'error',
+        'Failed to Schedule Email',
+        error instanceof Error ? error.message : 'An unknown error occurred'
+      );
     } finally {
       setIsSending(false);
     }
@@ -828,13 +805,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 className="btn btn-primary whitespace-nowrap"
                 onClick={() => {
                   if (!isAuthenticated) {
-                    setAlertDialog({
-                      open: true,
-                      title: 'Sign In Required',
-                      description:
-                        'Please sign in with your Google account to access the Resume Builder.',
-                      type: 'warning',
-                    });
+                    showToast(
+                      'warning',
+                      'Sign In Required',
+                      'Please sign in with your Google account to access the Resume Builder.'
+                    );
                     return;
                   }
                   if (isAuthenticated && onNavigate) {
@@ -911,23 +886,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               ) : (
                 <GoogleSignInButton
                   onSuccess={() => {
-                    setAlertDialog({
-                      open: true,
-                      title: 'Signed In Successfully!',
-                      description: 'Refreshing page...',
-                      type: 'success',
-                    });
+                    showToast('success', 'Signed In Successfully!', 'Refreshing page...');
                     setTimeout(() => {
                       window.location.reload();
                     }, 1000);
                   }}
                   onError={error => {
-                    setAlertDialog({
-                      open: true,
-                      title: 'Sign In Failed',
-                      description: error,
-                      type: 'error',
-                    });
+                    showToast('error', 'Sign In Failed', error);
                   }}
                 />
               )}
@@ -1349,15 +1314,25 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
           {/* File Upload Sections */}
           <div className="mt-6 px-6 pb-6">
+            {isCvAutoLoaded && attachments.cv && (
+              <p className="mb-3 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  {attachments.cv.name}
+                </span>{' '}
+                was attached automatically from this Resume Profile. Upload a
+                different file below only if you want to override it for this
+                email.
+              </p>
+            )}
             <JobFileUpload
-              onFilesChange={setAttachments}
+              onFilesChange={files => {
+                // A manual change to the CV slot overrides whatever was
+                // auto-loaded from the resume profile.
+                if (files.cv !== attachments.cv) setIsCvAutoLoaded(false);
+                setAttachments(files);
+              }}
               onAlert={(title, description, type) => {
-                setAlertDialog({
-                  open: true,
-                  title,
-                  description,
-                  type,
-                });
+                showToast(type, title, description);
               }}
             />
 
@@ -1383,6 +1358,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     CV{' '}
                     {attachments.cv ? `(${attachments.cv.name})` : '(Required)'}
                   </span>
+                  {isCvAutoLoaded && attachments.cv && (
+                    <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
+                      Auto-loaded from Resume Profile
+                    </span>
+                  )}
                 </div>
                 {requireCoverLetter && (
                   <div className="flex items-center gap-2 text-sm">
@@ -1560,17 +1540,18 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         onConfirm={() => setEditedBodyHtml(null)}
       />
 
-      {/* Alert Dialog */}
-      <AlertDialog
-        open={alertDialog.open}
-        onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
-        title={alertDialog.title}
-        description={alertDialog.description}
-        type={alertDialog.type}
-        onConfirm={alertDialog.onConfirm}
-        confirmText={alertDialog.confirmText}
-        cancelText={alertDialog.cancelText}
-        variant={alertDialog.variant}
+      {/* Sign Out confirmation */}
+      <ConfirmDialog
+        open={showSignOutConfirm}
+        onOpenChange={setShowSignOutConfirm}
+        title="Sign Out"
+        description="Are you sure you want to sign out?"
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        type="danger"
+        onConfirm={() => {
+          handleSignOut();
+        }}
       />
     </>
   );

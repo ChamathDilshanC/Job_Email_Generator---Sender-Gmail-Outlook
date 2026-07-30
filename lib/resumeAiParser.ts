@@ -1,4 +1,4 @@
-import { FinishReason, GoogleGenAI } from '@google/genai';
+import { FinishReason, GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 // Server-only: reads a resume (PDF bytes or plain extracted text) and asks
 // Gemini to pull it into the exact shape the Resume Builder wizard uses, so
@@ -262,7 +262,7 @@ async function runExtraction(parts: ContentPart[]): Promise<ParsedResumeContent>
       systemInstruction: SYSTEM_PROMPT,
       responseMimeType: 'application/json',
       responseJsonSchema: RESUME_EXTRACTION_SCHEMA,
-      thinkingConfig: { thinkingBudget: 0 },
+      thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
       temperature: 0,
       maxOutputTokens: 8000,
     },

@@ -12,6 +12,7 @@ import { copyToClipboard } from '@/lib/emailClient';
 import { saveEmailToHistory } from '@/lib/emailHistoryService';
 import { generateEmail, type EmailData } from '@/lib/emailTemplate';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
+import { clearDraft, loadDraft, saveDraft } from '@/lib/formDraft';
 import {
   base64ToFile,
   fileToBase64,
@@ -85,6 +86,28 @@ const EMPTY_ADDITIONAL_DETAILS: AdditionalDetails = {
   offerDeadline: '',
   decision: 'accept',
 };
+
+// In-progress compose state, mirrored to localStorage so switching to
+// another sidebar page (which unmounts this component entirely) and coming
+// back doesn't lose what was typed. File attachments can't be serialized
+// this way - the tagged CV re-attaches on its own via applyCvForProfile.
+interface SendEmailDraft {
+  formData: EmailData;
+  additionalDetails: AdditionalDetails;
+  showAdditionalDetails: boolean;
+  emailClient: 'gmail' | 'outlook';
+  requireCoverLetter: boolean;
+  trackOpens: boolean;
+  jobUrl: string;
+  sendMode: 'now' | 'schedule';
+  scheduledFor: string | null;
+  editedBodyHtml: string | null;
+  isEditingBody: boolean;
+}
+
+function sendEmailDraftKey(uid?: string | null): string {
+  return `sendEmailDraft:${uid || 'guest'}`;
+}
 
 interface SendEmailProps {
   onNavigate?: (page: PageType) => void;
@@ -182,6 +205,60 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     handleSignOut,
     isLoading: authLoading,
   } = useAuth();
+
+  // Restore an in-progress draft (if any) once, on mount.
+  const draftRestoredRef = useRef(false);
+  useEffect(() => {
+    if (draftRestoredRef.current) return;
+    draftRestoredRef.current = true;
+
+    const draft = loadDraft<SendEmailDraft>(sendEmailDraftKey(user?.uid));
+    if (!draft) return;
+
+    setFormData(draft.formData);
+    setAdditionalDetails(draft.additionalDetails);
+    setShowAdditionalDetails(draft.showAdditionalDetails);
+    setEmailClient(draft.emailClient);
+    setRequireCoverLetter(draft.requireCoverLetter);
+    setTrackOpens(draft.trackOpens);
+    setJobUrl(draft.jobUrl);
+    setSendMode(draft.sendMode);
+    setScheduledFor(draft.scheduledFor ? new Date(draft.scheduledFor) : null);
+    setEditedBodyHtml(draft.editedBodyHtml);
+    setIsEditingBody(draft.isEditingBody);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
+
+  // Mirror the in-progress draft to localStorage on every change, so
+  // navigating to another page and back restores exactly what was typed.
+  useEffect(() => {
+    saveDraft<SendEmailDraft>(sendEmailDraftKey(user?.uid), {
+      formData,
+      additionalDetails,
+      showAdditionalDetails,
+      emailClient,
+      requireCoverLetter,
+      trackOpens,
+      jobUrl,
+      sendMode,
+      scheduledFor: scheduledFor ? scheduledFor.toISOString() : null,
+      editedBodyHtml,
+      isEditingBody,
+    });
+  }, [
+    formData,
+    additionalDetails,
+    showAdditionalDetails,
+    emailClient,
+    requireCoverLetter,
+    trackOpens,
+    jobUrl,
+    sendMode,
+    scheduledFor,
+    editedBodyHtml,
+    isEditingBody,
+    user?.uid,
+  ]);
 
   // Load the CV file tagged to a resume profile (if any) and drop it
   // straight into the attachment slot, so picking a profile is enough to
@@ -563,6 +640,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           trackingId,
         });
 
+        // The draft is now safely sent - nothing left to protect against a
+        // tab switch, so drop it instead of resurrecting a "sent" email.
+        clearDraft(sendEmailDraftKey(user?.uid));
+
         showToast(
           'success',
           'Email Sent Successfully!',
@@ -660,6 +741,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       });
 
       if (result.success) {
+        // The draft is now safely scheduled server-side - nothing left to
+        // protect against a tab switch.
+        clearDraft(sendEmailDraftKey(user?.uid));
+
         showToast(
           'success',
           'Email Scheduled!',
@@ -1137,9 +1222,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               <select
                 className="form-select"
                 value={selectedTemplate}
-                onChange={e =>
-                  setSelectedTemplate(parseInt(e.target.value) as TemplateType)
-                }
+                onChange={e => {
+                  const next = parseInt(e.target.value) as TemplateType;
+                  setSelectedTemplate(next);
+                  // Shared with the Email Templates page's own selector, so
+                  // whichever page you pick a template from wins on remount.
+                  localStorage.setItem('selectedTemplateId', next.toString());
+                }}
                 disabled={!resumeData}
               >
                 {TEMPLATE_METADATA.map(template => (

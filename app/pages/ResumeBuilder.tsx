@@ -12,6 +12,7 @@ import { SocialLinks, createEmptySocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { Loader } from '@/components/ui/loader';
 import { useAuth } from '@/contexts/AuthContext';
+import { clearDraft, loadDraft, saveDraft } from '@/lib/formDraft';
 import { EASE } from '@/lib/motion';
 import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import { ParsedResumeContent } from '@/lib/resumeAiParser';
@@ -39,6 +40,36 @@ import PhoneInput from 'react-phone-number-input';
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
 import ProjectSection from '../components/ProjectSection';
+
+// Wizard fields not yet persisted via "Save & Continue", mirrored to
+// localStorage so switching to another sidebar page (which unmounts this
+// component entirely) and coming back restores what was typed instead of
+// falling back to whatever was last saved to MongoDB.
+interface ResumeWizardContent {
+  personalInfo: {
+    fullName: string;
+    email: string;
+    phone: string;
+    location: string;
+    summary: string;
+  };
+  socialLinks: SocialLinks;
+  workExperiences: WorkExperience[];
+  educations: Education[];
+  projects: Project[];
+  position: string;
+  selectedSkills: string[];
+}
+
+interface ResumeDraft {
+  profileId: string;
+  activeSection: string;
+  content: ResumeWizardContent;
+}
+
+function resumeDraftKey(uid: string): string {
+  return `resumeBuilderDraft:${uid}`;
+}
 
 export default function ResumeBuilder() {
   const { user, isLoading: authLoading } = useAuth();
@@ -104,6 +135,9 @@ export default function ResumeBuilder() {
   const [profiles, setProfiles] = useState<ResumeProfileSummary[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string>('default');
   const lastSavedSnapshotRef = useRef<string>('');
+  // Guards the draft-saving effect below from firing with the initial empty
+  // state before the real data (server or restored draft) has loaded.
+  const hasLoadedOnceRef = useRef(false);
 
   const getCurrentContent = useCallback(
     () => ({
@@ -186,6 +220,23 @@ export default function ResumeBuilder() {
       projects: data?.projects || [],
       skills: data?.skills || { position: '', selectedSkills: [] },
     });
+  }, []);
+
+  // Applies a locally-saved draft on top of freshly loaded server data, if
+  // one exists for this exact profile - lets typing survive a page switch
+  // even before the step is validated and saved via "Save & Continue".
+  const restoreDraftIfPresent = useCallback((uid: string, profileId: string) => {
+    const draft = loadDraft<ResumeDraft>(resumeDraftKey(uid));
+    if (!draft || draft.profileId !== profileId) return;
+
+    setPersonalInfo(draft.content.personalInfo);
+    setSocialLinks(draft.content.socialLinks);
+    setWorkExperiences(draft.content.workExperiences);
+    setEducations(draft.content.educations);
+    setProjects(draft.content.projects);
+    setPosition(draft.content.position);
+    setSelectedSkills(draft.content.selectedSkills);
+    setActiveSection(draft.activeSection);
   }, []);
 
   const hasExistingWizardData =
@@ -600,8 +651,10 @@ export default function ResumeBuilder() {
           'default';
         setActiveProfileId(cachedTargetId);
         applyLoadedData(cached.data);
+        restoreDraftIfPresent(user.uid, cachedTargetId);
         refreshCvFile(cachedTargetId);
         setIsLoading(false);
+        hasLoadedOnceRef.current = true;
       } else {
         setIsLoading(true);
       }
@@ -623,15 +676,18 @@ export default function ResumeBuilder() {
             'default';
           setActiveProfileId(targetProfileId);
           applyLoadedData(data);
+          restoreDraftIfPresent(user.uid, targetProfileId);
           refreshCvFile(targetProfileId);
           setCachedData(cacheKey, { profileList, data });
         } catch (error) {
           console.error('Error loading resume data:', error);
         } finally {
           setIsLoading(false);
+          hasLoadedOnceRef.current = true;
         }
       } else {
         setIsLoading(false);
+        hasLoadedOnceRef.current = true;
 
         // Show alert only once when user is not signed in
         if (!hasShownAlert) {
@@ -652,7 +708,40 @@ export default function ResumeBuilder() {
     };
 
     syncResumeData();
-  }, [user, authLoading, applyLoadedData]);
+  }, [user, authLoading, applyLoadedData, restoreDraftIfPresent]);
+
+  // Mirror not-yet-saved wizard input to localStorage on every change, so
+  // navigating to another page and back (or a step not yet validated with
+  // "Save & Continue") doesn't lose it. Gated on hasLoadedOnceRef so this
+  // never overwrites a real draft with the initial empty state before the
+  // mount effect above has had a chance to load or restore anything.
+  useEffect(() => {
+    if (!hasLoadedOnceRef.current || !user?.uid || !activeProfileId) return;
+    saveDraft<ResumeDraft>(resumeDraftKey(user.uid), {
+      profileId: activeProfileId,
+      activeSection,
+      content: {
+        personalInfo,
+        socialLinks,
+        workExperiences,
+        educations,
+        projects,
+        position,
+        selectedSkills,
+      },
+    });
+  }, [
+    user?.uid,
+    activeProfileId,
+    activeSection,
+    personalInfo,
+    socialLinks,
+    workExperiences,
+    educations,
+    projects,
+    position,
+    selectedSkills,
+  ]);
 
   // Helper function to show a notification (title/description/type stayed
   // the same at every call site; only the presentation moved to a toast).
@@ -701,6 +790,7 @@ export default function ResumeBuilder() {
         setActiveProfileId(profileId);
         const data = await loadResumeData(user.uid, profileId);
         applyLoadedData(data);
+        restoreDraftIfPresent(user.uid, profileId);
         refreshCvFile(profileId);
       } catch (error) {
         console.error('Error switching resume profile:', error);
@@ -708,7 +798,7 @@ export default function ResumeBuilder() {
         setIsLoading(false);
       }
     },
-    [user, applyLoadedData, refreshCvFile]
+    [user, applyLoadedData, restoreDraftIfPresent, refreshCvFile]
   );
 
   const handleCreateProfile = useCallback(
@@ -828,6 +918,9 @@ export default function ResumeBuilder() {
               { profileId: activeProfileId }
             );
             refreshProfiles();
+            // Now safely persisted to MongoDB - the localStorage draft for
+            // this profile would only ever restore stale/duplicate content.
+            clearDraft(resumeDraftKey(user.uid));
           }
 
           setActiveSection('experience');
@@ -856,6 +949,9 @@ export default function ResumeBuilder() {
               { profileId: activeProfileId }
             );
             refreshProfiles();
+            // Now safely persisted to MongoDB - the localStorage draft for
+            // this profile would only ever restore stale/duplicate content.
+            clearDraft(resumeDraftKey(user.uid));
           }
 
           setActiveSection('education');
@@ -884,6 +980,9 @@ export default function ResumeBuilder() {
               { profileId: activeProfileId }
             );
             refreshProfiles();
+            // Now safely persisted to MongoDB - the localStorage draft for
+            // this profile would only ever restore stale/duplicate content.
+            clearDraft(resumeDraftKey(user.uid));
           }
 
           setActiveSection('projects');
@@ -912,6 +1011,9 @@ export default function ResumeBuilder() {
               { profileId: activeProfileId }
             );
             refreshProfiles();
+            // Now safely persisted to MongoDB - the localStorage draft for
+            // this profile would only ever restore stale/duplicate content.
+            clearDraft(resumeDraftKey(user.uid));
           }
 
           setActiveSection('skills');
@@ -940,6 +1042,9 @@ export default function ResumeBuilder() {
               { profileId: activeProfileId }
             );
             refreshProfiles();
+            // Now safely persisted to MongoDB - the localStorage draft for
+            // this profile would only ever restore stale/duplicate content.
+            clearDraft(resumeDraftKey(user.uid));
           }
 
           showAlert(

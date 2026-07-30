@@ -254,8 +254,8 @@ erDiagram
 - **Rich text body editor** — live-rendered preview by default, with an opt-in Quill editor (edit → regenerate-from-template → preview-before-send loop)
 - **Gmail API direct send** with attachments, or an Outlook `mailto:` fallback for everyone else
 - **Schedule for later (Gmail)** — pick a future date/time; a GitHub Actions cron job hits a protected endpoint every 5 minutes and sends due emails even if you're not signed in at that moment
-- **Open tracking** — an invisible pixel records open count and first/last-opened time for both immediate and scheduled sends (not for Outlook `mailto:`, which hands off to your own mail client)
-- **Email History** — stats (sent/pending/failed/companies) plus a small application "pipeline" view (interview scheduled/offered/rejected)
+- **Open tracking (opt-in)** — a "Track Email Opens" toggle (off by default) embeds an invisible pixel that records open count and first/last-opened time, for both immediate and scheduled sends. Off by default because a hidden tracking pixel is a well-known spam-filter signal — for a job application, landing in the inbox matters more than knowing if it was opened.
+- **Email History with live open-status updates** — stats (sent/pending/failed/companies) plus a small application "pipeline" view (interview scheduled/offered/rejected). While the History page is open, it silently re-checks for new opens every 15 seconds (paused when the tab isn't visible) and updates the "Opened" badge on a card automatically — no manual refresh needed to see when a recruiter opens your email.
 
 ### 👤 Resume Builder
 
@@ -457,6 +457,8 @@ Three workflows under `.github/workflows/`:
 
 ## 📝 Recent Updates
 
+- ✅ Live-updating Email History — the "Opened" status on each card refreshes automatically (15s polling) with no manual reload
+- ✅ Open tracking made opt-in (off by default) — an always-on invisible pixel was a spam-filter red flag; now it's a toggle on Send Email
 - ✅ AI-powered resume parsing (Google Gemini) — upload a PDF/DOC/DOCX and auto-fill the entire Resume Builder wizard
 - ✅ Tagged CV storage — the uploaded resume file is kept per-profile and auto-attached in Send Email
 - ✅ App-wide toast notifications (`goey-toast`), replacing a custom alert-dialog system for one-way notices

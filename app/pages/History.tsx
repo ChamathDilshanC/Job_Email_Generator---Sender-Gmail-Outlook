@@ -24,7 +24,14 @@ import {
   ThumbsUp,
   XCircle,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+// How often to silently re-check for open-tracking updates (recipient
+// opened the email) while this page is visible. Not a hard real-time push
+// (no websocket/SSE infra here) -- polling is the simplest thing that
+// actually works within Vercel's serverless model, and 15s is frequent
+// enough to feel live without hammering the API/DB.
+const LIVE_REFRESH_INTERVAL_MS = 15000;
 
 export default function History() {
   const { user } = useAuth();
@@ -33,6 +40,7 @@ export default function History() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmail, setSelectedEmail] = useState<EmailHistory | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -70,6 +78,7 @@ export default function History() {
         const history = await loadEmailHistory(user.uid);
         setEmailHistory(history);
         setCachedData(cacheKey, history);
+        setLastSyncedAt(new Date());
       } catch (error) {
         console.error('Error loading email history:', error);
       } finally {
@@ -78,6 +87,34 @@ export default function History() {
     };
 
     fetchHistory();
+  }, [user?.uid]);
+
+  // Silently re-check for open-tracking updates while the page is visible,
+  // so an "Opened" badge can flip on without the user refreshing. Skips a
+  // tick if the tab isn't visible or a previous check is still in flight.
+  const isSyncingRef = useRef(false);
+  useEffect(() => {
+    if (!user?.uid) return;
+    const cacheKey = `history:${user.uid}`;
+
+    const intervalId = setInterval(async () => {
+      if (isSyncingRef.current || document.visibilityState !== 'visible') {
+        return;
+      }
+      isSyncingRef.current = true;
+      try {
+        const history = await loadEmailHistory(user.uid);
+        setEmailHistory(history);
+        setCachedData(cacheKey, history);
+        setLastSyncedAt(new Date());
+      } catch (error) {
+        console.error('Error refreshing email history:', error);
+      } finally {
+        isSyncingRef.current = false;
+      }
+    }, LIVE_REFRESH_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
   }, [user?.uid]);
 
   // Filter emails based on search query
@@ -227,13 +264,35 @@ export default function History() {
         className="w-full"
       >
         {/* Header */}
-        <motion.div variants={fadeInUp} className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Email History
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            View and manage your sent job application emails
-          </p>
+        <motion.div
+          variants={fadeInUp}
+          className="mb-8 flex flex-wrap items-end justify-between gap-3"
+        >
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Email History
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              View and manage your sent job application emails
+            </p>
+          </div>
+          {user?.uid && (
+            <div
+              className="flex items-center gap-1.5 text-xs text-muted-foreground"
+              title="Open status refreshes automatically every 15 seconds while this page is open"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+              </span>
+              Live
+              {lastSyncedAt && (
+                <span className="hidden sm:inline">
+                  &middot; synced {lastSyncedAt.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* Stats Cards */}

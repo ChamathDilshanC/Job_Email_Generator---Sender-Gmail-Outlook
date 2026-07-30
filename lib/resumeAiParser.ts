@@ -5,7 +5,7 @@ import { FinishReason, GoogleGenAI } from '@google/genai';
 // the parsed result can be dropped straight into component state with only
 // client-side id generation left to do.
 
-const MODEL = 'gemini-2.5-flash';
+const MODEL = 'gemini-3.6-flash';
 
 let client: GoogleGenAI | null = null;
 function getClient(): GoogleGenAI {

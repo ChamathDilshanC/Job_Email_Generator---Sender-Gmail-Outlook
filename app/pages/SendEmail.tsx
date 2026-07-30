@@ -137,10 +137,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   }>({ cv: null, coverLetter: null });
   const [isSending, setIsSending] = useState(false);
   const [requireCoverLetter, setRequireCoverLetter] = useState(false);
-  // Off by default: an invisible open-tracking pixel is one of the most
-  // common signals spam filters score against, and for a job application
-  // landing in the inbox matters far more than knowing if it was opened.
-  const [trackOpens, setTrackOpens] = useState(false);
+  // On by default per user preference - knowing whether a recruiter opened
+  // the email is worth more here than the small deliverability risk from
+  // the tracking pixel. Still user-toggleable per send.
+  const [trackOpens, setTrackOpens] = useState(true);
 
   // Template selection and resume data
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>(

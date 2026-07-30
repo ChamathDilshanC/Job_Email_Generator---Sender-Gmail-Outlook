@@ -137,6 +137,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   }>({ cv: null, coverLetter: null });
   const [isSending, setIsSending] = useState(false);
   const [requireCoverLetter, setRequireCoverLetter] = useState(false);
+  // Off by default: an invisible open-tracking pixel is one of the most
+  // common signals spam filters score against, and for a job application
+  // landing in the inbox matters far more than knowing if it was opened.
+  const [trackOpens, setTrackOpens] = useState(false);
 
   // Template selection and resume data
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>(
@@ -511,11 +515,14 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         });
       }
 
-      // Embed a hidden open-tracking pixel. Only possible for Gmail sends —
-      // Outlook's mailto: hands off to the user's own mail client, which we
-      // never see again.
-      const trackingId = crypto.randomUUID();
-      const bodyWithTracking = `${displayedBodyHtml}<img src="${window.location.origin}/api/track/${trackingId}" width="1" height="1" style="display:none" alt="" />`;
+      // Embed a hidden open-tracking pixel, but only if the user opted in —
+      // it's a well-known spam-filter signal, and only possible for Gmail
+      // sends anyway (Outlook's mailto: hands off to the user's own mail
+      // client, which we never see again).
+      const trackingId = trackOpens ? crypto.randomUUID() : undefined;
+      const bodyWithTracking = trackingId
+        ? `${displayedBodyHtml}<img src="${window.location.origin}/api/track/${trackingId}" width="1" height="1" style="display:none" alt="" />`
+        : displayedBodyHtml;
 
       // Send email via Gmail API
       const result = await sendEmailWithAttachments(
@@ -647,6 +654,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         scheduledFor: scheduledFor.toISOString(),
         companyName: formData.companyName,
         position: formData.position,
+        trackOpens,
         templateId: selectedTemplate,
         templateName,
       });
@@ -1164,6 +1172,31 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 checked={requireCoverLetter}
                 onCheckedChange={setRequireCoverLetter}
                 aria-label="Require Cover Letter"
+              />
+            </div>
+          </div>
+
+          {/* Open Tracking Toggle */}
+          <div className="mt-4 px-6">
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
+              <div>
+                <label
+                  htmlFor="track-opens"
+                  className="cursor-pointer text-[0.95rem] font-medium text-gray-800 dark:text-gray-200"
+                >
+                  Track Email Opens
+                </label>
+                <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                  {trackOpens
+                    ? 'A hidden pixel will record opens — this is a well-known spam-filter signal, so it may hurt inbox placement'
+                    : 'Off — recommended for job applications, since landing in the inbox matters more than open tracking'}
+                </p>
+              </div>
+              <Switch
+                id="track-opens"
+                checked={trackOpens}
+                onCheckedChange={setTrackOpens}
+                aria-label="Track Email Opens"
               />
             </div>
           </div>

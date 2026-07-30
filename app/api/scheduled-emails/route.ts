@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
       position,
       templateId,
       templateName,
+      trackOpens,
     } = body;
 
     if (!userId || !to || !subject || !bodyHtml || !scheduledFor) {
@@ -89,7 +90,11 @@ export async function POST(request: NextRequest) {
     }
 
     const collection = await getCollection();
-    const trackingId = randomUUID();
+    // Only generate a tracking pixel ID when the user opted in (see
+    // SendEmail.tsx's "Track Email Opens" toggle) — an invisible pixel is a
+    // well-known spam-filter signal, and the cron route already skips
+    // embedding one when trackingId is falsy.
+    const trackingId = trackOpens ? randomUUID() : null;
 
     const result = await collection.insertOne({
       userId,

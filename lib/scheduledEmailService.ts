@@ -34,6 +34,9 @@ export interface CreateScheduledEmailInput {
   position?: string;
   templateId?: number;
   templateName?: string;
+  // Off by default at the call site — an invisible open-tracking pixel is a
+  // well-known spam-filter signal, so it's opt-in per send.
+  trackOpens?: boolean;
 }
 
 export async function scheduleEmail(

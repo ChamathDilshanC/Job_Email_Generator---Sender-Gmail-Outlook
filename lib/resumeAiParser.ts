@@ -1,11 +1,16 @@
-import { FinishReason, GoogleGenAI, ThinkingLevel } from '@google/genai';
+import { ApiError, FinishReason, GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 // Server-only: reads a resume (PDF bytes or plain extracted text) and asks
 // Gemini to pull it into the exact shape the Resume Builder wizard uses, so
 // the parsed result can be dropped straight into component state with only
 // client-side id generation left to do.
 
-const MODEL = 'gemini-3.6-flash';
+// Tried in order. On a transient/availability error (429/500/503) we fall
+// through to the next one instead of failing the whole upload; a genuine
+// bad-request or content-safety error still fails immediately since retrying
+// on a different model won't fix either of those.
+const MODEL_CANDIDATES = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'];
+const RETRYABLE_STATUS = new Set([429, 500, 503]);
 
 let client: GoogleGenAI | null = null;
 function getClient(): GoogleGenAI {
@@ -255,8 +260,32 @@ const SYSTEM_PROMPT = `You extract structured resume data for a resume-builder a
 type ContentPart = string | { inlineData: { mimeType: string; data: string } };
 
 async function runExtraction(parts: ContentPart[]): Promise<ParsedResumeContent> {
+  let lastError: unknown;
+
+  for (const model of MODEL_CANDIDATES) {
+    try {
+      return await extractWithModel(model, parts);
+    } catch (error) {
+      lastError = error;
+      if (error instanceof ApiError && RETRYABLE_STATUS.has(error.status)) {
+        console.warn(`Gemini model ${model} unavailable (${error.status}), trying next candidate`);
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('The AI is currently unavailable. Please try again later.');
+}
+
+async function extractWithModel(
+  model: string,
+  parts: ContentPart[]
+): Promise<ParsedResumeContent> {
   const response = await getClient().models.generateContent({
-    model: MODEL,
+    model,
     contents: parts,
     config: {
       systemInstruction: SYSTEM_PROMPT,

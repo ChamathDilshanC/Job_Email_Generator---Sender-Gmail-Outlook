@@ -216,10 +216,13 @@ export async function DELETE(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db('job_email_generator');
     const collection = db.collection('resumes');
+    const cvCollection = db.collection('resume_cv_files');
 
     if (!profileId) {
-      // No profileId: delete every profile this user owns.
+      // No profileId: delete every profile this user owns (and any tagged
+      // CV files, which live in a separate collection).
       await collection.deleteMany({ userId });
+      await cvCollection.deleteMany({ userId });
       return NextResponse.json({ success: true, message: 'All resume profiles deleted' });
     }
 
@@ -229,6 +232,8 @@ export async function DELETE(request: NextRequest) {
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
+
+    await cvCollection.deleteOne({ userId, profileId });
 
     // If the deleted profile was the default, promote another remaining one.
     if (target?.isDefault) {

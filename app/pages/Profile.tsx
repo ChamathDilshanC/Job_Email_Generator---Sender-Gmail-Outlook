@@ -1,6 +1,5 @@
 'use client';
 
-import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +11,7 @@ import {
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import { loadResumeData } from '@/lib/resumeDataService';
+import { showToast } from '@/lib/toast';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -32,12 +32,6 @@ export default function Profile() {
     pending: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [alertDialog, setAlertDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-  }>({ open: false, title: '', description: '', type: 'info' });
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -125,24 +119,10 @@ export default function Profile() {
             }}
             onError={(error: string) => {
               console.error('Sign in failed:', error);
-              setAlertDialog({
-                open: true,
-                title: 'Sign In Failed',
-                description: error,
-                type: 'error',
-              });
+              showToast('error', 'Sign In Failed', error);
             }}
           />
         </motion.div>
-
-        {/* Alert Dialog */}
-        <AlertDialog
-          open={alertDialog.open}
-          onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
-          title={alertDialog.title}
-          description={alertDialog.description}
-          type={alertDialog.type}
-        />
       </div>
     );
   }
@@ -341,23 +321,19 @@ export default function Profile() {
                                 )
                               );
                             }
-                            setAlertDialog({
-                              open: true,
-                              title: 'Success',
-                              description:
-                                'Cache cleared successfully! The page will reload.',
-                              type: 'success',
-                            });
+                            showToast(
+                              'success',
+                              'Success',
+                              'Cache cleared successfully! The page will reload.'
+                            );
                             setTimeout(() => window.location.reload(), 1500);
                           } catch (error) {
                             console.error('Error clearing cache:', error);
-                            setAlertDialog({
-                              open: true,
-                              title: 'Error',
-                              description:
-                                'Failed to clear cache. Please try again.',
-                              type: 'error',
-                            });
+                            showToast(
+                              'error',
+                              'Error',
+                              'Failed to clear cache. Please try again.'
+                            );
                           }
                         },
                       });
@@ -414,22 +390,18 @@ export default function Profile() {
                         document.body.removeChild(link);
                         URL.revokeObjectURL(url);
 
-                        setAlertDialog({
-                          open: true,
-                          title: 'Success',
-                          description:
-                            'Your data has been exported successfully!',
-                          type: 'success',
-                        });
+                        showToast(
+                          'success',
+                          'Success',
+                          'Your data has been exported successfully!'
+                        );
                       } catch (error) {
                         console.error('Error exporting data:', error);
-                        setAlertDialog({
-                          open: true,
-                          title: 'Error',
-                          description:
-                            'Failed to export data. Please try again.',
-                          type: 'error',
-                        });
+                        showToast(
+                          'error',
+                          'Error',
+                          'Failed to export data. Please try again.'
+                        );
                       }
                     }}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -465,25 +437,21 @@ export default function Profile() {
                         onConfirm: async () => {
                           try {
                             await handleSignOut();
-                            setAlertDialog({
-                              open: true,
-                              title: 'Signed Out',
-                              description:
-                                'You have been successfully signed out.',
-                              type: 'success',
-                            });
+                            showToast(
+                              'success',
+                              'Signed Out',
+                              'You have been successfully signed out.'
+                            );
                             setTimeout(() => {
                               window.location.href = '/';
                             }, 1500);
                           } catch (error) {
                             console.error('Error signing out:', error);
-                            setAlertDialog({
-                              open: true,
-                              title: 'Error',
-                              description:
-                                'Failed to sign out. Please try again.',
-                              type: 'error',
-                            });
+                            showToast(
+                              'error',
+                              'Error',
+                              'Failed to sign out. Please try again.'
+                            );
                           }
                         },
                       });
@@ -534,26 +502,22 @@ export default function Profile() {
                             localStorage.clear();
                             sessionStorage.clear();
 
-                            setAlertDialog({
-                              open: true,
-                              title: 'Account Deleted',
-                              description:
-                                'Your account has been deleted. You will be signed out.',
-                              type: 'success',
-                            });
+                            showToast(
+                              'success',
+                              'Account Deleted',
+                              'Your account has been deleted. You will be signed out.'
+                            );
 
                             setTimeout(() => {
                               window.location.href = '/';
                             }, 1500);
                           } catch (error) {
                             console.error('Error deleting account:', error);
-                            setAlertDialog({
-                              open: true,
-                              title: 'Error',
-                              description:
-                                'Failed to delete account. Please contact support.',
-                              type: 'error',
-                            });
+                            showToast(
+                              'error',
+                              'Error',
+                              'Failed to delete account. Please contact support.'
+                            );
                           }
                         },
                       });
@@ -569,15 +533,6 @@ export default function Profile() {
           </div>
         </div>
       </motion.div>
-
-      {/* Alert Dialog */}
-      <AlertDialog
-        open={alertDialog.open}
-        onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
-        title={alertDialog.title}
-        description={alertDialog.description}
-        type={alertDialog.type}
-      />
 
       {/* Confirm Dialog */}
       <ConfirmDialog

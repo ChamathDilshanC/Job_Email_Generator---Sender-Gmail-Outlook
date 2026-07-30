@@ -3,7 +3,6 @@
 import EmailHistoryCard from '@/app/components/EmailHistoryCard';
 import EmailHistoryModal from '@/app/components/EmailHistoryModal';
 import { ApplicationStatus, EmailHistory } from '@/app/models/EmailHistory';
-import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -13,6 +12,7 @@ import {
 } from '@/lib/emailHistoryService';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { getCachedData, setCachedData } from '@/lib/pageDataCache';
+import { showToast } from '@/lib/toast';
 import { motion } from 'framer-motion';
 import {
   Building2,
@@ -33,12 +33,6 @@ export default function History() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmail, setSelectedEmail] = useState<EmailHistory | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [alertDialog, setAlertDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-  }>({ open: false, title: '', description: '', type: 'info' });
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -116,12 +110,11 @@ export default function History() {
     const success = await updateApplicationStatus(emailId, newStatus);
     if (!success) {
       setEmailHistory(previous);
-      setAlertDialog({
-        open: true,
-        title: 'Error',
-        description: 'Failed to update application status. Please try again.',
-        type: 'error',
-      });
+      showToast(
+        'error',
+        'Error',
+        'Failed to update application status. Please try again.'
+      );
     }
   };
 
@@ -137,29 +130,17 @@ export default function History() {
           const success = await deleteEmailFromHistory(emailId);
           if (success) {
             setEmailHistory(prev => prev.filter(email => email.id !== emailId));
-            setAlertDialog({
-              open: true,
-              title: 'Email Deleted',
-              description:
-                'The email has been successfully deleted from your history.',
-              type: 'success',
-            });
+            showToast(
+              'success',
+              'Email Deleted',
+              'The email has been successfully deleted from your history.'
+            );
           } else {
-            setAlertDialog({
-              open: true,
-              title: 'Error',
-              description: 'Failed to delete email. Please try again.',
-              type: 'error',
-            });
+            showToast('error', 'Error', 'Failed to delete email. Please try again.');
           }
         } catch (error) {
           console.error('Error deleting email:', error);
-          setAlertDialog({
-            open: true,
-            title: 'Error',
-            description: 'An error occurred while deleting the email.',
-            type: 'error',
-          });
+          showToast('error', 'Error', 'An error occurred while deleting the email.');
         }
       },
     });
@@ -403,15 +384,6 @@ export default function History() {
         email={selectedEmail}
         isOpen={showModal}
         onClose={closeModal}
-      />
-
-      {/* Alert Dialog */}
-      <AlertDialog
-        open={alertDialog.open}
-        onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
-        title={alertDialog.title}
-        description={alertDialog.description}
-        type={alertDialog.type}
       />
 
       {/* Confirm Dialog */}

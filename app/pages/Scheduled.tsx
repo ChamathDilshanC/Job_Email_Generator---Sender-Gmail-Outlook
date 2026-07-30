@@ -1,6 +1,5 @@
 'use client';
 
-import { AlertDialog } from '@/components/alert-dialog';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
@@ -12,6 +11,7 @@ import {
   ScheduledEmail,
 } from '@/lib/scheduledEmailService';
 import { getCachedData, setCachedData } from '@/lib/pageDataCache';
+import { showToast } from '@/lib/toast';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -28,12 +28,6 @@ export default function Scheduled() {
   const [scheduled, setScheduled] = useState<ScheduledEmail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasBackgroundSend, setHasBackgroundSend] = useState(true);
-  const [alertDialog, setAlertDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-  }>({ open: false, title: '', description: '', type: 'info' });
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     title: string;
@@ -75,14 +69,13 @@ export default function Scheduled() {
     if (result.success && user?.uid) {
       const ok = await checkGoogleBackgroundSendStatus(user.uid);
       setHasBackgroundSend(ok);
-      setAlertDialog({
-        open: true,
-        title: ok ? 'Background Sending Enabled' : 'Still Not Enabled',
-        description: ok
+      showToast(
+        ok ? 'success' : 'warning',
+        ok ? 'Background Sending Enabled' : 'Still Not Enabled',
+        ok
           ? 'Scheduled emails can now send in the background, even while this browser is closed.'
-          : "Google didn't grant offline access this time. Visit myaccount.google.com/permissions, remove access for this app, then reconnect again.",
-        type: ok ? 'success' : 'warning',
-      });
+          : "Google didn't grant offline access this time. Visit myaccount.google.com/permissions, remove access for this app, then reconnect again."
+      );
     }
   };
 
@@ -98,12 +91,7 @@ export default function Scheduled() {
             prev.map(s => (s.id === id ? { ...s, status: 'cancelled' } : s))
           );
         } else {
-          setAlertDialog({
-            open: true,
-            title: 'Error',
-            description: 'Failed to cancel the scheduled email.',
-            type: 'error',
-          });
+          showToast('error', 'Error', 'Failed to cancel the scheduled email.');
         }
       },
     });
@@ -119,12 +107,7 @@ export default function Scheduled() {
         if (ok) {
           setScheduled(prev => prev.filter(s => s.id !== id));
         } else {
-          setAlertDialog({
-            open: true,
-            title: 'Error',
-            description: 'Failed to delete the scheduled email.',
-            type: 'error',
-          });
+          showToast('error', 'Error', 'Failed to delete the scheduled email.');
         }
       },
     });
@@ -287,14 +270,6 @@ export default function Scheduled() {
           )}
         </motion.div>
       </motion.div>
-
-      <AlertDialog
-        open={alertDialog.open}
-        onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
-        title={alertDialog.title}
-        description={alertDialog.description}
-        type={alertDialog.type}
-      />
 
       <ConfirmDialog
         open={confirmDialog.open}

@@ -1,10 +1,10 @@
 'use client';
 
-import { AlertDialog } from '@/components/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
 import { TEMPLATE_METADATA, TemplateType } from '@/lib/templateTypes';
+import { showToast } from '@/lib/toast';
 import { useEffect, useState } from 'react';
 
 export default function EmailTemplates() {
@@ -23,13 +23,6 @@ export default function EmailTemplates() {
     bodyText: string;
     bodyHtml: string;
   } | null>(null);
-  const [alertDialog, setAlertDialog] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-  }>({ open: false, title: '', description: '', type: 'info' });
-
   // Load resume data and selected template on component mount
   useEffect(() => {
     // Load selected template from localStorage
@@ -62,13 +55,11 @@ export default function EmailTemplates() {
 
   const handlePreviewWithResume = (templateId: TemplateType) => {
     if (!resumeData) {
-      setAlertDialog({
-        open: true,
-        title: 'Resume Required',
-        description:
-          'Please complete your resume in the Resume Builder first to preview with your data.',
-        type: 'warning',
-      });
+      showToast(
+        'warning',
+        'Resume Required',
+        'Please complete your resume in the Resume Builder first to preview with your data.'
+      );
       return;
     }
 
@@ -343,15 +334,6 @@ export default function EmailTemplates() {
           </div>
         </div>
       )}
-
-      {/* Alert Dialog */}
-      <AlertDialog
-        open={alertDialog.open}
-        onOpenChange={open => setAlertDialog({ ...alertDialog, open })}
-        title={alertDialog.title}
-        description={alertDialog.description}
-        type={alertDialog.type}
-      />
     </>
   );
 }

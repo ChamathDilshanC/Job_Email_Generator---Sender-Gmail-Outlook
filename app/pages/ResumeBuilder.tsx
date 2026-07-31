@@ -71,6 +71,15 @@ function resumeDraftKey(uid: string): string {
   return `resumeBuilderDraft:${uid}`;
 }
 
+// AI extraction (and human-entered data) commonly comes back with spaces,
+// dashes, or parens (e.g. "+94 77 561 6104") - PhoneInput expects clean
+// E.164 (just '+' and digits), so strip formatting before validating
+// instead of rejecting anything that isn't already E.164.
+function normalizePhone(raw: string | undefined): string {
+  const cleaned = (raw || '').replace(/[^\d+]/g, '');
+  return /^\+\d{6,}$/.test(cleaned) ? cleaned : '+94';
+}
+
 export default function ResumeBuilder() {
   const { user, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -166,13 +175,10 @@ export default function ResumeBuilder() {
   // resume profile, and record a snapshot so `hasUnsavedChanges` starts false.
   const applyLoadedData = useCallback((data: ResumeData | null) => {
     if (data) {
-      const phoneValue = data.personalInfo?.phone || '+94';
-      const isValidPhone = phoneValue.match(/^\+\d+$/);
-
       setPersonalInfo({
         fullName: data.personalInfo?.fullName || '',
         email: data.personalInfo?.email || '',
-        phone: isValidPhone ? phoneValue : '+94',
+        phone: normalizePhone(data.personalInfo?.phone),
         location: data.personalInfo?.location || '',
         summary: data.personalInfo?.summary || '',
       });
@@ -267,13 +273,10 @@ export default function ResumeBuilder() {
         return;
       }
 
-      const phoneValue = parsed.personalInfo?.phone || '+94';
-      const isValidPhone = phoneValue.match(/^\+\d+$/);
-
       setPersonalInfo({
         fullName: parsed.personalInfo?.fullName || '',
         email: parsed.personalInfo?.email || '',
-        phone: isValidPhone ? phoneValue : '+94',
+        phone: normalizePhone(parsed.personalInfo?.phone),
         location: parsed.personalInfo?.location || '',
         summary: parsed.personalInfo?.summary || '',
       });

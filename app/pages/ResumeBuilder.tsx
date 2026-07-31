@@ -11,6 +11,7 @@ import { Project } from '@/app/models/Project';
 import { SocialLinks, createEmptySocialLinks } from '@/app/models/SocialLinks';
 import { WorkExperience } from '@/app/models/WorkExperience';
 import { Loader } from '@/components/ui/loader';
+import { RequiredStar } from '@/components/ui/required-star';
 import { useAuth } from '@/contexts/AuthContext';
 import { clearDraft, loadDraft, saveDraft } from '@/lib/formDraft';
 import { EASE } from '@/lib/motion';
@@ -1682,6 +1683,7 @@ export default function ResumeBuilder() {
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Full Name
+                        <RequiredStar />
                       </label>
                       <input
                         type="text"
@@ -1699,6 +1701,7 @@ export default function ResumeBuilder() {
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Email
+                        <RequiredStar />
                       </label>
                       <input
                         type="email"
@@ -2060,6 +2063,7 @@ export default function ResumeBuilder() {
                   >
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Target Position
+                      <RequiredStar />
                     </label>
                     <input
                       type="text"

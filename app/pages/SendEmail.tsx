@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
 import type { PageType } from '@/components/sidebar-01/types';
+import { RequiredStar } from '@/components/ui/required-star';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
@@ -115,12 +116,14 @@ interface SendEmailProps {
 
 function Field({
   label,
+  required,
   action,
   hint,
   className = '',
   children,
 }: {
   label: string;
+  required?: boolean;
   action?: ReactNode;
   hint?: ReactNode;
   className?: string;
@@ -131,6 +134,7 @@ function Field({
       <div className="mb-1.5 flex min-h-6 items-center justify-between gap-2">
         <label className="text-xs font-medium text-muted-foreground">
           {label}
+          {required && <RequiredStar />}
         </label>
         {action}
       </div>
@@ -1055,6 +1059,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2">
             <Field
               label="Company Name"
+              required
               action={
                 <div className="flex gap-1">
                   <button
@@ -1086,7 +1091,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               />
             </Field>
 
-            <Field label="Position" action={requiredBadge}>
+            <Field label="Position" required action={requiredBadge}>
               <input
                 type="text"
                 name="position"
@@ -1097,7 +1102,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               />
             </Field>
 
-            <Field label="Recipient Email" action={requiredBadge}>
+            <Field label="Recipient Email" required action={requiredBadge}>
               <input
                 type="email"
                 name="recipientEmail"

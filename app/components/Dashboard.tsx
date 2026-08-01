@@ -10,7 +10,9 @@ import {
 } from '@/components/ui/sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import DocsPage from '../pages/DocsPage';
 import EmailTemplates from '../pages/EmailTemplates';
+import GuidePage from '../pages/GuidePage';
 import History from '../pages/History';
 import Profile from '../pages/Profile';
 import ResumeBuilder from '../pages/ResumeBuilder';
@@ -34,6 +36,10 @@ export function Dashboard() {
         return <Scheduled />;
       case 'profile':
         return <Profile />;
+      case 'guide':
+        return <GuidePage />;
+      case 'docs':
+        return <DocsPage />;
       default:
         return <SendEmail onNavigate={setActivePage} />;
     }

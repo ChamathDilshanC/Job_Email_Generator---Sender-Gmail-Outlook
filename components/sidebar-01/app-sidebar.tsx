@@ -5,7 +5,7 @@ import { NavHeader } from '@/components/sidebar-01/nav-header';
 import { NavMain } from '@/components/sidebar-01/nav-main';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { CalendarClock, Clock, FileText, Home, Mail, User } from 'lucide-react';
+import { BookOpen, CalendarClock, Clock, FileCode, FileText, Home, Mail, User } from 'lucide-react';
 import type { NavItem, PageType, SidebarData } from './types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -72,6 +72,20 @@ export function AppSidebar({
       icon: User,
       isActive: false,
       isLocked: !isAuthenticated, // Lock when not authenticated
+    },
+    {
+      id: 'guide',
+      title: 'Guide Flow',
+      url: '#',
+      icon: BookOpen,
+      isActive: false,
+    },
+    {
+      id: 'docs',
+      title: 'Documentation',
+      url: '#',
+      icon: FileCode,
+      isActive: false,
     },
   ];
 

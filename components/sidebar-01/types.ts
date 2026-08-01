@@ -6,7 +6,9 @@ export type PageType =
   | 'resume'
   | 'history'
   | 'scheduled'
-  | 'profile';
+  | 'profile'
+  | 'guide'
+  | 'docs';
 
 export interface NavItem {
   id: string;

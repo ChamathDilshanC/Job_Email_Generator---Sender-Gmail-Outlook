@@ -197,7 +197,7 @@ function renderBannerHtml(text: string, accent: string, bg: string): string {
 }
 
 function attachmentNoteText(): string {
-  return `\n${'─'.repeat(40)}\n📎 Attached: My resume/CV is included with this email for your review.`;
+  return `\n${'─'.repeat(40)}\nAttached: My resume/CV is included with this email for your review.`;
 }
 
 function wrapHtml(inner: string): string {
@@ -909,7 +909,7 @@ ${attachmentNoteText()}`;
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:20px; background-color:${bg}; border-left:4px solid ${accent}; border-radius:6px;">
   <tr>
     <td style="padding:14px 16px;">
-      <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:${accent}; letter-spacing:0.8px; margin-bottom:4px;">⚡ Executive Recruiter Summary</div>
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:${accent}; letter-spacing:0.8px; margin-bottom:4px;">Executive Recruiter Summary</div>
       <div style="font-size:14px; color:#1e293b; line-height:1.5;">
         ${
           personalInfo.summary ||
@@ -1005,12 +1005,12 @@ ${p.keyFeatures
       <div style="padding-top:8px; border-top:1px dashed #cbd5e1;">
         ${
           p.githubUrl
-            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; margin-bottom:4px; background-color:#0f172a; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">📦 View GitHub Repository &rarr;</a>`
+            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; margin-bottom:4px; background-color:#0f172a; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">View GitHub Repository &rarr;</a>`
             : ''
         }
         ${
           p.projectUrl
-            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-bottom:4px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">🚀 Live Demo &rarr;</a>`
+            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-bottom:4px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">Live Demo &rarr;</a>`
             : ''
         }
       </div>
@@ -1049,11 +1049,11 @@ ${education
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:20px;">
   <tr>
     <td style="padding:12px 16px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:6px; font-size:13.5px; color:#334155; line-height:1.6;">
-      <div style="margin-bottom:6px;">⚡ <strong>Problem-Solving:</strong> Strong analytical mindset with proven capacity to debug complex issues &amp; optimize system performance</div>
-      <div style="margin-bottom:6px;">🤝 <strong>Collaboration:</strong> Thrives in agile cross-functional teams with active code reviews and clear communication</div>
-      <div style="margin-bottom:6px;">🚀 <strong>Learning Agility:</strong> Rapid learner passionate about modern frameworks, cloud architectures, and industry best practices</div>
-      <div style="margin-bottom:6px;">🛠 <strong>Clean Code Advocate:</strong> Dedicated to writing maintainable, well-documented, testable software components</div>
-      <div>🎯 <strong>Drive &amp; Initiative:</strong> Self-starter capable of driving features from concept to production delivery</div>
+      <div style="margin-bottom:6px;"><strong>Problem-Solving:</strong> Strong analytical mindset with proven capacity to debug complex issues &amp; optimize system performance</div>
+      <div style="margin-bottom:6px;"><strong>Collaboration:</strong> Thrives in agile cross-functional teams with active code reviews and clear communication</div>
+      <div style="margin-bottom:6px;"><strong>Learning Agility:</strong> Rapid learner passionate about modern frameworks, cloud architectures, and industry best practices</div>
+      <div style="margin-bottom:6px;"><strong>Clean Code Advocate:</strong> Dedicated to writing maintainable, well-documented, testable software components</div>
+      <div><strong>Drive &amp; Initiative:</strong> Self-starter capable of driving features from concept to production delivery</div>
     </td>
   </tr>
 </table>
@@ -1235,7 +1235,7 @@ ${attachmentNoteText()}`;
 <p>Dear Hiring Manager,</p>
 
 ${renderBannerHtml(
-  `🤝 Referred by ${referralName || 'a member of your team'}${
+  `Referred by ${referralName || 'a member of your team'}${
     referralRole ? ` &middot; ${referralRole}` : ''
   }`,
   accent,
@@ -1556,7 +1556,7 @@ ${fullName}`;
 <p>Dear ${greetingName},</p>
 
 ${renderBannerHtml(
-  isAccept ? '✅ Accepting the Offer' : '🙏 Declining the Offer',
+  isAccept ? 'Accepting the Offer' : 'Declining the Offer',
   accent,
   bg
 )}
@@ -2315,7 +2315,7 @@ ${fullName}`;
     offerDeadline ? ` on ${offerDeadline}` : ''
   }.</p>
 
-${renderBannerHtml('🚀 Excited to Join the Team', accent, bg)}
+${renderBannerHtml('Excited to Join the Team', accent, bg)}
 
 <p>Could you please confirm the start date and share any onboarding steps I should complete beforehand - paperwork, equipment setup, or anything else? I want to make sure I hit the ground running.</p>
 
@@ -2410,7 +2410,7 @@ ${attachmentNoteText()}`;
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:24px; background:linear-gradient(135deg, #0d9488, #14b8a6); border-radius:10px; color:#ffffff;">
   <tr>
     <td style="padding:18px 20px;">
-      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.9;">🎯 Recruiter Fast-Track Overview</div>
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.9;">Recruiter Fast-Track Overview</div>
       <div style="font-size:18px; font-weight:700; margin-top:4px;">Application for ${position}</div>
       <div style="font-size:13.5px; opacity:0.95; margin-top:6px; line-height:1.4;">Targeted for <strong>${companyName}</strong> &middot; High-Impact &amp; Production-Ready Professional</div>
     </td>
@@ -2428,7 +2428,7 @@ ${attachmentNoteText()}`;
 
 <!-- Skimmable Skills Matrix -->
 <div style="margin-top:24px; margin-bottom:24px; padding:16px; background-color:${bg}; border-radius:8px; border:1px solid #bbf7d0;">
-  <div style="font-size:13px; font-weight:700; color:${accent}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">⚡ Key Technical Competencies</div>
+  <div style="font-size:13px; font-weight:700; color:${accent}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Key Technical Competencies</div>
   <div>
     ${topSkills.map(skill => renderPill(skill, accent, '#ffffff')).join('')}
   </div>
@@ -2437,7 +2437,7 @@ ${attachmentNoteText()}`;
 <!-- Featured Projects Card Grid -->
 ${
   featuredProjects.length > 0
-    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">🚀 High-Impact Projects &amp; Source Code</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">High-Impact Projects &amp; Source Code</h3>
 ${featuredProjects
   .map(
     p => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:14px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:8px;">
@@ -2460,12 +2460,12 @@ ${featuredProjects
       <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #e2e8f0;">
         ${
           p.githubUrl
-            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; background-color:#0f172a; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">📦 View GitHub Code &rarr;</a>`
+            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; background-color:#0f172a; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">View GitHub Code &rarr;</a>`
             : ''
         }
         ${
           p.projectUrl
-            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">🚀 Live Application &rarr;</a>`
+            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">Live Application &rarr;</a>`
             : ''
         }
       </div>
@@ -2480,7 +2480,7 @@ ${featuredProjects
 <!-- Work Experience Summary -->
 ${
   workExperiences.length > 0
-    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">💼 Professional Experience</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">Professional Experience</h3>
 ${workExperiences
   .slice(0, 2)
   .map(
@@ -2567,7 +2567,7 @@ ${attachmentNoteText()}`;
 
 <p style="font-size:14.5px; color:#334155; line-height:1.6;">I am applying for the <strong style="color:#0f172a;">${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. Rather than just listing responsibilities, I prefer to demonstrate my engineering capabilities through working software deliverables and open-source GitHub repositories.</p>
 
-<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:14px; padding-bottom:6px; border-bottom:2px solid ${bg};">💻 Engineering Portfolio &amp; Code Showcases</h3>
+<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:14px; padding-bottom:6px; border-bottom:2px solid ${bg};">Engineering Portfolio &amp; Code Showcases</h3>
 
 ${topProjects
   .map(
@@ -2590,12 +2590,12 @@ ${topProjects
       <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #c7d2fe;">
         ${
           p.githubUrl
-            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; margin-bottom:4px; background-color:#1e1b4b; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">📦 Open GitHub Repo &rarr;</a>`
+            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; margin-bottom:4px; background-color:#1e1b4b; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">Open GitHub Repo &rarr;</a>`
             : ''
         }
         ${
           p.projectUrl
-            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-bottom:4px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">🚀 Visit Live Site &rarr;</a>`
+            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-bottom:4px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">Visit Live Site &rarr;</a>`
             : ''
         }
       </div>
@@ -2605,7 +2605,7 @@ ${topProjects
   )
   .join('')}
 
-<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">🛠 Technical Skills</h3>
+<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">Technical Skills</h3>
 <div style="margin-bottom:20px;">
   ${skills.selectedSkills.map(s => renderPill(s, accent, bg)).join('')}
 </div>

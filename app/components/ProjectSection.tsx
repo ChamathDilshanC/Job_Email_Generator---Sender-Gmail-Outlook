@@ -17,11 +17,13 @@ const formatDateToLocal = (date: Date): string => {
 interface ProjectSectionProps {
   projects: Project[];
   onUpdate: (projects: Project[]) => void;
+  onOpenGithubImporter?: () => void;
 }
 
 export default function ProjectSection({
   projects,
   onUpdate,
+  onOpenGithubImporter,
 }: ProjectSectionProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -250,6 +252,15 @@ export default function ProjectSection({
             >
               + Add Project
             </button>
+            {onOpenGithubImporter && (
+              <button
+                onClick={onOpenGithubImporter}
+                type="button"
+                className="w-full sm:w-auto px-6 py-3 bg-gray-900 dark:bg-gray-800 hover:bg-black dark:hover:bg-gray-700 text-white rounded-lg font-medium transition-all duration-200 hover:scale-105 text-sm md:text-base flex items-center justify-center gap-2 border border-gray-700 shadow-md"
+              >
+                🐙 Import from GitHub
+              </button>
+            )}
           </div>
 
           {projects.length > 0 && (

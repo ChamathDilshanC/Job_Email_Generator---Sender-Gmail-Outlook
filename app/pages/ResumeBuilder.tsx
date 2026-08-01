@@ -2,6 +2,7 @@
 
 import AtsPdfExportModal from '@/app/components/AtsPdfExportModal';
 import EducationSection from '@/app/components/EducationSection';
+import GitHubRepoImporterModal from '@/app/components/GitHubRepoImporterModal';
 import LinksSection from '@/app/components/LinksSection';
 import ResumeProfileSwitcher from '@/app/components/ResumeProfileSwitcher';
 import ResumeUploadSection from '@/app/components/ResumeUploadSection';
@@ -119,6 +120,7 @@ export default function ResumeBuilder() {
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [selectedCustomSkillIndex, setSelectedCustomSkillIndex] = useState(-1);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
 
   // Personal Info State (for step 1)
   const [personalInfo, setPersonalInfo] = useState({
@@ -344,6 +346,29 @@ export default function ResumeBuilder() {
       );
     },
     [hasExistingWizardData]
+  );
+
+  const handleImportGithubProjects = useCallback(
+    (importedProjects: Project[]) => {
+      setProjects(prev => {
+        const existingUrls = new Set(
+          prev.map(p => p.githubUrl?.toLowerCase()).filter(Boolean)
+        );
+        const newProjects = importedProjects.filter(
+          p => !p.githubUrl || !existingUrls.has(p.githubUrl.toLowerCase())
+        );
+        return [...prev, ...newProjects];
+      });
+
+      setStepsCompleted(prev => ({ ...prev, projects: true }));
+      setActiveSection('projects');
+      showToast(
+        'success',
+        'Projects Imported',
+        `Successfully added ${importedProjects.length} project(s) from GitHub to your resume!`
+      );
+    },
+    []
   );
 
   // Validation functions for each step - memoized for performance
@@ -1629,6 +1654,18 @@ export default function ResumeBuilder() {
                 Projects
               </div>
               <div
+                className="flex items-center gap-3 py-3.5 px-4 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 border border-gray-700 text-white rounded-lg transition-all duration-200 text-sm font-medium hover:scale-[1.02] cursor-pointer shadow-md min-w-[160px] lg:min-w-0 flex-shrink-0"
+                onClick={() => {
+                  setIsGithubModalOpen(true);
+                  setIsMobileSidebarOpen(false);
+                }}
+              >
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+                GitHub Import
+              </div>
+              <div
                 className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg transition-all duration-200 text-sm min-w-[150px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'skills'
                     ? 'text-[#3b3be3] dark:text-[#818cf8] border-[#3b3be3] dark:border-[#818cf8] font-bold'
@@ -2046,7 +2083,11 @@ export default function ResumeBuilder() {
                       </div>
                     </div>
                   </div>
-                  <ProjectSection projects={projects} onUpdate={setProjects} />
+                  <ProjectSection
+                    projects={projects}
+                    onUpdate={setProjects}
+                    onOpenGithubImporter={() => setIsGithubModalOpen(true)}
+                  />
                   <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                     <button
                       onClick={handlePreviousStep}
@@ -2346,6 +2387,12 @@ export default function ResumeBuilder() {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         resumeData={activeResumeData}
+      />
+      <GitHubRepoImporterModal
+        isOpen={isGithubModalOpen}
+        onClose={() => setIsGithubModalOpen(false)}
+        onImportProjects={handleImportGithubProjects}
+        initialGithubUrl={socialLinks.github}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import AtsPdfExportModal from '@/app/components/AtsPdfExportModal';
 import EducationSection from '@/app/components/EducationSection';
 import LinksSection from '@/app/components/LinksSection';
 import ResumeProfileSwitcher from '@/app/components/ResumeProfileSwitcher';
@@ -117,6 +118,7 @@ export default function ResumeBuilder() {
   const [isLoadingSkills, setIsLoadingSkills] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [selectedCustomSkillIndex, setSelectedCustomSkillIndex] = useState(-1);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Personal Info State (for step 1)
   const [personalInfo, setPersonalInfo] = useState({
@@ -148,6 +150,24 @@ export default function ResumeBuilder() {
   // Guards the draft-saving effect below from firing with the initial empty
   // state before the real data (server or restored draft) has loaded.
   const hasLoadedOnceRef = useRef(false);
+
+  const activeResumeData: ResumeData = useMemo(() => ({
+    userId: user?.uid || 'demo',
+    profileId: activeProfileId || 'default',
+    profileName: 'Active Profile',
+    isDefault: true,
+    personalInfo,
+    socialLinks,
+    workExperiences,
+    education: educations,
+    projects,
+    skills: {
+      position,
+      selectedSkills,
+    },
+    lastUpdated: new Date(),
+    createdAt: new Date(),
+  }), [user, activeProfileId, personalInfo, socialLinks, workExperiences, educations, projects, position, selectedSkills]);
 
   const getCurrentContent = useCallback(
     () => ({
@@ -1182,13 +1202,21 @@ export default function ResumeBuilder() {
         )}
 
         {/* Desktop Header */}
-        <div className="mb-6 md:mb-8 hidden lg:block">
-          <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
-            Template Information
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-            Create a professional template to complement your job applications
-          </p>
+        <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-4xl font-bold mb-1 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
+              Template Information
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
+              Create a professional template &amp; export recruiter-ready ATS PDF resumes
+            </p>
+          </div>
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all active:scale-95 text-sm self-start md:self-auto"
+          >
+            📄 Export ATS PDF
+          </button>
         </div>
 
         {/* Step Progress Indicator */}
@@ -2296,6 +2324,11 @@ export default function ResumeBuilder() {
           </div>
         </div>
       </div>
+      <AtsPdfExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        resumeData={activeResumeData}
+      />
     </div>
   );
 }

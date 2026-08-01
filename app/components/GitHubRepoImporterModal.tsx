@@ -310,7 +310,7 @@ export default function GitHubRepoImporterModal({
           {/* TOOLBAR (Filters / Search / Select All)         */}
           {/* ═══════════════════════════════════════════════ */}
           {repos.length > 0 && (
-            <div className="relative z-10 px-5 sm:px-7 py-3 border-b border-gray-200/60 dark:border-white/[0.06] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="relative z-20 px-5 sm:px-7 py-3 border-b border-gray-200/60 dark:border-white/[0.06] bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-wrap">
                 {/* Repo count badge */}
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-white/[0.06] rounded-lg">
@@ -326,7 +326,7 @@ export default function GitHubRepoImporterModal({
                 {/* Select / Deselect All */}
                 <button
                   onClick={toggleSelectAll}
-                  className="text-[11px] font-bold text-[#3b3be3] dark:text-[#818cf8] hover:text-[#2929c9] dark:hover:text-[#a5b4fc] transition-colors px-2 py-1 rounded-md hover:bg-[#3b3be3]/5 dark:hover:bg-[#818cf8]/10"
+                  className="text-[11px] font-bold text-[#3b3be3] dark:text-[#818cf8] hover:text-[#2929c9] dark:hover:text-[#a5b4fc] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-[#3b3be3]/5 dark:hover:bg-[#818cf8]/10"
                 >
                   {selectedRepoIds.size === filteredRepos.length && filteredRepos.length > 0
                     ? '✕ Deselect All'
@@ -335,59 +335,68 @@ export default function GitHubRepoImporterModal({
 
                 {/* Language filter dropdown */}
                 {availableLanguages.length > 1 && (
-                  <div className="relative">
+                  <div className="relative z-30">
                     <button
                       onClick={() => setShowLangDropdown(!showLangDropdown)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-white/[0.06] rounded-lg hover:bg-gray-200 dark:hover:bg-white/[0.1] transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/[0.08] rounded-lg hover:bg-gray-200 dark:hover:bg-white/[0.12] transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/[0.1]"
                     >
                       {langFilter !== 'all' && (
                         <span
-                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-gray-800"
                           style={{ backgroundColor: LANG_COLORS[langFilter] || '#6b7280' }}
                         />
                       )}
                       {langFilter === 'all' ? 'All Languages' : langFilter}
-                      <ChevronDown className="w-3 h-3" />
+                      <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showLangDropdown ? 'rotate-180' : ''}`} />
                     </button>
-                    {showLangDropdown && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setShowLangDropdown(false)} />
-                        <div className="absolute top-full left-0 mt-1 z-50 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-1 max-h-48 overflow-y-auto">
-                          <button
-                            onClick={() => { setLangFilter('all'); setShowLangDropdown(false); }}
-                            className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors ${langFilter === 'all' ? 'font-bold text-[#3b3be3] dark:text-[#818cf8]' : 'text-gray-700 dark:text-gray-300'}`}
+                    <AnimatePresence>
+                      {showLangDropdown && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setShowLangDropdown(false)} />
+                          <motion.div
+                            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute top-full left-0 mt-1.5 z-50 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl shadow-black/15 dark:shadow-black/40 py-1.5 max-h-56 overflow-y-auto"
                           >
-                            All Languages
-                          </button>
-                          {availableLanguages.map(lang => (
                             <button
-                              key={lang}
-                              onClick={() => { setLangFilter(lang); setShowLangDropdown(false); }}
-                              className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors flex items-center gap-2 ${langFilter === lang ? 'font-bold text-[#3b3be3] dark:text-[#818cf8]' : 'text-gray-700 dark:text-gray-300'}`}
+                              onClick={() => { setLangFilter('all'); setShowLangDropdown(false); }}
+                              className={`w-full text-left px-3.5 py-2 text-xs hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors rounded-lg mx-0 ${langFilter === 'all' ? 'font-bold text-[#3b3be3] dark:text-[#818cf8] bg-[#3b3be3]/5 dark:bg-[#818cf8]/10' : 'text-gray-700 dark:text-gray-300'}`}
                             >
-                              <span
-                                className="w-2 h-2 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: LANG_COLORS[lang] || '#6b7280' }}
-                              />
-                              {lang}
+                              All Languages
                             </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                            <div className="h-px bg-gray-100 dark:bg-white/[0.06] my-1 mx-3" />
+                            {availableLanguages.map(lang => (
+                              <button
+                                key={lang}
+                                onClick={() => { setLangFilter(lang); setShowLangDropdown(false); }}
+                                className={`w-full text-left px-3.5 py-2 text-xs hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors flex items-center gap-2.5 rounded-lg ${langFilter === lang ? 'font-bold text-[#3b3be3] dark:text-[#818cf8] bg-[#3b3be3]/5 dark:bg-[#818cf8]/10' : 'text-gray-700 dark:text-gray-300'}`}
+                              >
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                  style={{ backgroundColor: LANG_COLORS[lang] || '#6b7280' }}
+                                />
+                                {lang}
+                              </button>
+                            ))}
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
               </div>
 
               {/* Search */}
-              <div className="relative w-full sm:w-56">
+              <div className="relative w-full sm:w-60">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search repos..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-8.5 pr-3 py-2 bg-gray-50/80 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] rounded-lg text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] transition-colors"
+                  className="w-full pr-3 py-2 bg-gray-50/80 dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] rounded-lg text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] transition-colors"
                   style={{ paddingLeft: '2.1rem' }}
                 />
               </div>
@@ -397,16 +406,11 @@ export default function GitHubRepoImporterModal({
           {/* ═══════════════════════════════════════════════ */}
           {/* REPOSITORY CARDS GRID                           */}
           {/* ═══════════════════════════════════════════════ */}
-          <div className="relative z-10 flex-1 overflow-y-auto p-5 sm:p-7 space-y-4" style={{
-            background: 'linear-gradient(180deg, rgba(249,250,251,0.5) 0%, rgba(243,244,246,0.3) 100%)',
-          }}>
-            <div className="absolute inset-0 hidden dark:block" style={{
-              background: 'linear-gradient(180deg, rgba(2,6,23,0.5) 0%, rgba(15,23,42,0.3) 100%)',
-            }} />
+          <div className="relative z-10 flex-1 overflow-y-auto p-5 sm:p-6 bg-gradient-to-b from-gray-50/60 to-gray-100/40 dark:from-gray-950/60 dark:to-gray-900/40">
 
             {/* Empty state */}
             {repos.length === 0 && !isLoading && !errorMsg && (
-              <div className="relative z-10 text-center py-20 space-y-4">
+              <div className="text-center py-20 space-y-4">
                 <div className="relative mx-auto w-20 h-20">
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 animate-pulse" />
                   <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
@@ -424,11 +428,11 @@ export default function GitHubRepoImporterModal({
 
             {/* Loading skeleton */}
             {isLoading && (
-              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {[1, 2, 3, 4, 5, 6].map(i => (
                   <div
                     key={i}
-                    className="p-5 rounded-2xl border border-gray-200/60 dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.02]"
+                    className="p-5 rounded-2xl border border-gray-200/50 dark:border-white/[0.06] bg-white/80 dark:bg-white/[0.02]"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
@@ -447,8 +451,8 @@ export default function GitHubRepoImporterModal({
             )}
 
             {/* Cards grid */}
-            {!isLoading && (
-              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+            {!isLoading && filteredRepos.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredRepos.map((repo, idx) => {
                   const isSelected = selectedRepoIds.has(repo.id);
                   const editedProject = customProjectsMap.get(repo.id);
@@ -466,48 +470,79 @@ export default function GitHubRepoImporterModal({
                   return (
                     <motion.div
                       key={repo.id}
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(idx * 0.03, 0.3), duration: 0.25 }}
+                      transition={{ delay: Math.min(idx * 0.025, 0.3), duration: 0.3, ease: 'easeOut' }}
                       onClick={() => toggleSelectRepo(repo.id)}
-                      className={`group relative p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex flex-col justify-between overflow-hidden ${
+                      className={`group relative rounded-2xl cursor-pointer transition-all duration-300 overflow-hidden ${
                         isSelected
-                          ? 'bg-white dark:bg-white/[0.04] border-[#3b3be3]/40 dark:border-[#818cf8]/40 shadow-lg shadow-[#3b3be3]/[0.06] dark:shadow-[#818cf8]/[0.06]'
-                          : 'bg-white/70 dark:bg-white/[0.02] border-gray-200/70 dark:border-white/[0.06] hover:border-gray-300 dark:hover:border-white/[0.12] hover:shadow-md'
+                          ? 'shadow-xl shadow-[#3b3be3]/10 dark:shadow-[#818cf8]/10 scale-[1.01]'
+                          : 'shadow-sm hover:shadow-lg hover:scale-[1.005]'
                       }`}
                     >
-                      {/* Selection indicator top accent bar */}
-                      <div
-                        className={`absolute top-0 left-0 right-0 h-[2px] transition-all duration-300 ${
-                          isSelected
-                            ? 'bg-gradient-to-r from-[#3b3be3] via-[#5b5bf5] to-[#818cf8] opacity-100'
-                            : 'bg-gray-200 dark:bg-gray-700 opacity-0 group-hover:opacity-40'
-                        }`}
-                      />
+                      {/* ── Card background with glassmorphism ── */}
+                      <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
+                        isSelected
+                          ? 'bg-white dark:bg-[#1a1f35]'
+                          : 'bg-white/90 dark:bg-[#141929]/90'
+                      }`} />
 
-                      <div>
-                        {/* Header row */}
-                        <div className="flex items-start justify-between gap-2 mb-2.5">
-                          <div className="flex items-center gap-2.5 min-w-0">
+                      {/* ── Gradient accent border ── */}
+                      <div className={`absolute inset-0 rounded-2xl transition-all duration-300 ${
+                        isSelected
+                          ? 'ring-2 ring-[#3b3be3]/50 dark:ring-[#818cf8]/50'
+                          : 'ring-1 ring-gray-200/80 dark:ring-white/[0.07] group-hover:ring-gray-300 dark:group-hover:ring-white/[0.12]'
+                      }`} />
+
+                      {/* ── Top gradient accent line ── */}
+                      <div className={`absolute top-0 left-4 right-4 h-[3px] rounded-b-full transition-all duration-400 ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-[#3b3be3] via-[#6366f1] to-[#818cf8] opacity-100'
+                          : 'opacity-0 group-hover:opacity-30 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-500 dark:to-gray-600'
+                      }`} />
+
+                      {/* ── Card content ── */}
+                      <div className="relative z-10 p-5 flex flex-col h-full min-h-[180px]">
+
+                        {/* Header */}
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
                             {/* Custom checkbox */}
                             <div
-                              className={`w-[18px] h-[18px] rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all duration-200 ${
+                              className={`w-5 h-5 rounded-lg flex-shrink-0 flex items-center justify-center transition-all duration-250 mt-0.5 ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-[#3b3be3] to-[#5b5bf5] dark:from-[#818cf8] dark:to-[#6366f1] border-transparent shadow-sm shadow-[#3b3be3]/30'
-                                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-transparent group-hover:border-[#3b3be3]/50 dark:group-hover:border-[#818cf8]/50'
+                                  ? 'bg-gradient-to-br from-[#3b3be3] to-[#6366f1] dark:from-[#818cf8] dark:to-[#6366f1] shadow-md shadow-[#3b3be3]/30 dark:shadow-[#818cf8]/30'
+                                  : 'bg-gray-100 dark:bg-white/[0.06] border-2 border-gray-300 dark:border-gray-600 group-hover:border-[#3b3be3]/40 dark:group-hover:border-[#818cf8]/40'
                               }`}
                             >
                               {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                             </div>
-                            <h4 className="font-bold text-[13px] text-gray-900 dark:text-white truncate leading-tight">
-                              {displayTitle}
-                            </h4>
+
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-[14px] text-gray-900 dark:text-white truncate leading-snug mb-0.5">
+                                {displayTitle}
+                              </h4>
+                              {/* Language inline badge */}
+                              {repo.language && (
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                    style={{ backgroundColor: langColor }}
+                                  />
+                                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                                    {repo.language}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200">
                             <button
                               onClick={e => { e.stopPropagation(); handleOpenEdit(repo); }}
                               title="Edit project details"
-                              className="p-1.5 text-gray-400 hover:text-[#3b3be3] dark:hover:text-[#818cf8] rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-all"
+                              className="p-2 text-gray-400 hover:text-[#3b3be3] dark:hover:text-[#818cf8] rounded-xl hover:bg-gray-100 dark:hover:bg-white/[0.08] transition-all"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
@@ -516,7 +551,7 @@ export default function GitHubRepoImporterModal({
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={e => e.stopPropagation()}
-                              className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-all"
+                              className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-white/[0.08] transition-all"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
@@ -524,60 +559,50 @@ export default function GitHubRepoImporterModal({
                         </div>
 
                         {/* Description */}
-                        <p className="text-[12px] text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 leading-[1.6] pl-[30px]">
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-[1.7] flex-grow">
                           {displayDesc}
                         </p>
 
                         {/* Tech badges */}
-                        <div className="flex flex-wrap gap-1.5 mb-3 pl-[30px]">
+                        <div className="flex flex-wrap gap-1.5 mb-4">
                           {techList.slice(0, 5).map((tech, tidx) => (
                             <span
                               key={tidx}
-                              className="px-2 py-[3px] text-[10px] font-semibold rounded-md bg-gray-100/80 dark:bg-white/[0.06] text-gray-600 dark:text-gray-300 border border-gray-200/60 dark:border-white/[0.08]"
+                              className="px-2.5 py-1 text-[10px] font-semibold rounded-lg bg-gray-100/90 dark:bg-white/[0.06] text-gray-600 dark:text-gray-300 border border-gray-200/50 dark:border-white/[0.06] backdrop-blur-sm"
                             >
                               {tech}
                             </span>
                           ))}
                           {techList.length > 5 && (
-                            <span className="px-2 py-[3px] text-[10px] font-medium text-gray-400 dark:text-gray-500">
+                            <span className="px-2 py-1 text-[10px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/[0.03] rounded-lg">
                               +{techList.length - 5}
                             </span>
                           )}
                         </div>
-                      </div>
 
-                      {/* Stats footer */}
-                      <div className="flex items-center justify-between text-[11px] pt-2.5 border-t border-gray-100 dark:border-white/[0.05] pl-[30px]">
-                        <div className="flex items-center gap-3">
-                          {/* Language dot */}
-                          {repo.language && (
-                            <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-medium">
-                              <span
-                                className="w-2.5 h-2.5 rounded-full shadow-sm"
-                                style={{ backgroundColor: langColor }}
-                              />
-                              {repo.language}
-                            </span>
-                          )}
-                          {repo.stargazers_count > 0 && (
-                            <span className="flex items-center gap-1 text-amber-500 font-bold">
-                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                              {repo.stargazers_count}
-                            </span>
-                          )}
-                          {repo.forks_count > 0 && (
-                            <span className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
-                              <GitFork className="w-3 h-3" />
-                              {repo.forks_count}
-                            </span>
-                          )}
+                        {/* Stats footer */}
+                        <div className="flex items-center justify-between text-[11px] pt-3 border-t border-gray-100/80 dark:border-white/[0.05] mt-auto">
+                          <div className="flex items-center gap-3.5">
+                            {repo.stargazers_count > 0 && (
+                              <span className="flex items-center gap-1 text-amber-500 font-bold">
+                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                {repo.stargazers_count}
+                              </span>
+                            )}
+                            {repo.forks_count > 0 && (
+                              <span className="flex items-center gap-1 text-gray-400 dark:text-gray-500 font-medium">
+                                <GitFork className="w-3.5 h-3.5" />
+                                {repo.forks_count}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-gray-400 dark:text-gray-500 tabular-nums font-medium">
+                            {new Date(repo.pushed_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </span>
                         </div>
-                        <span className="text-gray-400 dark:text-gray-500 tabular-nums">
-                          {new Date(repo.pushed_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </span>
                       </div>
                     </motion.div>
                   );

@@ -17,13 +17,18 @@ export function GoogleSignInButton({
 
   const handleClick = async () => {
     setIsLoading(true);
-    const result = await handleSignIn();
-    setIsLoading(false);
-
-    if (result.success) {
-      onSuccess?.();
-    } else {
-      onError?.(result.error || 'Sign in failed');
+    try {
+      const result = await handleSignIn();
+      if (result.success) {
+        onSuccess?.();
+      } else {
+        const err = (result.error || '').toLowerCase();
+        if (!err.includes('cancel') && !err.includes('closed')) {
+          onError?.(result.error || 'Sign in failed');
+        }
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -108,6 +108,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  // Listen for window regain-focus to resolve pending sign-in promise if popup was closed/cancelled
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      if (pendingSignIn.current) {
+        setTimeout(() => {
+          if (pendingSignIn.current) {
+            console.log('Window regained focus: resolving pending sign-in as cancelled.');
+            pendingSignIn.current.resolve({
+              success: false,
+              error: 'Sign in was cancelled.',
+            });
+            pendingSignIn.current = null;
+          }
+        }, 600);
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, []);
+
   // Auth-code flow (rather than the simpler implicit flow) so the server can
   // exchange the code for a refresh token and store it for background
   // sending (scheduled emails). Note: @react-oauth/google's code-client
@@ -168,6 +191,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       pendingSignIn.current?.resolve({
         success: false,
         error: errorResponse.error_description || 'Sign in failed',
+      });
+      pendingSignIn.current = null;
+    },
+    onNonOAuthError: nonOAuthError => {
+      console.warn('Google sign in non-OAuth error:', nonOAuthError);
+      pendingSignIn.current?.resolve({
+        success: false,
+        error:
+          nonOAuthError.type === 'popup_closed'
+            ? 'Sign in was cancelled.'
+            : 'Sign in cancelled or failed.',
       });
       pendingSignIn.current = null;
     },

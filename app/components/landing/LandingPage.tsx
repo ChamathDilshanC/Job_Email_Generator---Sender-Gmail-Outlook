@@ -23,14 +23,22 @@ export function LandingPage() {
 
   const onGetStarted = async () => {
     setIsSigningIn(true);
-    const result = await handleSignIn();
-    setIsSigningIn(false);
-
-    if (!result.success) {
-      showToast(
-        'error',
-        result.error || 'Sign in failed. Please try again.'
-      );
+    try {
+      const result = await handleSignIn();
+      if (!result.success) {
+        // Suppress red error toast if user simply cancelled/closed the popup
+        const err = (result.error || '').toLowerCase();
+        if (!err.includes('cancel') && !err.includes('closed')) {
+          showToast(
+            'error',
+            result.error || 'Sign in failed. Please try again.'
+          );
+        }
+      }
+    } catch (err) {
+      console.error('Sign in error:', err);
+    } finally {
+      setIsSigningIn(false);
     }
   };
 

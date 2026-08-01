@@ -23,6 +23,8 @@ export enum TemplateType {
   REFERRAL_REQUEST = 20,
   OFFER_NEGOTIATION = 21,
   ONBOARDING_CONFIRMATION = 22,
+  ULTRA_MODERN_RECRUITER_SPOTLIGHT = 23,
+  EXECUTIVE_PROJECT_PORTFOLIO = 24,
 }
 
 export enum TemplateCategory {
@@ -295,5 +297,27 @@ export const TEMPLATE_METADATA: TemplateMetadata[] = [
     description:
       'Send after accepting an offer to confirm logistics before day one',
     category: TemplateCategory.OFFER_ONBOARDING,
+  },
+  {
+    id: TemplateType.ULTRA_MODERN_RECRUITER_SPOTLIGHT,
+    name: 'Ultra-Modern Recruiter Spotlight',
+    subject: 'Application for {Position} - {Your Name}',
+    preview:
+      '30-second skimmable recruiter layout with nature-harmonized fonts, core metrics & GitHub project links',
+    description:
+      'Designed specifically for quick recruiter evaluation with skimmable highlights, tech pills & interactive project links',
+    category: TemplateCategory.APPLICATION,
+    recommended: true,
+  },
+  {
+    id: TemplateType.EXECUTIVE_PROJECT_PORTFOLIO,
+    name: 'Executive Project & Code Showcase',
+    subject: 'Application for {Position} - Featured Projects & GitHub Included',
+    preview:
+      'High-impact showcase designed for senior engineering roles focusing on live project URLs & code repos',
+    description:
+      'Ultra modern project-centric presentation with tech stack breakdown, GitHub links, and live demos',
+    category: TemplateCategory.APPLICATION,
+    recommended: true,
   },
 ];

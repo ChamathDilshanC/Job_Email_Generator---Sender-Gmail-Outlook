@@ -2,7 +2,7 @@ import { ResumeData } from './resumeDataService';
 import { GeneratedEmail, JobDetails, TemplateType } from './templateTypes';
 
 const FONT =
-  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+  "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 /**
  * Format date range for work experience or projects
@@ -201,7 +201,8 @@ function attachmentNoteText(): string {
 }
 
 function wrapHtml(inner: string): string {
-  return `<div style="font-family:${FONT}; line-height:1.6; color:#333; max-width:640px; margin:0 auto;">
+  return `<style>@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');</style>
+<div style="font-family:${FONT}; line-height:1.6; color:#333; max-width:640px; margin:0 auto;">
 ${inner}
 </div>`;
 }
@@ -774,8 +775,9 @@ ${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 }
 
 /**
- * Template 6: Comprehensive Profile
- * The full report - every section, blue accent, sectioned like a one-page portfolio.
+ * Template 6: Comprehensive Profile (Ultra Professional & Recruiter Friendly)
+ * Complete profile - recruiter-friendly layout, nature-harmonized Plus Jakarta Sans & Inter typography,
+ * skimmable executive callout, interactive project cards with GitHub and Live demo buttons.
  */
 function generateComprehensiveProfile(
   resumeData: ResumeData,
@@ -811,8 +813,7 @@ I am writing to express my interest in the ${position} position at ${companyName
     } with comprehensive experience across multiple domains, I bring hands-on expertise in modern technologies, agile methodologies, and full-stack development that align with your team's needs.`
   }
 
-Technical Proficiency
-
+Technical Proficiency:
 ${
   allSkills.length > 0
     ? allSkills.map(skill => `• ${skill}`).join('\n')
@@ -821,7 +822,7 @@ ${
 
 ${
   workExperiences.length > 0
-    ? `Professional Experience & Key Projects
+    ? `Professional Experience & Career History:
 
 ${workExperiences
   .slice(0, 3)
@@ -844,21 +845,21 @@ ${exp.responsibilities
 
 ${
   projects.length > 0
-    ? `Featured Projects:
+    ? `Featured Projects & Deliverables:
 
 ${projects
   .slice(0, 3)
   .map(
-    p => `${p.name}
+    p => `${p.name} (${p.role || 'Developer'})
 ${p.description || ''}
 Technologies: ${p.technologies.join(', ')}
 ${p.keyFeatures
   .filter(f => f)
-  .slice(0, 2)
+  .slice(0, 3)
   .map(f => `• ${f}`)
   .join('\n')}
-${p.projectUrl ? `Project URL: ${p.projectUrl}` : ''}
-${p.githubUrl ? `GitHub: ${p.githubUrl}` : ''}`
+${p.githubUrl ? `GitHub Repo: ${p.githubUrl}` : ''}
+${p.projectUrl ? `Live Demo: ${p.projectUrl}` : ''}`
   )
   .join('\n\n')}`
     : ''
@@ -866,7 +867,7 @@ ${p.githubUrl ? `GitHub: ${p.githubUrl}` : ''}`
 
 ${
   education.length > 0
-    ? `Education
+    ? `Education & Credentials:
 
 ${education
   .slice(0, 2)
@@ -882,8 +883,7 @@ ${edu.institution} | ${formatDateRange(
     : ''
 }
 
-What I Bring to Your Team
-
+What I Bring to Your Team:
 • Problem-Solving: Strong analytical skills with ability to debug complex issues and optimize application performance
 • Collaboration: Experience working in team environments, participating in code reviews, and contributing to technical discussions
 • Learning Agility: Quick learner passionate about emerging technologies, best practices, and continuous skill development
@@ -905,17 +905,31 @@ ${attachmentNoteText()}`;
     accent
   )}
 
-<p>Dear Hiring Manager,</p>
+<!-- Recruiter Quick Summary Banner -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:20px; background-color:${bg}; border-left:4px solid ${accent}; border-radius:6px;">
+  <tr>
+    <td style="padding:14px 16px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:${accent}; letter-spacing:0.8px; margin-bottom:4px;">⚡ Executive Recruiter Summary</div>
+      <div style="font-size:14px; color:#1e293b; line-height:1.5;">
+        ${
+          personalInfo.summary ||
+          `Results-driven <strong>${
+            skills.position || 'Software Engineer'
+          }</strong> applying for the <strong>${position}</strong> position at <strong>${companyName}</strong>. Possesses hands-on expertise in full-stack architecture, clean code principles, and scalable web solutions.`
+        }
+      </div>
+    </td>
+  </tr>
+</table>
 
-<p>I am writing to express my interest in the <strong>${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. ${
-    personalInfo.summary ||
-    `As a ${
-      skills.position || 'professional'
-    } with comprehensive experience across multiple domains, I bring hands-on expertise in modern technologies, agile methodologies, and full-stack development that align with your team's needs.`
-  }</p>
+<p style="font-size:14.5px; color:#334155;">Dear Hiring Manager,</p>
 
-<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Technical Proficiency</h3>
-<div>
+<p style="font-size:14.5px; color:#334155; line-height:1.6;">I am writing to express my enthusiastic interest in the <strong style="color:#0f172a;">${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. With a strong track record of engineering scalable applications and delivering user-centric solutions, I am eager to bring my skill set to your team.</p>
+
+<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:28px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">
+  Technical Proficiency
+</h3>
+<div style="margin-bottom:20px;">
 ${
   allSkills.length > 0
     ? allSkills.map(skill => renderPill(skill, accent, bg)).join('')
@@ -925,20 +939,24 @@ ${
 
 ${
   workExperiences.length > 0
-    ? `<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Professional Experience &amp; Key Projects</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:28px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">
+  Professional Experience &amp; Career History
+</h3>
 ${workExperiences
   .slice(0, 3)
   .map(
-    exp => `<div style="margin-bottom:16px;">
-<p style="margin:0 0 2px 0;"><strong>${exp.position}</strong> &middot; ${
-      exp.company
-    } <span style="color:#6b7280; font-size:12px; font-weight:600;">&middot; ${formatDateRange(
-      exp.startDate,
-      exp.endDate,
-      exp.currentlyWorking
-    )}</span></p>
-<p style="margin:6px 0;">${exp.description || ''}</p>
-<ul style="margin:6px 0; padding-left:18px;">
+    exp => `<div style="margin-bottom:20px; padding:14px 16px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+  <strong style="font-size:15px; color:#0f172a;">${exp.position}</strong>
+  <span style="color:#64748b; font-size:12px; font-weight:600; background-color:#f1f5f9; padding:2px 8px; border-radius:4px;">${formatDateRange(
+    exp.startDate,
+    exp.endDate,
+    exp.currentlyWorking
+  )}</span>
+</div>
+<p style="margin:0 0 8px 0; font-size:13.5px; color:${accent}; font-weight:600;">${exp.company}</p>
+<p style="margin:0 0 8px 0; font-size:13.5px; color:#475569;">${exp.description || ''}</p>
+<ul style="margin:0; padding-left:18px; color:#334155; font-size:13.5px;">
 ${exp.responsibilities
   .filter(r => r)
   .slice(0, 3)
@@ -953,35 +971,49 @@ ${exp.responsibilities
 
 ${
   projects.length > 0
-    ? `<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Featured Projects</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:28px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">
+  Featured Projects &amp; Software Deliverables
+</h3>
 ${projects
   .slice(0, 3)
   .map(
-    p => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:14px; background-color:#f8fafc; border-radius:8px;">
+    p => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:16px; background-color:#f8fafc; border:1px solid #cbd5e1; border-left:4px solid ${accent}; border-radius:8px;">
   <tr>
-    <td style="padding:14px 16px;">
-      <p style="margin:0 0 4px 0;"><strong>${p.name}</strong></p>
-      <p style="margin:0 0 8px 0;">${p.description || ''}</p>
-      <p style="margin:0 0 8px 0; font-size:13px;"><strong>Technologies:</strong> ${p.technologies.join(
-        ', '
-      )}</p>
-      <ul style="margin:0 0 8px 0; padding-left:18px;">
+    <td style="padding:16px;">
+      <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:4px;">${p.name} <span style="font-size:12px; font-weight:500; color:#64748b;">(${p.role || 'Developer'})</span></div>
+      <p style="margin:0 0 10px 0; font-size:13.5px; color:#475569; line-height:1.5;">${p.description || ''}</p>
+      
+      <div style="margin-bottom:10px;">
+        <span style="font-size:12px; font-weight:700; color:#475569; margin-right:6px;">Tech Stack:</span>
+        ${p.technologies
+          .map(
+            tech =>
+              `<span style="display:inline-block; padding:2px 8px; margin:2px 4px 2px 0; background-color:#e0f2fe; color:#0369a1; border-radius:4px; font-size:11.5px; font-weight:600;">${tech}</span>`
+          )
+          .join('')}
+      </div>
+
+      <ul style="margin:0 0 12px 0; padding-left:18px; color:#334155; font-size:13px;">
 ${p.keyFeatures
   .filter(f => f)
-  .slice(0, 2)
-  .map(f => `<li style="margin-bottom:4px;">${f}</li>`)
+  .slice(0, 3)
+  .map(f => `<li style="margin-bottom:3px;">${f}</li>`)
   .join('')}
       </ul>
-      ${
-        p.projectUrl
-          ? `<p style="margin:0 0 2px 0; font-size:13px;"><strong>Project URL:</strong> <a href="${p.projectUrl}" style="color:${accent};">${p.projectUrl}</a></p>`
-          : ''
-      }
-      ${
-        p.githubUrl
-          ? `<p style="margin:0; font-size:13px;"><strong>GitHub:</strong> <a href="${p.githubUrl}" style="color:${accent};">${p.githubUrl}</a></p>`
-          : ''
-      }
+
+      <!-- Recruiter Interactive Links -->
+      <div style="padding-top:8px; border-top:1px dashed #cbd5e1;">
+        ${
+          p.githubUrl
+            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; margin-bottom:4px; background-color:#0f172a; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">📦 View GitHub Repository &rarr;</a>`
+            : ''
+        }
+        ${
+          p.projectUrl
+            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-bottom:4px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">🚀 Live Demo &rarr;</a>`
+            : ''
+        }
+      </div>
     </td>
   </tr>
 </table>`
@@ -992,37 +1024,41 @@ ${p.keyFeatures
 
 ${
   education.length > 0
-    ? `<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">Education</h3>
+    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:28px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">
+  Education &amp; Credentials
+</h3>
 ${education
   .slice(0, 2)
   .map(
-    edu => `<p style="margin:0 0 10px 0;"><strong>${edu.degree}</strong> in ${
-      edu.fieldOfStudy
-    }<br>
-<span style="color:#6b7280; font-size:13px;">${
-      edu.institution
-    } &middot; ${formatDateRange(
+    edu => `<div style="margin-bottom:10px; padding:12px 14px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:6px;">
+<strong style="font-size:14.5px; color:#0f172a;">${edu.degree}</strong> <span style="color:#475569;">in ${edu.fieldOfStudy}</span><br>
+<span style="color:#64748b; font-size:12.5px; font-weight:500;">${edu.institution} &middot; ${formatDateRange(
       edu.startDate,
       edu.endDate,
       edu.currentlyStudying
-    )}</span></p>`
+    )}</span>
+</div>`
   )
   .join('')}`
     : ''
 }
 
-<h3 style="color:#0f172a; font-size:15px; margin-top:26px; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${bg};">What I Bring to Your Team</h3>
-<ul style="padding-left:18px;">
-<li style="margin-bottom:6px;"><strong>Problem-Solving:</strong> Strong analytical skills with ability to debug complex issues and optimize application performance</li>
-<li style="margin-bottom:6px;"><strong>Collaboration:</strong> Experience working in team environments, participating in code reviews, and contributing to technical discussions</li>
-<li style="margin-bottom:6px;"><strong>Learning Agility:</strong> Quick learner passionate about emerging technologies, best practices, and continuous skill development</li>
-<li style="margin-bottom:6px;"><strong>Clean Code Advocate:</strong> Commitment to writing maintainable, well-documented code following industry standards</li>
-<li style="margin-bottom:6px;"><strong>Initiative:</strong> Self-starter with proven ability to manage multiple projects and deliver results in fast-paced environments</li>
-</ul>
+<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:28px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">
+  Key Strengths &amp; Recruiter Value Proposition
+</h3>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+  <tr>
+    <td style="padding:12px 16px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:6px; font-size:13.5px; color:#334155; line-height:1.6;">
+      <div style="margin-bottom:6px;">⚡ <strong>Problem-Solving:</strong> Strong analytical mindset with proven capacity to debug complex issues &amp; optimize system performance</div>
+      <div style="margin-bottom:6px;">🤝 <strong>Collaboration:</strong> Thrives in agile cross-functional teams with active code reviews and clear communication</div>
+      <div style="margin-bottom:6px;">🚀 <strong>Learning Agility:</strong> Rapid learner passionate about modern frameworks, cloud architectures, and industry best practices</div>
+      <div style="margin-bottom:6px;">🛠 <strong>Clean Code Advocate:</strong> Dedicated to writing maintainable, well-documented, testable software components</div>
+      <div>🎯 <strong>Drive &amp; Initiative:</strong> Self-starter capable of driving features from concept to production delivery</div>
+    </td>
+  </tr>
+</table>
 
-<p style="margin-top:22px;">I am excited about the opportunity to contribute to <strong style="color:${accent};">${companyName}</strong>'s innovative projects while learning from your experienced engineering team. My combination of academic foundation, practical experience, and enthusiasm for software development positions me to make meaningful contributions from day one.</p>
-
-<p>I would welcome the opportunity to discuss how my technical skills, project experience, and passion align with your team's objectives.</p>
+<p style="margin-top:22px; font-size:14.5px; color:#334155; line-height:1.6;">I am eager to contribute to <strong style="color:${accent};">${companyName}</strong>'s growth and engineering excellence. I welcome the opportunity to discuss how my technical foundation, project portfolio, and problem-solving mindset align with your goals.</p>
 
 ${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 
@@ -2295,6 +2331,297 @@ ${renderSimpleClosingHtml(fullName, 'Best regards', accent)}`);
 }
 
 /**
+ * Template 23: Ultra-Modern Recruiter Spotlight
+ * Organic Emerald/Teal aesthetic, 30-second skimmable structure, high-impact project badges & GitHub CTA.
+ */
+function generateUltraModernRecruiterSpotlight(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const {
+    personalInfo,
+    skills,
+    workExperiences,
+    projects,
+    socialLinks,
+  } = resumeData;
+  const { companyName, position } = jobDetails;
+  const accent = '#0d9488'; // Emerald / Teal nature tone
+  const bg = '#f0fdf4';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const topSkills = skills.selectedSkills.slice(0, 6);
+  const featuredProjects = projects.slice(0, 3);
+  const linksText = formatSocialLinks(socialLinks);
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }${linksText ? `\n${linksText}` : ''}
+
+RECRUITER SPOTLIGHT: Application for ${position} at ${companyName}
+
+Executive Summary:
+${
+  personalInfo.summary ||
+  `Dedicated ${
+    skills.position || 'Software Professional'
+  } specializing in building scalable web applications and intuitive digital experiences.`
+}
+
+Top Competencies:
+${topSkills.map(s => `• ${s}`).join('\n')}
+
+Featured Projects & Code:
+${featuredProjects
+  .map(
+    p => `• ${p.name}: ${p.description || ''}
+  Tech: ${p.technologies.join(', ')}
+  ${p.githubUrl ? `GitHub: ${p.githubUrl}` : ''}
+  ${p.projectUrl ? `Live URL: ${p.projectUrl}` : ''}`
+  )
+  .join('\n\n')}
+
+Work Experience:
+${workExperiences
+  .slice(0, 2)
+  .map(
+    e => `• ${e.position} at ${e.company} (${formatDateRange(
+      e.startDate,
+      e.endDate,
+      e.currentlyWorking
+    )})`
+  )
+  .join('\n')}
+
+I would love to schedule a brief call to discuss how my hands-on technical skills and project deliverables align with ${companyName}'s needs.
+
+Best regards,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:24px; background:linear-gradient(135deg, #0d9488, #14b8a6); border-radius:10px; color:#ffffff;">
+  <tr>
+    <td style="padding:18px 20px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.9;">🎯 Recruiter Fast-Track Overview</div>
+      <div style="font-size:18px; font-weight:700; margin-top:4px;">Application for ${position}</div>
+      <div style="font-size:13.5px; opacity:0.95; margin-top:6px; line-height:1.4;">Targeted for <strong>${companyName}</strong> &middot; High-Impact &amp; Production-Ready Professional</div>
+    </td>
+  </tr>
+</table>
+
+<p style="font-size:14.5px; color:#1e293b;">Dear Hiring Team,</p>
+
+<p style="font-size:14.5px; color:#334155; line-height:1.6;">${
+    personalInfo.summary ||
+    `I am a passionate <strong>${
+      skills.position || 'Software Engineer'
+    }</strong> with a proven track record of creating efficient, scalable web applications. I am excited about the <strong>${position}</strong> role at <strong style="color:${accent};">${companyName}</strong>.`
+  }</p>
+
+<!-- Skimmable Skills Matrix -->
+<div style="margin-top:24px; margin-bottom:24px; padding:16px; background-color:${bg}; border-radius:8px; border:1px solid #bbf7d0;">
+  <div style="font-size:13px; font-weight:700; color:${accent}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">⚡ Key Technical Competencies</div>
+  <div>
+    ${topSkills.map(skill => renderPill(skill, accent, '#ffffff')).join('')}
+  </div>
+</div>
+
+<!-- Featured Projects Card Grid -->
+${
+  featuredProjects.length > 0
+    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">🚀 High-Impact Projects &amp; Source Code</h3>
+${featuredProjects
+  .map(
+    p => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:14px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:8px;">
+  <tr>
+    <td style="padding:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <strong style="font-size:15px; color:#0f172a;">${p.name}</strong>
+      </div>
+      <p style="margin:0 0 10px 0; font-size:13.5px; color:#475569;">${p.description || ''}</p>
+      
+      <div style="margin-bottom:10px;">
+        ${p.technologies
+          .map(
+            t =>
+              `<span style="display:inline-block; padding:2px 8px; margin:2px 4px 2px 0; background-color:${bg}; color:${accent}; border-radius:4px; font-size:11px; font-weight:600;">${t}</span>`
+          )
+          .join('')}
+      </div>
+
+      <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #e2e8f0;">
+        ${
+          p.githubUrl
+            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; background-color:#0f172a; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">📦 View GitHub Code &rarr;</a>`
+            : ''
+        }
+        ${
+          p.projectUrl
+            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">🚀 Live Application &rarr;</a>`
+            : ''
+        }
+      </div>
+    </td>
+  </tr>
+</table>`
+  )
+  .join('')}`
+    : ''
+}
+
+<!-- Work Experience Summary -->
+${
+  workExperiences.length > 0
+    ? `<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">💼 Professional Experience</h3>
+${workExperiences
+  .slice(0, 2)
+  .map(
+    e => `<div style="margin-bottom:12px; padding:12px 14px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:6px;">
+  <strong style="font-size:14px; color:#0f172a;">${e.position}</strong> &middot; <span style="color:${accent}; font-weight:600;">${e.company}</span>
+  <div style="font-size:12px; color:#64748b; margin-top:2px;">${formatDateRange(
+    e.startDate,
+    e.endDate,
+    e.currentlyWorking
+  )}</div>
+</div>`
+  )
+  .join('')}`
+    : ''
+}
+
+<p style="margin-top:24px; font-size:14.5px; color:#334155; line-height:1.6;">I welcome the opportunity to connect for a quick 15-minute conversation to discuss how my technical expertise can support <strong style="color:${accent};">${companyName}</strong>'s objectives.</p>
+
+${renderClosingHtml(fullName, 'Sincerely', accent, bg)}`);
+
+  return {
+    subject: `Application for ${position} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Template 24: Executive Project & Code Showcase
+ * Deep Indigo theme, project-centric layout focusing on open-source repositories, GitHub, and live deliverables.
+ */
+function generateExecutiveProjectPortfolio(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, projects, socialLinks } = resumeData;
+  const { companyName, position } = jobDetails;
+  const accent = '#4f46e5'; // Deep Indigo
+  const bg = '#eef2ff';
+
+  const fullName = personalInfo.fullName || 'Your Name';
+  const topProjects = projects.slice(0, 4);
+  const linksText = formatSocialLinks(socialLinks);
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }${linksText ? `\n${linksText}` : ''}
+
+Application for ${position} - Engineering Portfolio & Code Repositories
+
+Dear Hiring Manager,
+
+I am writing to submit my application for the ${position} position at ${companyName}. I focus on building robust, scalable software systems with clean architecture.
+
+Featured Software Projects & GitHub Repositories:
+${topProjects
+  .map(
+    p => `• ${p.name} (${p.role || 'Developer'})
+  Description: ${p.description || ''}
+  Tech Stack: ${p.technologies.join(', ')}
+  ${p.githubUrl ? `GitHub: ${p.githubUrl}` : ''}
+  ${p.projectUrl ? `Live URL: ${p.projectUrl}` : ''}`
+  )
+  .join('\n\n')}
+
+Core Skills:
+${skills.selectedSkills.join(', ')}
+
+I would be thrilled to discuss my technical projects and how I can contribute to ${companyName}'s engineering success.
+
+Best regards,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p style="font-size:14.5px; color:#1e293b;">Dear Hiring Manager,</p>
+
+<p style="font-size:14.5px; color:#334155; line-height:1.6;">I am applying for the <strong style="color:#0f172a;">${position}</strong> position at <strong style="color:${accent};">${companyName}</strong>. Rather than just listing responsibilities, I prefer to demonstrate my engineering capabilities through working software deliverables and open-source GitHub repositories.</p>
+
+<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:14px; padding-bottom:6px; border-bottom:2px solid ${bg};">💻 Engineering Portfolio &amp; Code Showcases</h3>
+
+${topProjects
+  .map(
+    p => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-bottom:16px; background-color:#ffffff; border:1px solid #c7d2fe; border-left:4px solid ${accent}; border-radius:8px;">
+  <tr>
+    <td style="padding:16px;">
+      <div style="font-size:16px; font-weight:700; color:#1e1b4b; margin-bottom:4px;">${p.name} <span style="font-size:12px; font-weight:500; color:#6366f1;">(${p.role || 'Developer'})</span></div>
+      <p style="margin:0 0 10px 0; font-size:13.5px; color:#374151; line-height:1.5;">${p.description || ''}</p>
+      
+      <div style="margin-bottom:10px;">
+        <strong style="font-size:12px; color:#4338ca; margin-right:4px;">Tech Stack:</strong>
+        ${p.technologies
+          .map(
+            t =>
+              `<span style="display:inline-block; padding:2px 8px; margin:2px 4px 2px 0; background-color:${bg}; color:${accent}; border-radius:4px; font-size:11px; font-weight:600;">${t}</span>`
+          )
+          .join('')}
+      </div>
+
+      <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #c7d2fe;">
+        ${
+          p.githubUrl
+            ? `<a href="${p.githubUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-right:8px; margin-bottom:4px; background-color:#1e1b4b; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">📦 Open GitHub Repo &rarr;</a>`
+            : ''
+        }
+        ${
+          p.projectUrl
+            ? `<a href="${p.projectUrl}" target="_blank" style="display:inline-block; padding:6px 14px; margin-bottom:4px; background-color:${accent}; color:#ffffff; font-weight:600; font-size:12px; text-decoration:none; border-radius:6px;">🚀 Visit Live Site &rarr;</a>`
+            : ''
+        }
+      </div>
+    </td>
+  </tr>
+</table>`
+  )
+  .join('')}
+
+<h3 style="color:#0f172a; font-size:15px; font-weight:700; margin-top:26px; margin-bottom:12px; padding-bottom:6px; border-bottom:2px solid ${bg};">🛠 Technical Skills</h3>
+<div style="margin-bottom:20px;">
+  ${skills.selectedSkills.map(s => renderPill(s, accent, bg)).join('')}
+</div>
+
+<p style="margin-top:24px; font-size:14.5px; color:#334155; line-height:1.6;">Thank you for taking the time to review my portfolio and application. I look forward to connecting to discuss how my background aligns with ${companyName}'s current engineering priorities.</p>
+
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
+
+  return {
+    subject: `Application for ${position} - Portfolio Included - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
  * Main function to generate email from template
  */
 export function generateEmailFromTemplate(
@@ -2347,6 +2674,10 @@ export function generateEmailFromTemplate(
       return generateOfferNegotiation(resumeData, jobDetails);
     case TemplateType.ONBOARDING_CONFIRMATION:
       return generateOnboardingConfirmation(resumeData, jobDetails);
+    case TemplateType.ULTRA_MODERN_RECRUITER_SPOTLIGHT:
+      return generateUltraModernRecruiterSpotlight(resumeData, jobDetails);
+    case TemplateType.EXECUTIVE_PROJECT_PORTFOLIO:
+      return generateExecutiveProjectPortfolio(resumeData, jobDetails);
     default:
       return generateProfessionalIntroduction(resumeData, jobDetails);
   }

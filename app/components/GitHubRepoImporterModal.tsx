@@ -215,7 +215,7 @@ export default function GitHubRepoImporterModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 20 }}
           transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-          className="relative w-full max-w-5xl flex flex-col max-h-[92vh] rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]"
+          className="relative w-full max-w-[90vw] 2xl:max-w-[1600px] flex flex-col max-h-[92vh] rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]"
           style={{
             background:
               'linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(248,250,252,0.95) 100%)',
@@ -448,7 +448,7 @@ export default function GitHubRepoImporterModal({
 
             {/* Cards grid */}
             {!isLoading && (
-              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
                 {filteredRepos.map((repo, idx) => {
                   const isSelected = selectedRepoIds.has(repo.id);
                   const editedProject = customProjectsMap.get(repo.id);

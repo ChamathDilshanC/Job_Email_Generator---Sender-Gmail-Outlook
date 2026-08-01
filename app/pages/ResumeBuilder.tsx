@@ -304,7 +304,25 @@ export default function ResumeBuilder() {
       setSocialLinks(parsed.socialLinks || createEmptySocialLinks());
       setWorkExperiences(withGeneratedIds(parsed.workExperiences || []));
       setEducations(withGeneratedIds(parsed.education || []));
-      setProjects(withGeneratedIds(parsed.projects || []));
+      setProjects(
+        withGeneratedIds(
+          (parsed.projects || []).map(p => ({
+            name: p.name || '',
+            role: p.role || 'Full Stack Developer',
+            technologies: p.technologies || [],
+            startDate: p.startDate || '',
+            endDate: p.currentlyWorking ? '' : p.endDate || '',
+            currentlyWorking: !!p.currentlyWorking,
+            description: p.description || '',
+            keyFeatures:
+              p.keyFeatures && p.keyFeatures.length > 0
+                ? p.keyFeatures
+                : [''],
+            projectUrl: p.projectUrl || '',
+            githubUrl: p.githubUrl || '',
+          }))
+        )
+      );
       setPosition(parsed.skills?.position || '');
       setSelectedSkills(parsed.skills?.selectedSkills || []);
 

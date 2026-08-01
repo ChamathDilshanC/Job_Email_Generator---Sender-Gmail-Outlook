@@ -168,16 +168,52 @@ const projectItemSchema = {
     'githubUrl',
   ],
   properties: {
-    name: { type: 'string' },
-    role: { type: 'string' },
-    technologies: { type: 'array', items: { type: 'string' } },
-    startDate: { type: 'string', description: DATE_DESCRIPTION },
-    endDate: { type: 'string', description: DATE_DESCRIPTION },
-    currentlyWorking: { type: 'boolean' },
-    description: { type: 'string' },
-    keyFeatures: { type: 'array', items: { type: 'string' } },
-    projectUrl: { type: 'string' },
-    githubUrl: { type: 'string' },
+    name: { type: 'string', description: 'Name or title of the project.' },
+    role: {
+      type: 'string',
+      description:
+        "Role or contribution in project (e.g. 'Full Stack Developer', 'Lead Architect', 'Creator'). Infer appropriate role if unstated.",
+    },
+    technologies: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Technologies, languages, frameworks, and tools used in this project.',
+    },
+    startDate: {
+      type: 'string',
+      description:
+        "Start date of the project in ISO 'YYYY-MM-DD' format (e.g. '2023-01-01'). Use 1st of month if month/year given. Empty string if unknown.",
+    },
+    endDate: {
+      type: 'string',
+      description:
+        "End date of the project in ISO 'YYYY-MM-DD' format (e.g. '2023-08-01'). Empty string if currently ongoing, active, or unknown.",
+    },
+    currentlyWorking: {
+      type: 'boolean',
+      description:
+        'True if the project is ongoing, active, or currently maintained; false if completed or has an explicit end date.',
+    },
+    description: {
+      type: 'string',
+      description: 'Brief overview of the project and its goals.',
+    },
+    keyFeatures: {
+      type: 'array',
+      items: { type: 'string' },
+      description:
+        'Bullet points of key features, achievements, technical highlights, or deliverables of the project.',
+    },
+    projectUrl: {
+      type: 'string',
+      description:
+        "Live web application URL, demo link, or website link associated with this specific project (e.g., 'https://myproject.demo.com' or 'myproject.com'). Empty string if not present.",
+    },
+    githubUrl: {
+      type: 'string',
+      description:
+        "GitHub repository URL associated with this specific project (e.g., 'https://github.com/username/repo' or 'github.com/...'). Empty string if not present.",
+    },
   },
 };
 
@@ -207,12 +243,12 @@ const RESUME_EXTRACTION_SCHEMA = {
         },
         location: {
           type: 'string',
-          description: "City, Country (or City, State) if present.",
+          description: 'City, Country (or City, State) if present.',
         },
         summary: {
           type: 'string',
           description:
-            "2-4 sentence professional summary. If the resume has no explicit summary/objective, write a concise one from the rest of the content.",
+            '2-4 sentence professional summary. If the resume has no explicit summary/objective, write a concise one from the rest of the content.',
         },
       },
     },
@@ -255,7 +291,13 @@ const RESUME_EXTRACTION_SCHEMA = {
   },
 };
 
-const SYSTEM_PROMPT = `You extract structured resume data for a resume-builder app. Read the resume content provided and return only what the schema asks for — do not invent employers, dates, or skills that aren't supported by the text. Use empty strings/arrays for anything not present rather than guessing. Keep bullet points concise and close to the original wording.`;
+const SYSTEM_PROMPT = `You extract structured resume data for a resume-builder app. Read the resume content provided and return only what the schema asks for — do not invent employers, dates, or skills that aren't supported by the text. Use empty strings/arrays for anything not present rather than guessing. Keep bullet points concise and close to the original wording.
+
+CRITICAL INSTRUCTIONS FOR PROJECTS:
+1. PROJECT LINKS: Thoroughly scan project titles, descriptions, headers, and bullet points for URLs:
+   - Extract any GitHub repository link (e.g., https://github.com/user/repo or github.com/user/repo) into "githubUrl".
+   - Extract any live application, demo, production link, or project website into "projectUrl".
+2. PROJECT DATES: Look for date ranges associated with projects (e.g. "Jan 2023 - Present", "2022 - 2023", "Jun 2023"). Format "startDate" and "endDate" as "YYYY-MM-DD" (use 1st of month e.g., '2023-01-01'). If the project is ongoing or current, set "currentlyWorking": true and "endDate": "".`;
 
 type ContentPart = string | { inlineData: { mimeType: string; data: string } };
 

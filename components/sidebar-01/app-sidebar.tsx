@@ -73,20 +73,6 @@ export function AppSidebar({
       isActive: false,
       isLocked: !isAuthenticated, // Lock when not authenticated
     },
-    {
-      id: 'guide',
-      title: 'Guide Flow',
-      url: '#',
-      icon: BookOpen,
-      isActive: false,
-    },
-    {
-      id: 'docs',
-      title: 'Documentation',
-      url: '#',
-      icon: FileCode,
-      isActive: false,
-    },
   ];
 
   // Update active state based on current page
@@ -111,7 +97,11 @@ export function AppSidebar({
       <SidebarContent>
         <NavMain items={data.navMain} onNavigate={onNavigate} />
       </SidebarContent>
-      <NavFooter user={data.user} />
+      <NavFooter
+        user={data.user}
+        onNavigate={onNavigate}
+        activePage={activePage}
+      />
     </Sidebar>
   );
 }

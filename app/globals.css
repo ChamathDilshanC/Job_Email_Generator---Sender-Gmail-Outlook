@@ -977,6 +977,11 @@ a {
   min-width: 120px;
 }
 
+.phone-input-custom .PhoneInputCountrySelect option {
+  background-color: #ffffff;
+  color: #111827;
+}
+
 .phone-input-custom .PhoneInputCountrySelect:focus {
   outline: none;
 }
@@ -1189,6 +1194,19 @@ a {
 }
 
 .dark .phone-input-custom .PhoneInputCountrySelect {
+  color: var(--text-primary);
+  background-color: transparent;
+}
+
+.dark .phone-input-custom .PhoneInputCountrySelect option,
+.dark select option,
+.dark option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.dark .phone-input-custom .PhoneInputCountrySelectArrow {
+  opacity: 0.8;
   color: var(--text-primary);
 }
 

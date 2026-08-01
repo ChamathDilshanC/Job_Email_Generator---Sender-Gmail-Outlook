@@ -81,6 +81,15 @@ export default function GitHubRepoImporterModal({
     }
   }, [initialGithubUrl, inputUrl]);
 
+  /* ── Derived data (must be before early return to satisfy Rules of Hooks) ── */
+  const availableLanguages = useMemo(() => {
+    const langs = new Set<string>();
+    repos.forEach(r => {
+      if (r.language) langs.add(r.language);
+    });
+    return Array.from(langs).sort();
+  }, [repos]);
+
   if (!isOpen) return null;
 
   const handleFetchRepos = async () => {
@@ -162,14 +171,7 @@ export default function GitHubRepoImporterModal({
     }
   };
 
-  /* ── Derived data ── */
-  const availableLanguages = useMemo(() => {
-    const langs = new Set<string>();
-    repos.forEach(r => {
-      if (r.language) langs.add(r.language);
-    });
-    return Array.from(langs).sort();
-  }, [repos]);
+
 
   const filteredRepos = repos.filter(repo => {
     if (langFilter !== 'all' && repo.language !== langFilter) return false;

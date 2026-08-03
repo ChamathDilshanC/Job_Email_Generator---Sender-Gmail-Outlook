@@ -46,18 +46,18 @@ export default function AtsPdfExportModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-5xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full lg:w-[66.666vw] h-[85vh] lg:h-[66.666vh] min-h-[520px] max-w-7xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col justify-between m-auto"
         >
           {/* Modal Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-semibold">
+              <div className="w-10 h-10 rounded-xl bg-[#3b3be3]/10 text-[#3b3be3] dark:text-[#818cf8] flex items-center justify-center font-semibold">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   ATS PDF Resume Exporter
-                  <span className="px-2 py-0.5 text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300 rounded-full">
+                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full">
                     100% Vector ATS Ready
                   </span>
                 </h3>
@@ -75,7 +75,7 @@ export default function AtsPdfExportModal({
           </div>
 
           {/* Modal Content - 2 Columns */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden min-h-0">
             {/* Theme Selector Sidebar (4 Cols) */}
             <div className="lg:col-span-4 p-5 border-r border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/50 overflow-y-auto space-y-3">
               <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-2">
@@ -90,7 +90,7 @@ export default function AtsPdfExportModal({
                     onClick={() => setSelectedTheme(option.id)}
                     className={`relative p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
                       isSelected
-                        ? 'bg-white dark:bg-gray-800 border-teal-500 shadow-md ring-2 ring-teal-500/20'
+                        ? 'bg-white dark:bg-gray-800 border-[#3b3be3] shadow-md ring-2 ring-[#3b3be3]/20'
                         : 'bg-white/60 dark:bg-gray-800/40 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
                     }`}
                   >
@@ -105,7 +105,7 @@ export default function AtsPdfExportModal({
                         </h4>
                       </div>
                       {isSelected ? (
-                        <div className="w-5 h-5 rounded-full bg-teal-500 text-white flex items-center justify-center text-xs">
+                        <div className="w-5 h-5 rounded-full bg-[#3b3be3] text-white flex items-center justify-center text-xs">
                           <Check className="w-3 h-3 stroke-[3]" />
                         </div>
                       ) : (
@@ -132,9 +132,9 @@ export default function AtsPdfExportModal({
             </div>
 
             {/* Live Interactive Preview Frame (8 Cols) */}
-            <div className="lg:col-span-8 p-4 bg-gray-100 dark:bg-gray-950 flex flex-col items-center justify-center overflow-hidden relative">
-              <div className="w-full h-full max-h-[560px] bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col">
-                <div className="bg-gray-200 dark:bg-gray-800 px-4 py-2 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
+            <div className="lg:col-span-8 p-4 bg-gray-100 dark:bg-gray-950 flex flex-col items-center justify-center overflow-hidden relative h-full">
+              <div className="w-full h-full bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col">
+                <div className="bg-gray-200 dark:bg-gray-800 px-4 py-2 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 shrink-0">
                   <span>Live Preview: {ATS_THEME_OPTIONS.find(t => t.id === selectedTheme)?.name}</span>
                   <span>Vector Searchable PDF</span>
                 </div>
@@ -148,7 +148,7 @@ export default function AtsPdfExportModal({
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40 shrink-0">
             <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
               Candidate: <strong className="text-gray-700 dark:text-gray-300">{resumeData.personalInfo.fullName || 'User'}</strong> ({resumeData.skills.position || 'Software Engineer'})
             </div>
@@ -161,7 +161,7 @@ export default function AtsPdfExportModal({
               </button>
               <button
                 onClick={handleExport}
-                className="px-5 py-2.5 text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 dark:bg-teal-500 dark:hover:bg-teal-600 rounded-xl shadow-lg shadow-teal-500/25 flex items-center gap-2 transition-all active:scale-95"
+                className="px-6 py-3 text-sm font-medium text-white bg-[#3b3be3] hover:bg-[#2929c9] rounded-lg shadow-md flex items-center gap-2 transition-all active:scale-95"
               >
                 <Download className="w-4 h-4" />
                 Download ATS PDF

@@ -1256,7 +1256,7 @@ export default function ResumeBuilder() {
           </div>
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-teal-500/20 transition-all active:scale-95 text-sm self-start md:self-auto"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3b3be3] hover:bg-[#2929c9] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-sm self-start md:self-auto"
           >
             📄 Export ATS PDF
           </button>

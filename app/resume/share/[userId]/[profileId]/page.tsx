@@ -58,15 +58,27 @@ function PublicShareableResumeContent() {
     ? generateAtsResumeHtml(resumeData, selectedTheme)
     : '';
 
+  const handleSelectTheme = (themeId: AtsTheme) => {
+    setSelectedTheme(themeId);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('theme', themeId);
+      window.history.replaceState(null, '', url.toString());
+    }
+  };
+
   const handleCopyShareLink = () => {
     if (typeof window === 'undefined') return;
-    const shareUrl = window.location.href;
+    const shareUrl = `${window.location.origin}/resume/share/${encodeURIComponent(
+      userId
+    )}/${encodeURIComponent(profileId)}?theme=${selectedTheme}`;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
+    const themeName = ATS_THEME_OPTIONS.find(t => t.id === selectedTheme)?.badge || selectedTheme;
     showToast(
       'success',
       'Share Link Copied!',
-      'Anyone with this link can view this ATS resume.'
+      `Direct share link for "${themeName}" layout copied to clipboard.`
     );
     setTimeout(() => setCopied(false), 2000);
   };
@@ -141,7 +153,7 @@ function PublicShareableResumeContent() {
               {ATS_THEME_OPTIONS.map(theme => (
                 <button
                   key={theme.id}
-                  onClick={() => setSelectedTheme(theme.id)}
+                  onClick={() => handleSelectTheme(theme.id)}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
                     selectedTheme === theme.id
                       ? 'bg-[#3b3be3] text-white shadow-sm'
@@ -198,7 +210,7 @@ function PublicShareableResumeContent() {
         {ATS_THEME_OPTIONS.map(theme => (
           <button
             key={theme.id}
-            onClick={() => setSelectedTheme(theme.id)}
+            onClick={() => handleSelectTheme(theme.id)}
             className={`px-3 py-1 rounded-lg shrink-0 font-medium transition-all ${
               selectedTheme === theme.id
                 ? 'bg-[#3b3be3] text-white'

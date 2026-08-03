@@ -77,6 +77,13 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+function formatUrl(url?: string): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 /**
  * Generates ATS-Compliant, Vector-Printable HTML for the selected resume theme.
  */
@@ -104,11 +111,12 @@ export function generateAtsResumeHtml(
   // ----------------------------------------------------
   if (theme === AtsTheme.MODERN) {
     const contactLines = [
-      personalInfo.phone ? `${personalInfo.phone} 📞` : '',
-      personalInfo.email ? `${personalInfo.email} ✉️` : '',
-      personalInfo.location ? `${personalInfo.location} 📍` : '',
-      socialLinks?.linkedin ? `LinkedIn: ${socialLinks.linkedin} 🌐` : '',
-      socialLinks?.portfolio ? `${socialLinks.portfolio} 🌐` : '',
+      personalInfo.phone ? `<a href="tel:${personalInfo.phone.replace(/\s+/g, '')}">${personalInfo.phone}</a> 📞` : '',
+      personalInfo.email ? `<a href="mailto:${personalInfo.email}">${personalInfo.email}</a> ✉️` : '',
+      personalInfo.location ? `<span>${personalInfo.location}</span> 📍` : '',
+      socialLinks?.linkedin ? `<a href="${formatUrl(socialLinks.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn</a> 🌐` : '',
+      socialLinks?.github ? `<a href="${formatUrl(socialLinks.github)}" target="_blank" rel="noopener noreferrer">GitHub</a> 🌐` : '',
+      socialLinks?.portfolio ? `<a href="${formatUrl(socialLinks.portfolio)}" target="_blank" rel="noopener noreferrer">Portfolio</a> 🌐` : '',
     ].filter(Boolean);
 
     return `<!DOCTYPE html>
@@ -131,6 +139,15 @@ export function generateAtsResumeHtml(
       box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    a {
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    a:hover {
+      color: #1d4ed8;
     }
     .header-box {
       background-color: #f8fafc;
@@ -224,7 +241,6 @@ export function generateAtsResumeHtml(
     }
     .skill-item { font-size: 12.5px; color: #334155; display: flex; align-items: center; gap: 6px; }
     .skill-item::before { content: "•"; color: #475569; font-weight: bold; }
-    a { color: #2563eb; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -233,7 +249,12 @@ export function generateAtsResumeHtml(
       <div class="candidate-name">${fullName}</div>
       <div class="candidate-title">${position}</div>
     </div>
-    ${personalInfo.photoUrl ? `<img src="${personalInfo.photoUrl}" alt="${fullName}" class="avatar-circle" style="object-fit: cover; border: 2px solid #cbd5e1;" />` : `<div class="avatar-circle">${initials}</div>`}
+    ${personalInfo.photoUrl ? `
+      <div style="position: relative; width: 68px; height: 68px; flex-shrink: 0; margin: 0 20px;">
+        <img src="${personalInfo.photoUrl}" alt="${fullName}" class="avatar-circle" style="margin: 0; width: 68px; height: 68px; object-fit: cover; border: 2px solid #cbd5e1;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <div class="avatar-circle" style="margin: 0; display: none;">${initials}</div>
+      </div>
+    ` : `<div class="avatar-circle">${initials}</div>`}
     <div class="header-right">
       ${contactLines.map(c => `<div>${c}</div>`).join('')}
     </div>
@@ -307,11 +328,12 @@ export function generateAtsResumeHtml(
   // ----------------------------------------------------
   if (theme === AtsTheme.CLASSIC) {
     const contactLine = [
-      personalInfo.location || '',
-      personalInfo.phone || '',
-      personalInfo.email || '',
-      socialLinks?.linkedin ? `linkedin.com/in/${socialLinks.linkedin.replace(/.*\/in\//, '')}` : '',
-      socialLinks?.portfolio ? socialLinks.portfolio.replace(/^https?:\/\//, '') : '',
+      personalInfo.location ? `<span>${personalInfo.location}</span>` : '',
+      personalInfo.phone ? `<a href="tel:${personalInfo.phone.replace(/\s+/g, '')}">${personalInfo.phone}</a>` : '',
+      personalInfo.email ? `<a href="mailto:${personalInfo.email}">${personalInfo.email}</a>` : '',
+      socialLinks?.linkedin ? `<a href="${formatUrl(socialLinks.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>` : '',
+      socialLinks?.github ? `<a href="${formatUrl(socialLinks.github)}" target="_blank" rel="noopener noreferrer">GitHub</a>` : '',
+      socialLinks?.portfolio ? `<a href="${formatUrl(socialLinks.portfolio)}" target="_blank" rel="noopener noreferrer">Portfolio</a>` : '',
     ].filter(Boolean).join(' | ');
 
     return `<!DOCTYPE html>
@@ -334,6 +356,15 @@ export function generateAtsResumeHtml(
       box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    a {
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    a:hover {
+      color: #1d4ed8;
     }
     .header-block {
       page-break-inside: avoid;
@@ -482,11 +513,12 @@ export function generateAtsResumeHtml(
   // ----------------------------------------------------
   if (theme === AtsTheme.EXECUTIVE) {
     const contactLine = [
-      personalInfo.location || '',
-      personalInfo.phone || '',
-      personalInfo.email || '',
-      socialLinks?.portfolio ? socialLinks.portfolio.replace(/^https?:\/\//, '') : '',
-      socialLinks?.linkedin ? `LinkedIn: ${socialLinks.linkedin}` : '',
+      personalInfo.location ? `<span>${personalInfo.location}</span>` : '',
+      personalInfo.phone ? `<a href="tel:${personalInfo.phone.replace(/\s+/g, '')}">${personalInfo.phone}</a>` : '',
+      personalInfo.email ? `<a href="mailto:${personalInfo.email}">${personalInfo.email}</a>` : '',
+      socialLinks?.linkedin ? `<a href="${formatUrl(socialLinks.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>` : '',
+      socialLinks?.github ? `<a href="${formatUrl(socialLinks.github)}" target="_blank" rel="noopener noreferrer">GitHub</a>` : '',
+      socialLinks?.portfolio ? `<a href="${formatUrl(socialLinks.portfolio)}" target="_blank" rel="noopener noreferrer">Portfolio</a>` : '',
     ].filter(Boolean).join(' | ');
 
     return `<!DOCTYPE html>
@@ -509,6 +541,15 @@ export function generateAtsResumeHtml(
       box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    a:hover {
+      color: #004499;
     }
     .header-block {
       page-break-inside: avoid;
@@ -663,11 +704,12 @@ export function generateAtsResumeHtml(
   // THEME 4: MINIMALIST (Compact Slate Layout)
   // ----------------------------------------------------
   const contactItems = [
-    personalInfo.email ? `📧 ${personalInfo.email}` : '',
-    personalInfo.phone ? `📞 ${personalInfo.phone}` : '',
-    personalInfo.location ? `📍 ${personalInfo.location}` : '',
-    socialLinks?.linkedin ? `LinkedIn: ${socialLinks.linkedin}` : '',
-    socialLinks?.portfolio ? `Portfolio: ${socialLinks.portfolio}` : '',
+    personalInfo.email ? `📧 <a href="mailto:${personalInfo.email}">${personalInfo.email}</a>` : '',
+    personalInfo.phone ? `📞 <a href="tel:${personalInfo.phone.replace(/\s+/g, '')}">${personalInfo.phone}</a>` : '',
+    personalInfo.location ? `📍 <span>${personalInfo.location}</span>` : '',
+    socialLinks?.linkedin ? `🌐 <a href="${formatUrl(socialLinks.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn</a>` : '',
+    socialLinks?.github ? `💻 <a href="${formatUrl(socialLinks.github)}" target="_blank" rel="noopener noreferrer">GitHub</a>` : '',
+    socialLinks?.portfolio ? `🔗 <a href="${formatUrl(socialLinks.portfolio)}" target="_blank" rel="noopener noreferrer">Portfolio</a>` : '',
   ].filter(Boolean);
 
   return `<!DOCTYPE html>
@@ -690,6 +732,15 @@ export function generateAtsResumeHtml(
       box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    a {
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    a:hover {
+      color: #1d4ed8;
     }
     .header-block { page-break-inside: avoid; break-inside: avoid; }
     .candidate-name { font-size: 24px; font-weight: 800; color: #0f172a; }
@@ -750,7 +801,7 @@ export function exportAtsResumePdf(
   printWindow.onload = () => {
     setTimeout(() => {
       printWindow.focus();
-    printWindow.print();
+      printWindow.print();
     }, 250);
   };
 }

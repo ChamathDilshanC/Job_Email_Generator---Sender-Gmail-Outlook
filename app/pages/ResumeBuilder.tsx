@@ -1,6 +1,7 @@
 'use client';
 
 import AtsPdfExportModal from '@/app/components/AtsPdfExportModal';
+import ShareResumeModal from '@/app/components/ShareResumeModal';
 import EducationSection from '@/app/components/EducationSection';
 import GitHubRepoImporterModal from '@/app/components/GitHubRepoImporterModal';
 import LinksSection from '@/app/components/LinksSection';
@@ -121,6 +122,7 @@ export default function ResumeBuilder() {
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [selectedCustomSkillIndex, setSelectedCustomSkillIndex] = useState(-1);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
 
   // Personal Info State (for step 1)
@@ -1225,15 +1227,7 @@ export default function ResumeBuilder() {
       showToast('warning', 'Sign In Required', 'Please sign in to generate a shareable resume link.');
       return;
     }
-    const shareUrl = `${window.location.origin}/resume/share/${encodeURIComponent(
-      user.uid
-    )}/${encodeURIComponent(activeProfileId)}`;
-    navigator.clipboard.writeText(shareUrl);
-    showToast(
-      'success',
-      'Shareable Resume Link Copied!',
-      'Anyone with this link can view your live ATS resume.'
-    );
+    setIsShareModalOpen(true);
   };
 
   if (isLoading) {
@@ -2432,6 +2426,11 @@ export default function ResumeBuilder() {
       <AtsPdfExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
+        resumeData={activeResumeData}
+      />
+      <ShareResumeModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
         resumeData={activeResumeData}
       />
       <GitHubRepoImporterModal

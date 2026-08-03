@@ -55,6 +55,7 @@ interface ResumeWizardContent {
     phone: string;
     location: string;
     summary: string;
+    photoUrl?: string;
   };
   socialLinks: SocialLinks;
   workExperiences: WorkExperience[];
@@ -129,7 +130,18 @@ export default function ResumeBuilder() {
     phone: '+94',
     location: '',
     summary: '',
+    photoUrl: user?.photoURL || '',
   });
+
+  // Keep photoUrl synced with user.photoURL if not manually set
+  useEffect(() => {
+    if (user?.photoURL) {
+      setPersonalInfo(prev => ({
+        ...prev,
+        photoUrl: prev.photoUrl || user.photoURL,
+      }));
+    }
+  }, [user?.photoURL]);
 
   // Social Links State
   const [socialLinks, setSocialLinks] = useState<SocialLinks>(
@@ -207,6 +219,7 @@ export default function ResumeBuilder() {
         phone: normalizePhone(data.personalInfo?.phone),
         location: data.personalInfo?.location || '',
         summary: data.personalInfo?.summary || '',
+        photoUrl: data.personalInfo?.photoUrl || user?.photoURL || '',
       });
       setWorkExperiences(data.workExperiences || []);
       setEducations(data.education || []);
@@ -221,6 +234,7 @@ export default function ResumeBuilder() {
         phone: '+94',
         location: '',
         summary: '',
+        photoUrl: user?.photoURL || '',
       });
       setSocialLinks(createEmptySocialLinks());
       setWorkExperiences([]);
@@ -261,7 +275,10 @@ export default function ResumeBuilder() {
     const draft = loadDraft<ResumeDraft>(resumeDraftKey(uid));
     if (!draft || draft.profileId !== profileId) return;
 
-    setPersonalInfo(draft.content.personalInfo);
+    setPersonalInfo({
+      ...draft.content.personalInfo,
+      photoUrl: draft.content.personalInfo.photoUrl || user?.photoURL || '',
+    });
     setSocialLinks(draft.content.socialLinks);
     setWorkExperiences(draft.content.workExperiences);
     setEducations(draft.content.educations);
@@ -305,6 +322,7 @@ export default function ResumeBuilder() {
         phone: normalizePhone(parsed.personalInfo?.phone),
         location: parsed.personalInfo?.location || '',
         summary: parsed.personalInfo?.summary || '',
+        photoUrl: user?.photoURL || '',
       });
       setSocialLinks(parsed.socialLinks || createEmptySocialLinks());
       setWorkExperiences(withGeneratedIds(parsed.workExperiences || []));
@@ -1185,6 +1203,7 @@ export default function ResumeBuilder() {
             phone: '',
             location: '',
             summary: '',
+            photoUrl: user?.photoURL || '',
           });
           break;
         case 'experience':
@@ -1284,7 +1303,7 @@ export default function ResumeBuilder() {
               onClick={() => setIsExportModalOpen(true)}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3b3be3] hover:bg-[#2929c9] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-sm"
             >
-              📄 Export ATS PDF
+              ✨ Export Resume (PDF / DOCX)
             </button>
           </div>
         </div>

@@ -1,14 +1,13 @@
-'use client';
-
 import {
   ATS_THEME_OPTIONS,
   AtsTheme,
+  exportAtsResumeDocx,
   exportAtsResumePdf,
   generateAtsResumeHtml,
 } from '@/lib/atsPdfGenerator';
 import { ResumeData } from '@/lib/resumeDataService';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Download, Printer, Share2, Sparkles, X } from 'lucide-react';
+import { Check, Download, FileText, Printer, Share2, Sparkles, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { showToast } from '@/lib/toast';
 
@@ -35,20 +34,30 @@ export default function AtsPdfExportModal({
 
   if (!isOpen || !resumeData) return null;
 
-  const handleExport = () => {
+  const handleExportPdf = () => {
     exportAtsResumePdf(resumeData, selectedTheme);
+  };
+
+  const handleExportDocx = () => {
+    exportAtsResumeDocx(resumeData, selectedTheme);
+    showToast(
+      'success',
+      'DOCX Exported!',
+      'Your editable Word document resume has been downloaded.'
+    );
   };
 
   const handleCopyShareLink = () => {
     if (typeof window === 'undefined') return;
     const shareUrl = `${window.location.origin}/resume/share/${encodeURIComponent(
       resumeData.userId
-    )}/${encodeURIComponent(resumeData.profileId)}`;
+    )}/${encodeURIComponent(resumeData.profileId)}?theme=${selectedTheme}`;
     navigator.clipboard.writeText(shareUrl);
+    const themeName = ATS_THEME_OPTIONS.find(t => t.id === selectedTheme)?.name || selectedTheme;
     showToast(
       'success',
       'Shareable Link Copied!',
-      'Anyone with this link can view your live resume web page.'
+      `Direct link for "${themeName}" theme copied to clipboard.`
     );
   };
 
@@ -60,7 +69,7 @@ export default function AtsPdfExportModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full lg:w-[66.666vw] h-[85vh] lg:h-[66.666vh] min-h-[520px] max-w-7xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col justify-between m-auto"
+          className="relative w-full max-w-6xl h-[90vh] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col justify-between m-auto"
         >
           {/* Modal Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40">
@@ -70,13 +79,13 @@ export default function AtsPdfExportModal({
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  ATS PDF Resume Exporter
+                  ATS Resume Exporter
                   <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 rounded-full">
-                    100% Vector ATS Ready
+                    PDF &amp; DOCX Ready
                   </span>
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Select a recruiter-tested ATS theme and export your resume as a clean, searchable PDF.
+                  Select a recruiter-tested ATS theme and export your resume as a clean PDF or editable Word document.
                 </p>
               </div>
             </div>
@@ -146,11 +155,11 @@ export default function AtsPdfExportModal({
             </div>
 
             {/* Live Interactive Preview Frame (8 Cols) */}
-            <div className="lg:col-span-8 p-4 bg-gray-100 dark:bg-gray-950 flex flex-col items-center justify-center overflow-hidden relative h-full">
+            <div className="lg:col-span-8 p-4 bg-slate-100 dark:bg-gray-900 flex flex-col items-center justify-center overflow-hidden relative h-full">
               <div className="w-full h-full bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col">
                 <div className="bg-gray-200 dark:bg-gray-800 px-4 py-2 border-b border-gray-300 dark:border-gray-700 flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 shrink-0">
                   <span>Live Preview: {ATS_THEME_OPTIONS.find(t => t.id === selectedTheme)?.name}</span>
-                  <span>Vector Searchable PDF</span>
+                  <span>Vector PDF &amp; Editable DOCX</span>
                 </div>
                 <iframe
                   title="ATS PDF Live Preview"
@@ -163,29 +172,36 @@ export default function AtsPdfExportModal({
 
           {/* Modal Footer Actions */}
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/40 shrink-0">
-            <div className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
-              Candidate: <strong className="text-gray-700 dark:text-gray-300">{resumeData.personalInfo.fullName || 'User'}</strong> ({resumeData.skills.position || 'Software Engineer'})
+            <div className="text-xs text-gray-500 dark:text-gray-400 hidden lg:block">
+              Candidate: <strong className="text-gray-700 dark:text-gray-300">{resumeData.personalInfo.fullName || 'User'}</strong>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto justify-end">
               <button
                 onClick={handleCopyShareLink}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
+                className="px-3.5 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-1.5"
               >
                 <Share2 className="w-4 h-4" />
                 Share Link
               </button>
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                className="px-3.5 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleExport}
-                className="px-6 py-3 text-sm font-medium text-white bg-[#3b3be3] hover:bg-[#2929c9] rounded-lg shadow-md flex items-center gap-2 transition-all active:scale-95"
+                onClick={handleExportDocx}
+                className="px-4 py-2 text-xs sm:text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <FileText className="w-4 h-4" />
+                Export DOCX
+              </button>
+              <button
+                onClick={handleExportPdf}
+                className="px-4 py-2 text-xs sm:text-sm font-medium text-white bg-[#3b3be3] hover:bg-[#2929c9] rounded-lg shadow-md flex items-center gap-1.5 transition-all active:scale-95"
               >
                 <Download className="w-4 h-4" />
-                Download ATS PDF
+                Export PDF
               </button>
             </div>
           </div>
@@ -194,3 +210,4 @@ export default function AtsPdfExportModal({
     </AnimatePresence>
   );
 }
+

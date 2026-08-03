@@ -750,7 +750,50 @@ export function exportAtsResumePdf(
   printWindow.onload = () => {
     setTimeout(() => {
       printWindow.focus();
-      printWindow.print();
+    printWindow.print();
     }, 250);
   };
+}
+
+/**
+ * Triggers clean, editable DOCX Word Document download of the ATS resume.
+ */
+export function exportAtsResumeDocx(
+  resumeData: ResumeData,
+  theme: AtsTheme = AtsTheme.MODERN
+): void {
+  const htmlContent = generateAtsResumeHtml(resumeData, theme);
+  const candidateName = (resumeData.personalInfo.fullName || 'Candidate_Resume').trim();
+  const fileName = `${candidateName.replace(/[^a-zA-Z0-9_-]/g, '_')}_Resume.doc`;
+
+  const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+  <meta charset='utf-8'>
+  <title>${candidateName} - Resume</title>
+  <!--[if gte mso 9]>
+  <xml>
+    <w:WordDocument>
+      <w:View>Print</w:View>
+      <w:Zoom>100</w:Zoom>
+      <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+  </xml>
+  <![endif]-->
+</head>
+<body>`;
+  const footer = `</body></html>`;
+  const fullDocument = header + htmlContent + footer;
+
+  const blob = new Blob(['\ufeff' + fullDocument], {
+    type: 'application/msword',
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

@@ -33,27 +33,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userInfoResponse = await fetch(
-      'https://www.googleapis.com/oauth2/v3/userinfo',
-      { headers: { Authorization: `Bearer ${tokens.access_token}` } }
-    );
-    if (!userInfoResponse.ok) {
-      return NextResponse.json(
-        { error: 'Failed to fetch Google account info' },
-        { status: 502 }
-      );
+    let user: { uid: string; email: string; displayName: string; photoURL: string } | null = null;
+
+    if (tokens.id_token) {
+      try {
+        const payloadBase64 = tokens.id_token.split('.')[1];
+        const payloadJson = Buffer.from(payloadBase64, 'base64').toString('utf-8');
+        const parsed = JSON.parse(payloadJson);
+        if (parsed.sub && parsed.email) {
+          user = {
+            uid: parsed.sub,
+            email: parsed.email,
+            displayName: parsed.name || parsed.email,
+            photoURL: parsed.picture || '',
+          };
+        }
+      } catch (e) {
+        console.warn('Could not parse id_token locally, falling back to userinfo endpoint:', e);
+      }
     }
-    const userInfo = await userInfoResponse.json();
 
-    const user = {
-      uid: userInfo.sub,
-      email: userInfo.email,
-      displayName: userInfo.name || userInfo.email,
-      photoURL: userInfo.picture || '',
-    };
+    if (!user) {
+      const userInfoResponse = await fetch(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+      );
+      if (!userInfoResponse.ok) {
+        return NextResponse.json(
+          { error: 'Failed to fetch Google account info' },
+          { status: 502 }
+        );
+      }
+      const userInfo = await userInfoResponse.json();
+      user = {
+        uid: userInfo.sub,
+        email: userInfo.email,
+        displayName: userInfo.name || userInfo.email,
+        photoURL: userInfo.picture || '',
+      };
+    }
 
-    await storeRefreshTokenIfPresent(user.uid, tokens.refresh_token, tokens.scope);
-    const hasRefreshToken = await hasStoredRefreshToken(user.uid);
+    const storedNewToken = await storeRefreshTokenIfPresent(
+      user.uid,
+      tokens.refresh_token,
+      tokens.scope
+    );
+    const hasRefreshToken =
+      storedNewToken || (await hasStoredRefreshToken(user.uid));
 
     return NextResponse.json({
       accessToken: tokens.access_token,

@@ -15,7 +15,7 @@ function ThemedToaster() {
   return (
     <GooeyToaster
       theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
-      position="top-center"
+      position="top-right"
       closeButton
       showProgress
     />

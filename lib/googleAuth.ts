@@ -3,15 +3,18 @@ import { google } from 'googleapis';
 import clientPromise from './mongodb';
 
 const ALGORITHM = 'aes-256-gcm';
+let cachedKey: Buffer | null = null;
 
 function getEncryptionKey(): Buffer {
+  if (cachedKey) return cachedKey;
   const secret = process.env.TOKEN_ENCRYPTION_KEY;
   if (!secret) {
     throw new Error('TOKEN_ENCRYPTION_KEY is not configured');
   }
   // Derive a 32-byte key from whatever string the operator provided, so the
   // env var doesn't have to be an exact-length hex/base64 value.
-  return scryptSync(secret, 'jobmail-google-refresh-token', 32);
+  cachedKey = scryptSync(secret, 'jobmail-google-refresh-token', 32);
+  return cachedKey;
 }
 
 interface EncryptedPayload {

@@ -106,6 +106,67 @@ export function generateAtsResumeHtml(
   const selectedSkills = skills.selectedSkills || [];
   const initials = getInitials(fullName);
 
+  // Common Page Break CSS
+  const printPageBreakCss = `
+    @page {
+      size: letter portrait;
+      margin: 0.5in;
+    }
+    @media print {
+      @page {
+        size: letter portrait;
+        margin: 0.5in;
+      }
+      body {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .section-block, .item-card, .skills-block, .summary-block {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        break-inside: avoid-page !important;
+        -webkit-column-break-inside: avoid !important;
+      }
+      .section-title {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        break-after: avoid-page !important;
+        -webkit-column-break-after: avoid !important;
+      }
+    }
+    .section-block {
+      display: block;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      break-inside: avoid-page;
+      -webkit-column-break-inside: avoid;
+      margin-top: 16px;
+    }
+    .section-title {
+      page-break-after: avoid;
+      break-after: avoid;
+      break-after: avoid-page;
+      -webkit-column-break-after: avoid;
+    }
+    .item-card {
+      display: block;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      break-inside: avoid-page;
+      -webkit-column-break-inside: avoid;
+      margin-bottom: 14px;
+    }
+    .bullet-list {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .bullet-list li {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  `;
+
   // ----------------------------------------------------
   // THEME 1: MODERN (Olivia Sanchez Layout)
   // ----------------------------------------------------
@@ -126,14 +187,14 @@ export function generateAtsResumeHtml(
   <title>${fullName} - Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    @page { size: letter portrait; margin: 0; }
+    ${printPageBreakCss}
     body {
       font-family: 'Inter', sans-serif;
       color: #1e293b;
       background: #ffffff;
       line-height: 1.5;
       font-size: 13px;
-      padding: 0.5in;
+      padding: 0.4in;
       max-width: 800px;
       margin: 0 auto;
       box-sizing: border-box;
@@ -157,7 +218,7 @@ export function generateAtsResumeHtml(
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       page-break-inside: avoid;
       break-inside: avoid;
     }
@@ -203,23 +264,14 @@ export function generateAtsResumeHtml(
       color: #0f172a;
       border-bottom: 1px solid #cbd5e1;
       padding-bottom: 4px;
-      margin-top: 18px;
-      margin-bottom: 12px;
-      page-break-after: avoid;
-      break-after: avoid;
+      margin-top: 14px;
+      margin-bottom: 10px;
     }
     .summary-text {
       font-size: 12.5px;
       color: #334155;
       line-height: 1.6;
-      margin-bottom: 16px;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .item-card {
       margin-bottom: 14px;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     .item-header { display: flex; justify-content: space-between; align-items: baseline; }
     .item-title { font-size: 13.5px; font-weight: 700; color: #0f172a; }
@@ -228,6 +280,7 @@ export function generateAtsResumeHtml(
     .bullet-list { padding-left: 18px; margin-top: 4px; }
     .bullet-list li { margin-bottom: 3px; font-size: 12.5px; color: #334155; }
     .skills-block {
+      margin-top: 16px;
       page-break-inside: avoid;
       break-inside: avoid;
     }
@@ -236,8 +289,6 @@ export function generateAtsResumeHtml(
       grid-template-columns: repeat(3, 1fr);
       gap: 6px 16px;
       margin-bottom: 14px;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     .skill-item { font-size: 12.5px; color: #334155; display: flex; align-items: center; gap: 6px; }
     .skill-item::before { content: "•"; color: #475569; font-weight: bold; }
@@ -260,10 +311,10 @@ export function generateAtsResumeHtml(
     </div>
   </div>
 
-  ${summary ? `<div class="skills-block"><div class="section-title">SUMMARY</div><div class="summary-text">${summary}</div></div>` : ''}
+  ${summary ? `<div class="section-block"><div class="section-title">SUMMARY</div><div class="summary-text">${summary}</div></div>` : ''}
 
   ${workExperiences.length > 0 ? `
-    <div class="section-title">WORK EXPERIENCE</div>
+    <div class="section-title" style="margin-top:16px;">WORK EXPERIENCE</div>
     ${workExperiences.map(exp => `
       <div class="item-card">
         <div class="item-header">
@@ -281,7 +332,7 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${projects.length > 0 ? `
-    <div class="section-title">KEY PROJECTS</div>
+    <div class="section-title" style="margin-top:16px;">KEY PROJECTS</div>
     ${projects.map(p => `
       <div class="item-card">
         <div class="item-header">
@@ -299,7 +350,7 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${education.length > 0 ? `
-    <div class="section-title">EDUCATION</div>
+    <div class="section-title" style="margin-top:16px;">EDUCATION</div>
     ${education.map(edu => `
       <div class="item-card">
         <div class="item-header">
@@ -343,14 +394,14 @@ export function generateAtsResumeHtml(
   <title>${fullName} - ATS Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    @page { size: letter portrait; margin: 0; }
+    ${printPageBreakCss}
     body {
       font-family: 'Inter', sans-serif;
       color: #000000;
       background: #ffffff;
       line-height: 1.45;
       font-size: 12.5px;
-      padding: 0.5in;
+      padding: 0.4in;
       max-width: 800px;
       margin: 0 auto;
       box-sizing: border-box;
@@ -387,7 +438,7 @@ export function generateAtsResumeHtml(
     .header-divider {
       border-bottom: 1.5px solid #000000;
       margin-top: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .section-title {
       font-size: 13px;
@@ -397,23 +448,14 @@ export function generateAtsResumeHtml(
       color: #000000;
       border-bottom: 1.5px solid #000000;
       padding-bottom: 3px;
-      margin-top: 18px;
+      margin-top: 14px;
       margin-bottom: 10px;
-      page-break-after: avoid;
-      break-after: avoid;
     }
     .summary-text {
       font-size: 12.5px;
       color: #1e293b;
       line-height: 1.55;
-      margin-bottom: 14px;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .item-card {
-      margin-bottom: 14px;
-      page-break-inside: avoid;
-      break-inside: avoid;
+      margin-bottom: 12px;
     }
     .item-row { display: flex; justify-content: space-between; align-items: baseline; }
     .item-company { font-size: 13px; font-weight: 800; color: #000000; }
@@ -422,6 +464,7 @@ export function generateAtsResumeHtml(
     .bullet-list { padding-left: 18px; margin-top: 4px; }
     .bullet-list li { margin-bottom: 3px; font-size: 12px; color: #1e293b; }
     .skills-block {
+      margin-top: 14px;
       page-break-inside: avoid;
       break-inside: avoid;
     }
@@ -429,8 +472,6 @@ export function generateAtsResumeHtml(
       font-size: 12px;
       color: #000000;
       line-height: 1.6;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
   </style>
 </head>
@@ -442,14 +483,14 @@ export function generateAtsResumeHtml(
   </div>
 
   ${summary ? `
-    <div class="skills-block">
+    <div class="section-block">
       <div class="section-title">PROFESSIONAL SUMMARY</div>
       <div class="summary-text">${summary}</div>
     </div>
   ` : ''}
 
   ${education.length > 0 ? `
-    <div class="section-title">EDUCATION</div>
+    <div class="section-title" style="margin-top:14px;">EDUCATION</div>
     ${education.map(edu => `
       <div class="item-card">
         <div class="item-row">
@@ -462,7 +503,7 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${workExperiences.length > 0 ? `
-    <div class="section-title">RELEVANT EXPERIENCE</div>
+    <div class="section-title" style="margin-top:14px;">RELEVANT EXPERIENCE</div>
     ${workExperiences.map(exp => `
       <div class="item-card">
         <div class="item-row">
@@ -481,7 +522,7 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${projects.length > 0 ? `
-    <div class="section-title">PROJECTS &amp; DELIVERABLES</div>
+    <div class="section-title" style="margin-top:14px;">PROJECTS &amp; DELIVERABLES</div>
     ${projects.map(p => `
       <div class="item-card">
         <div class="item-row">
@@ -528,14 +569,14 @@ export function generateAtsResumeHtml(
   <title>${fullName} - Executive Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    @page { size: letter portrait; margin: 0; }
+    ${printPageBreakCss}
     body {
       font-family: 'Inter', sans-serif;
       color: #1e293b;
       background: #ffffff;
       line-height: 1.5;
       font-size: 13px;
-      padding: 0.5in;
+      padding: 0.4in;
       max-width: 800px;
       margin: 0 auto;
       box-sizing: border-box;
@@ -581,7 +622,7 @@ export function generateAtsResumeHtml(
     .blue-divider {
       border-bottom: 2px solid #0066cc;
       margin-top: 12px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
     .section-title {
       font-size: 13.5px;
@@ -591,23 +632,14 @@ export function generateAtsResumeHtml(
       color: #0066cc;
       border-bottom: 1.5px solid #0066cc;
       padding-bottom: 4px;
-      margin-top: 18px;
-      margin-bottom: 12px;
-      page-break-after: avoid;
-      break-after: avoid;
+      margin-top: 14px;
+      margin-bottom: 10px;
     }
     .summary-text {
       font-size: 12.5px;
       color: #334155;
       line-height: 1.6;
-      margin-bottom: 16px;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .item-card {
       margin-bottom: 14px;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
     .item-header { display: flex; justify-content: space-between; align-items: baseline; }
     .item-title { font-size: 13.5px; font-weight: 700; color: #0f172a; }
@@ -615,6 +647,7 @@ export function generateAtsResumeHtml(
     .bullet-list { padding-left: 18px; margin-top: 4px; }
     .bullet-list li { margin-bottom: 3px; font-size: 12.5px; color: #334155; }
     .skills-block {
+      margin-top: 14px;
       page-break-inside: avoid;
       break-inside: avoid;
     }
@@ -622,8 +655,6 @@ export function generateAtsResumeHtml(
       font-size: 12.5px;
       color: #334155;
       line-height: 1.6;
-      page-break-inside: avoid;
-      break-inside: avoid;
     }
   </style>
 </head>
@@ -636,14 +667,14 @@ export function generateAtsResumeHtml(
   </div>
 
   ${summary ? `
-    <div class="skills-block">
+    <div class="section-block">
       <div class="section-title">SUMMARY</div>
       <div class="summary-text">${summary}</div>
     </div>
   ` : ''}
 
   ${workExperiences.length > 0 ? `
-    <div class="section-title">PROFESSIONAL EXPERIENCE</div>
+    <div class="section-title" style="margin-top:14px;">PROFESSIONAL EXPERIENCE</div>
     ${workExperiences.map(exp => `
       <div class="item-card">
         <div class="item-header">
@@ -661,7 +692,7 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${projects.length > 0 ? `
-    <div class="section-title">FEATURED PROJECTS</div>
+    <div class="section-title" style="margin-top:14px;">FEATURED PROJECTS</div>
     ${projects.map(p => `
       <div class="item-card">
         <div class="item-header">
@@ -685,7 +716,7 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${education.length > 0 ? `
-    <div class="section-title">EDUCATION</div>
+    <div class="section-title" style="margin-top:14px;">EDUCATION</div>
     ${education.map(edu => `
       <div class="item-card">
         <div class="item-header">
@@ -719,14 +750,14 @@ export function generateAtsResumeHtml(
   <title>${fullName} - Minimalist Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    @page { size: letter portrait; margin: 0; }
+    ${printPageBreakCss}
     body {
       font-family: 'Inter', sans-serif;
       color: #1e293b;
       background: #ffffff;
       line-height: 1.5;
       font-size: 12.5px;
-      padding: 0.5in;
+      padding: 0.4in;
       max-width: 800px;
       margin: 0 auto;
       box-sizing: border-box;
@@ -748,8 +779,7 @@ export function generateAtsResumeHtml(
     .contact-bar { font-size: 11.5px; color: #475569; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
     .section-title {
       font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-      color: #334155; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 4px; margin-top: 16px; margin-bottom: 10px;
-      page-break-after: avoid; break-after: avoid;
+      color: #334155; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 4px; margin-top: 14px; margin-bottom: 10px;
     }
     .summary-box { background-color: #f1f5f9; border-left: 3px solid #334155; padding: 8px 12px; border-radius: 4px; font-size: 12.5px; margin-bottom: 12px; page-break-inside: avoid; break-inside: avoid; }
     .item-card { margin-bottom: 12px; page-break-inside: avoid; break-inside: avoid; }
@@ -772,9 +802,9 @@ export function generateAtsResumeHtml(
   </div>
   ${summary ? `<div class="summary-box">${summary}</div>` : ''}
   ${selectedSkills.length > 0 ? `<div class="skills-block"><div class="section-title">Technical Skills</div><div class="skills-grid">${selectedSkills.map(s => `<span class="skill-pill">${s}</span>`).join('')}</div></div>` : ''}
-  ${workExperiences.length > 0 ? `<div class="section-title">Work Experience</div>${workExperiences.map(exp => `<div class="item-card"><div class="item-header"><span class="item-title">${exp.position}</span><span class="item-date">${formatDateRange(exp.startDate, exp.endDate, exp.currentlyWorking)}</span></div><div class="item-subtitle">${exp.company}</div>${exp.responsibilities && exp.responsibilities.length > 0 ? `<ul class="bullet-list">${exp.responsibilities.filter(Boolean).map(r => `<li>${r}</li>`).join('')}</ul>` : ''}</div>`).join('')}` : ''}
-  ${projects.length > 0 ? `<div class="section-title">Projects</div>${projects.map(p => `<div class="item-card"><div class="item-header"><span class="item-title">${p.name} (${p.role || 'Developer'})</span><span class="item-date">${formatDateRange(p.startDate, p.endDate, p.currentlyWorking)}</span></div>${p.keyFeatures && p.keyFeatures.length > 0 ? `<ul class="bullet-list">${p.keyFeatures.filter(Boolean).map(f => `<li>${f}</li>`).join('')}</ul>` : ''}</div>`).join('')}` : ''}
-  ${education.length > 0 ? `<div class="section-title">Education</div>${education.map(edu => `<div class="item-card"><div class="item-header"><span class="item-title">${edu.degree} in ${edu.fieldOfStudy}</span><span class="item-date">${formatDateRange(edu.startDate, edu.endDate, edu.currentlyStudying)}</span></div><div class="item-subtitle">${edu.institution}</div></div>`).join('')}` : ''}
+  ${workExperiences.length > 0 ? `<div class="section-title" style="margin-top:14px;">Work Experience</div>${workExperiences.map(exp => `<div class="item-card"><div class="item-header"><span class="item-title">${exp.position}</span><span class="item-date">${formatDateRange(exp.startDate, exp.endDate, exp.currentlyWorking)}</span></div><div class="item-subtitle">${exp.company}</div>${exp.responsibilities && exp.responsibilities.length > 0 ? `<ul class="bullet-list">${exp.responsibilities.filter(Boolean).map(r => `<li>${r}</li>`).join('')}</ul>` : ''}</div>`).join('')}` : ''}
+  ${projects.length > 0 ? `<div class="section-title" style="margin-top:14px;">Projects</div>${projects.map(p => `<div class="item-card"><div class="item-header"><span class="item-title">${p.name} (${p.role || 'Developer'})</span><span class="item-date">${formatDateRange(p.startDate, p.endDate, p.currentlyWorking)}</span></div>${p.keyFeatures && p.keyFeatures.length > 0 ? `<ul class="bullet-list">${p.keyFeatures.filter(Boolean).map(f => `<li>${f}</li>`).join('')}</ul>` : ''}</div>`).join('')}` : ''}
+  ${education.length > 0 ? `<div class="section-title" style="margin-top:14px;">Education</div>${education.map(edu => `<div class="item-card"><div class="item-header"><span class="item-title">${edu.degree} in ${edu.fieldOfStudy}</span><span class="item-date">${formatDateRange(edu.startDate, edu.endDate, edu.currentlyStudying)}</span></div><div class="item-subtitle">${edu.institution}</div></div>`).join('')}` : ''}
 </body>
 </html>`;
 }

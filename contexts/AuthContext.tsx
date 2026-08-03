@@ -1,6 +1,7 @@
 'use client';
 
 import { clearBrowserCache } from '@/lib/clearCache';
+import { showToast } from '@/lib/toast';
 import { useGoogleLogin } from '@react-oauth/google';
 import React, {
   createContext,
@@ -141,6 +142,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useGoogleLogin({
     flow: 'auth-code',
     onSuccess: async codeResponse => {
+      showToast(
+        'info',
+        'Logging in...',
+        'Please wait a moment while we load your dashboard.'
+      );
       try {
         const exchangeResponse = await fetch('/api/auth/google/exchange', {
           method: 'POST',

@@ -63,8 +63,8 @@ export function Dashboard() {
           </div>
           <ThemeToggle />
         </header>
-        <main className="flex-1 overflow-auto">
-          <div className="px-8 py-4">
+        <main className="flex-1 overflow-y-auto min-h-0">
+          <div className="px-4 sm:px-8 pt-4 pb-24">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activePage}

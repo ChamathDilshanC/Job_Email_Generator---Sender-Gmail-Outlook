@@ -158,7 +158,10 @@ export default function ResumeBuilder() {
     profileId: activeProfileId || 'default',
     profileName: 'Active Profile',
     isDefault: true,
-    personalInfo,
+    personalInfo: {
+      ...personalInfo,
+      photoUrl: user?.photoURL || undefined,
+    },
     socialLinks,
     workExperiences,
     education: educations,
@@ -1198,6 +1201,22 @@ export default function ResumeBuilder() {
     }
   }, [activeSection]);
 
+  const handleShareResume = () => {
+    if (!user) {
+      showToast('warning', 'Sign In Required', 'Please sign in to generate a shareable resume link.');
+      return;
+    }
+    const shareUrl = `${window.location.origin}/resume/share/${encodeURIComponent(
+      user.uid
+    )}/${encodeURIComponent(activeProfileId)}`;
+    navigator.clipboard.writeText(shareUrl);
+    showToast(
+      'success',
+      'Shareable Resume Link Copied!',
+      'Anyone with this link can view your live ATS resume.'
+    );
+  };
+
   if (isLoading) {
     return <Loader fullScreen text="Loading your resume data..." />;
   }
@@ -1254,12 +1273,20 @@ export default function ResumeBuilder() {
               Create a professional template &amp; export recruiter-ready ATS PDF resumes
             </p>
           </div>
-          <button
-            onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3b3be3] hover:bg-[#2929c9] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-sm self-start md:self-auto"
-          >
-            📄 Export ATS PDF
-          </button>
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+            <button
+              onClick={handleShareResume}
+              className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg shadow-sm transition-all duration-200 text-sm"
+            >
+              🔗 Share Link
+            </button>
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3b3be3] hover:bg-[#2929c9] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-sm"
+            >
+              📄 Export ATS PDF
+            </button>
+          </div>
         </div>
 
         {/* Step Progress Indicator */}

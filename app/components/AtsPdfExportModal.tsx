@@ -8,8 +8,9 @@ import {
 } from '@/lib/atsPdfGenerator';
 import { ResumeData } from '@/lib/resumeDataService';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Download, Printer, Sparkles, X } from 'lucide-react';
+import { Check, Download, Printer, Share2, Sparkles, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { showToast } from '@/lib/toast';
 
 interface AtsPdfExportModalProps {
   isOpen: boolean;
@@ -36,6 +37,19 @@ export default function AtsPdfExportModal({
 
   const handleExport = () => {
     exportAtsResumePdf(resumeData, selectedTheme);
+  };
+
+  const handleCopyShareLink = () => {
+    if (typeof window === 'undefined') return;
+    const shareUrl = `${window.location.origin}/resume/share/${encodeURIComponent(
+      resumeData.userId
+    )}/${encodeURIComponent(resumeData.profileId)}`;
+    navigator.clipboard.writeText(shareUrl);
+    showToast(
+      'success',
+      'Shareable Link Copied!',
+      'Anyone with this link can view your live resume web page.'
+    );
   };
 
   return (
@@ -153,6 +167,13 @@ export default function AtsPdfExportModal({
               Candidate: <strong className="text-gray-700 dark:text-gray-300">{resumeData.personalInfo.fullName || 'User'}</strong> ({resumeData.skills.position || 'Software Engineer'})
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <button
+                onClick={handleCopyShareLink}
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <Share2 className="w-4 h-4" />
+                Share Link
+              </button>
               <button
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl transition-colors"

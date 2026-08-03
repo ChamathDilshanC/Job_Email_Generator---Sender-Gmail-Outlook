@@ -15,6 +15,7 @@ export interface ResumeData {
     phone?: string;
     location?: string;
     summary?: string;
+    photoUrl?: string;
   };
   socialLinks?: SocialLinks;
   workExperiences: WorkExperience[];

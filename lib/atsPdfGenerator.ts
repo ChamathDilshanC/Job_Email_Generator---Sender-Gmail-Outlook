@@ -118,17 +118,17 @@ export function generateAtsResumeHtml(
   <title>${fullName} - Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { size: letter portrait; margin: 0.4in; }
+    @page { size: letter portrait; margin: 0; }
     body {
       font-family: 'Inter', sans-serif;
       color: #1e293b;
       background: #ffffff;
       line-height: 1.5;
       font-size: 13px;
-      padding: 24px;
+      padding: 0.5in;
       max-width: 800px;
       margin: 0 auto;
+      box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -141,6 +141,8 @@ export function generateAtsResumeHtml(
       align-items: center;
       justify-content: space-between;
       margin-bottom: 20px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .header-left { flex: 1; }
     .candidate-name {
@@ -186,25 +188,39 @@ export function generateAtsResumeHtml(
       padding-bottom: 4px;
       margin-top: 18px;
       margin-bottom: 12px;
+      page-break-after: avoid;
+      break-after: avoid;
     }
     .summary-text {
       font-size: 12.5px;
       color: #334155;
       line-height: 1.6;
       margin-bottom: 16px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
-    .item-card { margin-bottom: 14px; page-break-inside: avoid; }
+    .item-card {
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     .item-header { display: flex; justify-content: space-between; align-items: baseline; }
     .item-title { font-size: 13.5px; font-weight: 700; color: #0f172a; }
     .item-date { font-size: 12px; font-weight: 600; color: #475569; }
     .item-subtitle { font-size: 12.5px; font-weight: 600; color: #475569; margin-top: 1px; }
     .bullet-list { padding-left: 18px; margin-top: 4px; }
     .bullet-list li { margin-bottom: 3px; font-size: 12.5px; color: #334155; }
+    .skills-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     .skills-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 6px 16px;
       margin-bottom: 14px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .skill-item { font-size: 12.5px; color: #334155; display: flex; align-items: center; gap: 6px; }
     .skill-item::before { content: "•"; color: #475569; font-weight: bold; }
@@ -217,13 +233,13 @@ export function generateAtsResumeHtml(
       <div class="candidate-name">${fullName}</div>
       <div class="candidate-title">${position}</div>
     </div>
-    <div class="avatar-circle">${initials}</div>
+    ${personalInfo.photoUrl ? `<img src="${personalInfo.photoUrl}" alt="${fullName}" class="avatar-circle" style="object-fit: cover; border: 2px solid #cbd5e1;" />` : `<div class="avatar-circle">${initials}</div>`}
     <div class="header-right">
       ${contactLines.map(c => `<div>${c}</div>`).join('')}
     </div>
   </div>
 
-  ${summary ? `<div class="section-title">SUMMARY</div><div class="summary-text">${summary}</div>` : ''}
+  ${summary ? `<div class="skills-block"><div class="section-title">SUMMARY</div><div class="summary-text">${summary}</div></div>` : ''}
 
   ${workExperiences.length > 0 ? `
     <div class="section-title">WORK EXPERIENCE</div>
@@ -275,9 +291,11 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${selectedSkills.length > 0 ? `
-    <div class="section-title">KEY SKILLS</div>
-    <div class="skills-grid">
-      ${selectedSkills.map(s => `<div class="skill-item">${s}</div>`).join('')}
+    <div class="skills-block">
+      <div class="section-title">KEY SKILLS</div>
+      <div class="skills-grid">
+        ${selectedSkills.map(s => `<div class="skill-item">${s}</div>`).join('')}
+      </div>
     </div>
   ` : ''}
 </body>
@@ -303,19 +321,23 @@ export function generateAtsResumeHtml(
   <title>${fullName} - ATS Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { size: letter portrait; margin: 0.4in; }
+    @page { size: letter portrait; margin: 0; }
     body {
       font-family: 'Inter', sans-serif;
       color: #000000;
       background: #ffffff;
       line-height: 1.45;
       font-size: 12.5px;
-      padding: 24px;
+      padding: 0.5in;
       max-width: 800px;
       margin: 0 auto;
+      box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    .header-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .candidate-name {
       font-size: 30px;
@@ -346,31 +368,53 @@ export function generateAtsResumeHtml(
       padding-bottom: 3px;
       margin-top: 18px;
       margin-bottom: 10px;
+      page-break-after: avoid;
+      break-after: avoid;
     }
     .summary-text {
       font-size: 12.5px;
       color: #1e293b;
       line-height: 1.55;
       margin-bottom: 14px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
-    .item-card { margin-bottom: 14px; page-break-inside: avoid; }
+    .item-card {
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     .item-row { display: flex; justify-content: space-between; align-items: baseline; }
     .item-company { font-size: 13px; font-weight: 800; color: #000000; }
     .item-date { font-size: 12px; font-weight: 600; color: #1e293b; }
     .item-role { font-size: 13px; font-weight: 700; color: #000000; margin-top: 1px; }
     .bullet-list { padding-left: 18px; margin-top: 4px; }
     .bullet-list li { margin-bottom: 3px; font-size: 12px; color: #1e293b; }
-    .skills-line { font-size: 12px; color: #000000; line-height: 1.6; }
+    .skills-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .skills-line {
+      font-size: 12px;
+      color: #000000;
+      line-height: 1.6;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
   </style>
 </head>
 <body>
-  <div class="candidate-name">${fullName}</div>
-  <div class="contact-line">${contactLine}</div>
-  <div class="header-divider"></div>
+  <div class="header-block">
+    <div class="candidate-name">${fullName}</div>
+    <div class="contact-line">${contactLine}</div>
+    <div class="header-divider"></div>
+  </div>
 
   ${summary ? `
-    <div class="section-title">PROFESSIONAL SUMMARY</div>
-    <div class="summary-text">${summary}</div>
+    <div class="skills-block">
+      <div class="section-title">PROFESSIONAL SUMMARY</div>
+      <div class="summary-text">${summary}</div>
+    </div>
   ` : ''}
 
   ${education.length > 0 ? `
@@ -424,8 +468,10 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${selectedSkills.length > 0 ? `
-    <div class="section-title">SKILLS &amp; COMPETENCIES</div>
-    <div class="skills-line"><strong>Technical Skills:</strong> ${selectedSkills.join(', ')}</div>
+    <div class="skills-block">
+      <div class="section-title">SKILLS &amp; COMPETENCIES</div>
+      <div class="skills-line"><strong>Technical Skills:</strong> ${selectedSkills.join(', ')}</div>
+    </div>
   ` : ''}
 </body>
 </html>`;
@@ -450,19 +496,23 @@ export function generateAtsResumeHtml(
   <title>${fullName} - Executive Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { size: letter portrait; margin: 0.4in; }
+    @page { size: letter portrait; margin: 0; }
     body {
       font-family: 'Inter', sans-serif;
       color: #1e293b;
       background: #ffffff;
       line-height: 1.5;
       font-size: 13px;
-      padding: 24px;
+      padding: 0.5in;
       max-width: 800px;
       margin: 0 auto;
+      box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    .header-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .candidate-name {
       font-size: 28px;
@@ -502,31 +552,53 @@ export function generateAtsResumeHtml(
       padding-bottom: 4px;
       margin-top: 18px;
       margin-bottom: 12px;
+      page-break-after: avoid;
+      break-after: avoid;
     }
     .summary-text {
       font-size: 12.5px;
       color: #334155;
       line-height: 1.6;
       margin-bottom: 16px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
-    .item-card { margin-bottom: 14px; page-break-inside: avoid; }
+    .item-card {
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     .item-header { display: flex; justify-content: space-between; align-items: baseline; }
     .item-title { font-size: 13.5px; font-weight: 700; color: #0f172a; }
     .item-date { font-size: 12px; font-weight: 700; color: #1e293b; }
     .bullet-list { padding-left: 18px; margin-top: 4px; }
     .bullet-list li { margin-bottom: 3px; font-size: 12.5px; color: #334155; }
-    .skills-line { font-size: 12.5px; color: #334155; line-height: 1.6; }
+    .skills-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .skills-line {
+      font-size: 12.5px;
+      color: #334155;
+      line-height: 1.6;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
   </style>
 </head>
 <body>
-  <div class="candidate-name">${fullName}</div>
-  <div class="candidate-role">${position}</div>
-  <div class="contact-line">${contactLine}</div>
-  <div class="blue-divider"></div>
+  <div class="header-block">
+    <div class="candidate-name">${fullName}</div>
+    <div class="candidate-role">${position}</div>
+    <div class="contact-line">${contactLine}</div>
+    <div class="blue-divider"></div>
+  </div>
 
   ${summary ? `
-    <div class="section-title">SUMMARY</div>
-    <div class="summary-text">${summary}</div>
+    <div class="skills-block">
+      <div class="section-title">SUMMARY</div>
+      <div class="summary-text">${summary}</div>
+    </div>
   ` : ''}
 
   ${workExperiences.length > 0 ? `
@@ -565,8 +637,10 @@ export function generateAtsResumeHtml(
   ` : ''}
 
   ${selectedSkills.length > 0 ? `
-    <div class="section-title">SKILLS</div>
-    <div class="skills-line">${selectedSkills.join('  •  ')}</div>
+    <div class="skills-block">
+      <div class="section-title">SKILLS</div>
+      <div class="skills-line">${selectedSkills.join('  •  ')}</div>
+    </div>
   ` : ''}
 
   ${education.length > 0 ? `
@@ -603,47 +677,50 @@ export function generateAtsResumeHtml(
   <title>${fullName} - Minimalist Resume</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    @page { size: letter portrait; margin: 0.4in; }
+    @page { size: letter portrait; margin: 0; }
     body {
       font-family: 'Inter', sans-serif;
       color: #1e293b;
       background: #ffffff;
       line-height: 1.5;
       font-size: 12.5px;
-      padding: 24px;
+      padding: 0.5in;
       max-width: 800px;
       margin: 0 auto;
+      box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
+    .header-block { page-break-inside: avoid; break-inside: avoid; }
     .candidate-name { font-size: 24px; font-weight: 800; color: #0f172a; }
     .candidate-title { font-size: 14px; font-weight: 600; color: #334155; margin-top: 2px; }
     .contact-bar { font-size: 11.5px; color: #475569; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
     .section-title {
       font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
       color: #334155; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 4px; margin-top: 16px; margin-bottom: 10px;
+      page-break-after: avoid; break-after: avoid;
     }
-    .summary-box { background-color: #f1f5f9; border-left: 3px solid #334155; padding: 8px 12px; border-radius: 4px; font-size: 12.5px; margin-bottom: 12px; }
-    .item-card { margin-bottom: 12px; page-break-inside: avoid; }
+    .summary-box { background-color: #f1f5f9; border-left: 3px solid #334155; padding: 8px 12px; border-radius: 4px; font-size: 12.5px; margin-bottom: 12px; page-break-inside: avoid; break-inside: avoid; }
+    .item-card { margin-bottom: 12px; page-break-inside: avoid; break-inside: avoid; }
     .item-header { display: flex; justify-content: space-between; align-items: baseline; }
     .item-title { font-size: 13px; font-weight: 700; color: #0f172a; }
     .item-subtitle { font-size: 12.5px; font-weight: 600; color: #334155; }
     .item-date { font-size: 11.5px; color: #64748b; font-weight: 600; }
     .bullet-list { padding-left: 16px; margin-top: 4px; }
     .bullet-list li { margin-bottom: 2px; font-size: 12px; color: #334155; }
-    .skills-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+    .skills-block { page-break-inside: avoid; break-inside: avoid; }
+    .skills-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; page-break-inside: avoid; break-inside: avoid; }
     .skill-pill { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; }
   </style>
 </head>
 <body>
-  <div style="border-bottom: 2px solid #334155; padding-bottom: 12px; margin-bottom: 14px;">
+  <div class="header-block" style="border-bottom: 2px solid #334155; padding-bottom: 12px; margin-bottom: 14px;">
     <div class="candidate-name">${fullName}</div>
     <div class="candidate-title">${position}</div>
     <div class="contact-bar">${contactItems.map(item => `<span>${item}</span>`).join(' &bull; ')}</div>
   </div>
   ${summary ? `<div class="summary-box">${summary}</div>` : ''}
-  ${selectedSkills.length > 0 ? `<div class="section-title">Technical Skills</div><div class="skills-grid">${selectedSkills.map(s => `<span class="skill-pill">${s}</span>`).join('')}</div>` : ''}
+  ${selectedSkills.length > 0 ? `<div class="skills-block"><div class="section-title">Technical Skills</div><div class="skills-grid">${selectedSkills.map(s => `<span class="skill-pill">${s}</span>`).join('')}</div></div>` : ''}
   ${workExperiences.length > 0 ? `<div class="section-title">Work Experience</div>${workExperiences.map(exp => `<div class="item-card"><div class="item-header"><span class="item-title">${exp.position}</span><span class="item-date">${formatDateRange(exp.startDate, exp.endDate, exp.currentlyWorking)}</span></div><div class="item-subtitle">${exp.company}</div>${exp.responsibilities && exp.responsibilities.length > 0 ? `<ul class="bullet-list">${exp.responsibilities.filter(Boolean).map(r => `<li>${r}</li>`).join('')}</ul>` : ''}</div>`).join('')}` : ''}
   ${projects.length > 0 ? `<div class="section-title">Projects</div>${projects.map(p => `<div class="item-card"><div class="item-header"><span class="item-title">${p.name} (${p.role || 'Developer'})</span><span class="item-date">${formatDateRange(p.startDate, p.endDate, p.currentlyWorking)}</span></div>${p.keyFeatures && p.keyFeatures.length > 0 ? `<ul class="bullet-list">${p.keyFeatures.filter(Boolean).map(f => `<li>${f}</li>`).join('')}</ul>` : ''}</div>`).join('')}` : ''}
   ${education.length > 0 ? `<div class="section-title">Education</div>${education.map(edu => `<div class="item-card"><div class="item-header"><span class="item-title">${edu.degree} in ${edu.fieldOfStudy}</span><span class="item-date">${formatDateRange(edu.startDate, edu.endDate, edu.currentlyStudying)}</span></div><div class="item-subtitle">${edu.institution}</div></div>`).join('')}` : ''}

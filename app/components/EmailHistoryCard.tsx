@@ -17,6 +17,7 @@ import {
   getApplicationStatusClasses,
   getDeliveryStatusClasses,
 } from '@/lib/emailHistoryStatus';
+import { cleanPreviewText } from '@/lib/emailPreview';
 import { fadeInUp } from '@/lib/motion';
 import { motion } from 'framer-motion';
 import {
@@ -185,7 +186,7 @@ export default function EmailHistoryCard({
 
       <div className="mb-4 rounded-lg border-l-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 py-2 pl-3 pr-3">
         <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-2">
-          {email.emailPreview}
+          {cleanPreviewText(email.emailPreview || '') || 'No preview available.'}
         </p>
       </div>
 

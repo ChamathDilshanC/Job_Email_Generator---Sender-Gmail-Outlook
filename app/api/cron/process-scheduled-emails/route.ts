@@ -1,3 +1,4 @@
+import { buildEmailPreview } from '@/lib/emailPreview';
 import { getValidAccessTokenForUser } from '@/lib/googleAuth';
 import clientPromise from '@/lib/mongodb';
 import { sendGmailMessage, withTrackingPixel } from '@/lib/sendGmail';
@@ -81,8 +82,8 @@ async function processDueEmails() {
           coverLetter: email.attachmentNames?.coverLetter,
         },
         emailSubject: email.subject,
-        emailPreview:
-          String(email.bodyHtml).replace(/<[^>]*>/g, ' ').slice(0, 200) + '...',
+        emailPreview: buildEmailPreview(String(email.bodyHtml || '')),
+        emailBodyHtml: String(email.bodyHtml || ''),
         trackingId: email.trackingId,
         createdAt: new Date(),
       });

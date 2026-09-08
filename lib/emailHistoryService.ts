@@ -77,6 +77,32 @@ export async function loadEmailHistory(
 }
 
 /**
+ * Load the full HTML body of one history entry. Kept out of the list payload
+ * (a rendered email is far bigger than the row it belongs to), so the details
+ * modal asks for it only when it's actually opened.
+ */
+export async function loadEmailBodyHtml(
+  userId: string | undefined | null,
+  emailId: string
+): Promise<string> {
+  if (!userId || !emailId) return '';
+
+  try {
+    const response = await fetch(
+      `/api/email-history?userId=${encodeURIComponent(
+        userId
+      )}&bodyFor=${encodeURIComponent(emailId)}`
+    );
+    if (!response.ok) throw new Error('Failed to load email body');
+    const data = await response.json();
+    return data.emailBodyHtml || '';
+  } catch (error) {
+    console.error('Error loading email body:', error);
+    return '';
+  }
+}
+
+/**
  * Load just the sent/pending/total counts for a user, without pulling down
  * every history document (used by the Profile page's stat tiles).
  */

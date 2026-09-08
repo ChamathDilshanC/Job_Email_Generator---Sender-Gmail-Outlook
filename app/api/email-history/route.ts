@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const statsOnly = searchParams.get('stats') === 'true';
+    const bodyForId = searchParams.get('bodyFor');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -36,6 +37,22 @@ export async function GET(request: NextRequest) {
     const db = client.db('job_email_generator');
     const collection = db.collection('email_history');
     await ensureIndexes(collection);
+
+    if (bodyForId) {
+      // The full HTML body is only fetched when a single email is opened, so
+      // the list request doesn't carry 50 rendered emails over the wire.
+      if (!ObjectId.isValid(bodyForId)) {
+        return NextResponse.json({ error: 'Invalid email ID' }, { status: 400 });
+      }
+      const doc = await collection.findOne(
+        { _id: new ObjectId(bodyForId), userId },
+        { projection: { emailBodyHtml: 1 } }
+      );
+      if (!doc) {
+        return NextResponse.json({ error: 'Email not found' }, { status: 404 });
+      }
+      return NextResponse.json({ emailBodyHtml: doc.emailBodyHtml || '' });
+    }
 
     if (statsOnly) {
       // Just three counts — avoid pulling every full history doc (incl.
@@ -50,11 +67,30 @@ export async function GET(request: NextRequest) {
     }
 
     const history = await collection
-      .find({ userId })
+      .find({ userId }, { projection: { emailBodyHtml: 0 } })
       .sort({ sentDate: -1 }) // Newest first
       .skip(offset)
       .limit(limit)
       .toArray();
+
+    // Which rows have a stored HTML body worth fetching on open. Cheap to
+    // answer separately; far cheaper than shipping every body in the list.
+    const idsWithBody = new Set(
+      history.length === 0
+        ? []
+        : (
+            await collection
+              .find(
+                {
+                  userId,
+                  emailBodyHtml: { $exists: true, $nin: [null, ''] },
+                  _id: { $in: history.map(doc => doc._id) },
+                },
+                { projection: { _id: 1 } }
+              )
+              .toArray()
+          ).map(doc => doc._id.toString())
+    );
 
     // Transform _id to id for frontend compatibility
     const transformedHistory = history.map(doc => ({
@@ -65,6 +101,7 @@ export async function GET(request: NextRequest) {
       // rows have no application yet, so leave their stage unset.
       applicationStatus:
         doc.applicationStatus ?? (doc.status === 'sent' ? 'applied' : undefined),
+      hasBodyHtml: idsWithBody.has(doc._id.toString()),
     }));
 
     return NextResponse.json({ history: transformedHistory });

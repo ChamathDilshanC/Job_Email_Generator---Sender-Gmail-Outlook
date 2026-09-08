@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
 import { saveEmailToHistory } from '@/lib/emailHistoryService';
+import { buildEmailPreview } from '@/lib/emailPreview';
 import { generateEmail, type EmailData } from '@/lib/emailTemplate';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import { clearDraft, loadDraft, saveDraft } from '@/lib/formDraft';
@@ -640,7 +641,12 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             coverLetter: attachments.coverLetter?.name,
           },
           emailSubject: subject,
-          emailPreview: plainTextFallback.substring(0, 200) + '...',
+          // Snapshot what was actually sent (including any manual edits), not
+          // the originally generated template body.
+          emailPreview:
+            buildEmailPreview(displayedBodyHtml) ||
+            buildEmailPreview(plainTextFallback),
+          emailBodyHtml: displayedBodyHtml,
           trackingId,
         });
 

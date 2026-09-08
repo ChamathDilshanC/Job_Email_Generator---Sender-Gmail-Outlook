@@ -1,13 +1,16 @@
 'use client';
 
 import { APPLICATION_STATUS_LABELS, EmailHistory } from '@/app/models/EmailHistory';
+import { loadEmailBodyHtml } from '@/lib/emailHistoryService';
 import {
   formatDeliveryStatusLabel,
   getApplicationStatusClasses,
   getDeliveryStatusClasses,
 } from '@/lib/emailHistoryStatus';
+import { cleanPreviewText, htmlToPlainText } from '@/lib/emailPreview';
 import { motion } from 'framer-motion';
-import { Eye } from 'lucide-react';
+import { Eye, Loader2, Paperclip } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface EmailHistoryModalProps {
   email: EmailHistory | null;
@@ -20,7 +23,57 @@ export default function EmailHistoryModal({
   isOpen,
   onClose,
 }: EmailHistoryModalProps) {
+  const [bodyHtml, setBodyHtml] = useState('');
+  const [isLoadingBody, setIsLoadingBody] = useState(false);
+  const [showPlainText, setShowPlainText] = useState(false);
+
+  const emailId = email?.id;
+  const userId = email?.userId;
+  // Rows saved before we started keeping the HTML body have no `hasBodyHtml`;
+  // those fall back to the stored text snippet.
+  const hasBodyHtml = Boolean(email?.hasBodyHtml || email?.emailBodyHtml);
+
+  useEffect(() => {
+    if (!isOpen || !emailId) return;
+
+    setShowPlainText(false);
+
+    if (email?.emailBodyHtml) {
+      setBodyHtml(email.emailBodyHtml);
+      return;
+    }
+
+    if (!hasBodyHtml) {
+      setBodyHtml('');
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingBody(true);
+    setBodyHtml('');
+
+    loadEmailBodyHtml(userId, emailId)
+      .then(html => {
+        if (!cancelled) setBodyHtml(html);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingBody(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, emailId, userId, hasBodyHtml]);
+
   if (!isOpen || !email) return null;
+
+  const attachmentNames = [
+    email.attachments?.cv,
+    email.attachments?.coverLetter,
+  ].filter((name): name is string => Boolean(name && name.trim()));
+
+  const previewText = cleanPreviewText(email.emailPreview || '');
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -170,39 +223,32 @@ export default function EmailHistoryModal({
 
           {/* Attachments */}
           <div className="mb-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Attachments</p>
-            <div className="flex gap-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-[#818cf8]/10 text-blue-700 dark:text-[#a5b4fc] rounded-lg text-sm">
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {email.attachments.cv}
-              </span>
-              {email.attachments.coverLetter && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-[#818cf8]/10 text-blue-700 dark:text-[#a5b4fc] rounded-lg text-sm">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {email.attachments.coverLetter}
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              Attachments{' '}
+              {attachmentNames.length > 0 && (
+                <span className="text-gray-400 dark:text-gray-500">
+                  ({attachmentNames.length})
                 </span>
               )}
-            </div>
+            </p>
+            {attachmentNames.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {attachmentNames.map(name => (
+                  <span
+                    key={name}
+                    title={name}
+                    className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-blue-700 dark:bg-[#818cf8]/10 dark:text-[#a5b4fc]"
+                  >
+                    <Paperclip className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{name}</span>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 dark:text-gray-500 italic">
+                No attachments were sent with this email.
+              </p>
+            )}
           </div>
 
           {/* Email Subject */}
@@ -213,12 +259,46 @@ export default function EmailHistoryModal({
 
           {/* Email Preview */}
           <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Email Preview</p>
-            <div className="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                {email.emailPreview}
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Email Preview
               </p>
+              {bodyHtml && (
+                <button
+                  type="button"
+                  onClick={() => setShowPlainText(prev => !prev)}
+                  className="text-xs font-medium text-[#3b3be3] hover:underline dark:text-[#a5b4fc]"
+                >
+                  {showPlainText ? 'Show formatted email' : 'Show plain text'}
+                </button>
+              )}
             </div>
+
+            {isLoadingBody ? (
+              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading the email…
+              </div>
+            ) : bodyHtml && !showPlainText ? (
+              // Sandboxed so the stored email markup can never run script or
+              // reach back into the app — it's only ever rendered, not trusted.
+              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700">
+                <iframe
+                  title="Sent email preview"
+                  srcDoc={bodyHtml}
+                  sandbox=""
+                  className="h-[420px] w-full border-0 bg-white"
+                />
+              </div>
+            ) : (
+              <div className="max-h-[420px] overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/60">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                  {(showPlainText ? htmlToPlainText(bodyHtml) : '') ||
+                    previewText ||
+                    'No preview available for this email.'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

@@ -38,7 +38,12 @@ export interface EmailHistory {
     coverLetter?: string;
   };
   emailSubject: string;
-  emailPreview: string; // First 200 characters of email body
+  emailPreview: string; // Short plain-text snippet of the email body
+  // Full HTML body as sent, so History can show the real email instead of a
+  // text snippet. Left off the list payload (it's large) and fetched on
+  // demand; `hasBodyHtml` tells the UI whether it's worth asking for.
+  emailBodyHtml?: string;
+  hasBodyHtml?: boolean;
 }
 
 // Helper function to create empty email history

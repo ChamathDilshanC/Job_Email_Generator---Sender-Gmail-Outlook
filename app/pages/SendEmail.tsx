@@ -37,6 +37,8 @@ import {
 } from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
 import type { CoverLetter } from '@/lib/coverLetter';
+import { stripLeadingGreeting } from '@/lib/coverLetter';
+import { jsPDF } from 'jspdf';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -398,12 +400,50 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       setAttachments(previous => ({ ...previous, coverLetter: null }));
       return;
     }
-    const fileName = `${(letter.name || `${letter.companyName}_${letter.position}`).replace(/[^\w.-]+/g, '_')}.txt`;
+    const resumeName = resumeData?.personalInfo.fullName || user?.displayName || 'Applicant';
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+    const margin = 18;
+    const pageWidth = 210;
+    const contentWidth = pageWidth - margin * 2;
+    const accent = letter.template === 'editorial' ? '#D71920' : letter.template === 'corporate' ? '#1555B5' : '#334155';
+    pdf.setDrawColor(accent);
+    pdf.setLineWidth(0.8);
+    pdf.line(margin, 12, pageWidth - margin, 12);
+    pdf.setTextColor('#172033');
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text(resumeName, margin, 24);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor('#526071');
+    const contact = [resumeData?.personalInfo.email, resumeData?.personalInfo.phone, resumeData?.personalInfo.location].filter(Boolean).join(' · ');
+    if (contact) pdf.text(contact, margin, 30);
+    pdf.setTextColor(accent);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(letter.position, margin, contact ? 36 : 30);
+    let y = contact ? 48 : 42;
+    pdf.setTextColor('#172033');
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), margin, y);
+    y += 10;
+    pdf.text(`Dear ${letter.hiringManagerName || 'Hiring Manager'},`, margin, y);
+    y += 8;
+    const paragraphs = stripLeadingGreeting(letter.content).split(/\n\s*\n/).filter(Boolean);
+    for (const paragraph of paragraphs) {
+      const lines = pdf.splitTextToSize(paragraph.replace(/\s+/g, ' ').trim(), contentWidth);
+      pdf.text(lines, margin, y, { align: 'justify', maxWidth: contentWidth });
+      y += lines.length * 4.5 + 4;
+    }
+    y += 3;
+    pdf.text(['Sincerely,', resumeName], margin, y);
+    const blob = pdf.output('blob');
+    const fileName = `${(letter.name || `${letter.companyName}_${letter.position}`).replace(/[^\w.-]+/g, '_')}.pdf`;
     setAttachments(previous => ({
       ...previous,
-      coverLetter: new File([letter.content], fileName, { type: 'text/plain' }),
+      coverLetter: new File([blob], fileName, { type: 'application/pdf' }),
     }));
-    showToast('success', 'Saved cover letter attached', `${letter.name || letter.companyName} is ready to send.`);
+    showToast('success', 'Cover letter PDF attached', `${letter.name || letter.companyName} is ready to send.`);
   };
 
   const loadDevResume = async () => {

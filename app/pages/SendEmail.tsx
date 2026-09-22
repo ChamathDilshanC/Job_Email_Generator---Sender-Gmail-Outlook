@@ -255,6 +255,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   }>({ cv: null, coverLetter: null });
   const [savedCoverLetters, setSavedCoverLetters] = useState<CoverLetter[]>([]);
   const [selectedSavedCoverLetter, setSelectedSavedCoverLetter] = useState('');
+  const [cvSource, setCvSource] = useState<'profile' | 'devresume'>('profile');
+  const [devResumeUpdatedAt, setDevResumeUpdatedAt] = useState<string | null>(null);
+  const [isLoadingDevResume, setIsLoadingDevResume] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [requireCoverLetter, setRequireCoverLetter] = useState(false);
   // On by default per user preference - knowing whether a recruiter opened
@@ -401,6 +404,27 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       coverLetter: new File([letter.content], fileName, { type: 'text/plain' }),
     }));
     showToast('success', 'Saved cover letter attached', `${letter.name || letter.companyName} is ready to send.`);
+  };
+
+  const loadDevResume = async () => {
+    if (!user?.uid) return;
+    setIsLoadingDevResume(true);
+    try {
+      const response = await fetch(`/api/integrations/devresume/resume?userId=${encodeURIComponent(user.uid)}`, { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok || !data.resume?.data) throw new Error(data.error || 'DevResume resume is unavailable.');
+      setAttachments(previous => ({
+        ...previous,
+        cv: base64ToFile(data.resume.data, data.resume.fileName, data.resume.mimeType),
+      }));
+      setIsCvAutoLoaded(false);
+      setDevResumeUpdatedAt(data.resume.lastModified || null);
+      showToast('success', 'DevResume resume loaded', data.resume.lastModified ? `Updated ${new Date(data.resume.lastModified).toLocaleString()}` : undefined);
+    } catch (error) {
+      showToast('error', 'Could not load DevResume resume', error instanceof Error ? error.message : undefined);
+    } finally {
+      setIsLoadingDevResume(false);
+    }
   };
 
   // Load the CV file tagged to a resume profile (if any) and drop it
@@ -1376,6 +1400,38 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 </select>
               </Field>
             )}
+
+            <Field label="CV Source" icon={<FileText className="h-3.5 w-3.5 text-primary" />}>
+              <div className="space-y-2">
+                <select
+                  className="form-select"
+                  value={cvSource}
+                  onChange={event => {
+                    const source = event.target.value as 'profile' | 'devresume';
+                    setCvSource(source);
+                    if (source === 'profile') {
+                      setDevResumeUpdatedAt(null);
+                      applyCvForProfile(selectedProfileId);
+                    } else {
+                      void loadDevResume();
+                    }
+                  }}
+                >
+                  <option value="profile">JobMail Resume Profile CV</option>
+                  <option value="devresume">DevResume Google Drive CV</option>
+                </select>
+                {cvSource === 'devresume' && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/15 bg-primary/[0.03] px-3 py-2 text-xs">
+                    <span className="text-muted-foreground">
+                      {devResumeUpdatedAt ? `Drive updated ${new Date(devResumeUpdatedAt).toLocaleString()}` : 'Latest Drive resume will be loaded for this email.'}
+                    </span>
+                    <button type="button" className="font-semibold text-primary hover:underline" onClick={() => void loadDevResume()} disabled={isLoadingDevResume}>
+                      {isLoadingDevResume ? 'Loading...' : 'Refresh from Drive'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </Field>
 
             <Field label="Send Via" icon={<Send className="h-3.5 w-3.5 text-primary" />}>
               <div className="inline-flex rounded-lg border border-border p-1">

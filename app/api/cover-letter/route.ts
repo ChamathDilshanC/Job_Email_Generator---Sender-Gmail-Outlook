@@ -30,10 +30,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { userId, profileId, companyName, position, jobDescription, content } = body;
-    if (!userId || !profileId || !companyName?.trim() || !position?.trim() || !jobDescription?.trim() || !content?.trim()) {
-      return NextResponse.json({ error: 'Incomplete cover letter.' }, { status: 400 });
+    if (!userId || !profileId || !companyName?.trim() || !position?.trim() || !content?.trim()) {
+      return NextResponse.json({ error: 'Resume profile, company, position, and content are required.' }, { status: 400 });
     }
-    if (jobDescription.length > MAX_TEXT || content.length > MAX_TEXT) return NextResponse.json({ error: 'Cover letter is too large.' }, { status: 400 });
+    if ((jobDescription || '').length > MAX_TEXT || content.length > MAX_TEXT) return NextResponse.json({ error: 'Cover letter is too large.' }, { status: 400 });
     const client = await clientPromise;
     const db = client.db('job_email_generator');
     const collection = db.collection<Record<string, unknown> & { _id: string }>(collectionName);
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const document = {
       userId, profileId, profileName: body.profileName || '', name: body.name?.trim() || `${companyName.trim()} - ${position.trim()}`,
       companyName: companyName.trim(), position: position.trim(),
-      jobUrl: body.jobUrl?.trim() || '', jobDescription: jobDescription.trim(),
+      jobUrl: body.jobUrl?.trim() || '', jobDescription: jobDescription?.trim() || '',
       length: body.length, tone: body.tone, additionalInstructions: body.additionalInstructions?.trim() || '',
       hiringManagerName: body.hiringManagerName?.trim() || '',
       hiringManagerTitle: body.hiringManagerTitle?.trim() || '',

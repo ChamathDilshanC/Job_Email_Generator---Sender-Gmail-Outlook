@@ -14,7 +14,6 @@ import { saveEmailToHistory } from '@/lib/emailHistoryService';
 import { buildEmailPreview } from '@/lib/emailPreview';
 import { generateEmail, type EmailData } from '@/lib/emailTemplate';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
-import { clearDraft, loadDraft, saveDraft } from '@/lib/formDraft';
 import {
   base64ToFile,
   fileToBase64,
@@ -112,11 +111,18 @@ interface SendEmailDraft {
   scheduledFor: string | null;
   editedBodyHtml: string | null;
   isEditingBody: boolean;
+  emailGenerationMode: 'template' | 'ai';
+  jobDescription: string;
+  aiTone: string;
+  aiLength: string;
+  aiInstructions: string;
 }
 
 function sendEmailDraftKey(uid?: string | null): string {
   return `sendEmailDraft:${uid || 'guest'}`;
 }
+
+const inMemorySendEmailDrafts = new Map<string, SendEmailDraft>();
 
 interface SendEmailProps {
   onNavigate?: (page: PageType) => void;
@@ -289,7 +295,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     if (draftRestoredRef.current) return;
     draftRestoredRef.current = true;
 
-    const draft = loadDraft<SendEmailDraft>(sendEmailDraftKey(user?.uid));
+    const draft = inMemorySendEmailDrafts.get(sendEmailDraftKey(user?.uid));
     if (!draft) return;
 
     setFormData(draft.formData);
@@ -303,13 +309,19 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setScheduledFor(draft.scheduledFor ? new Date(draft.scheduledFor) : null);
     setEditedBodyHtml(draft.editedBodyHtml);
     setIsEditingBody(draft.isEditingBody);
+    setEmailGenerationMode(draft.emailGenerationMode);
+    setJobDescription(draft.jobDescription);
+    setAiTone(draft.aiTone);
+    setAiLength(draft.aiLength);
+    setAiInstructions(draft.aiInstructions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
-  // Mirror the in-progress draft to localStorage on every change, so
-  // navigating to another page and back restores exactly what was typed.
+  // Keep the draft in memory so sidebar navigation preserves it, while a full
+  // browser refresh starts with a clean compose form.
   useEffect(() => {
-    saveDraft<SendEmailDraft>(sendEmailDraftKey(user?.uid), {
+    if (!draftRestoredRef.current) return;
+    inMemorySendEmailDrafts.set(sendEmailDraftKey(user?.uid), {
       formData,
       additionalDetails,
       showAdditionalDetails,
@@ -321,6 +333,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       scheduledFor: scheduledFor ? scheduledFor.toISOString() : null,
       editedBodyHtml,
       isEditingBody,
+      emailGenerationMode,
+      jobDescription,
+      aiTone,
+      aiLength,
+      aiInstructions,
     });
   }, [
     formData,
@@ -334,6 +351,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     scheduledFor,
     editedBodyHtml,
     isEditingBody,
+    emailGenerationMode,
+    jobDescription,
+    aiTone,
+    aiLength,
+    aiInstructions,
     user?.uid,
   ]);
 
@@ -761,7 +783,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
         // The draft is now safely sent - nothing left to protect against a
         // tab switch, so drop it instead of resurrecting a "sent" email.
-        clearDraft(sendEmailDraftKey(user?.uid));
+        inMemorySendEmailDrafts.delete(sendEmailDraftKey(user?.uid));
 
         showToast(
           'success',
@@ -862,7 +884,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       if (result.success) {
         // The draft is now safely scheduled server-side - nothing left to
         // protect against a tab switch.
-        clearDraft(sendEmailDraftKey(user?.uid));
+        inMemorySendEmailDrafts.delete(sendEmailDraftKey(user?.uid));
 
         showToast(
           'success',
@@ -923,6 +945,25 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       ...prev,
       companyName: '',
     }));
+  };
+
+  const handleClearDetails = () => {
+    setFormData({ companyName: '', position: '', recipientEmail: '' });
+    setAdditionalDetails(EMPTY_ADDITIONAL_DETAILS);
+    setShowAdditionalDetails(false);
+    setJobUrl('');
+    setJobDescription('');
+    setAiInstructions('');
+    setAiGeneratedEmail(null);
+    setEditedBodyHtml(null);
+    setIsEditingBody(false);
+    setEmailGenerationMode('template');
+    setSendMode('now');
+    setScheduledFor(null);
+    setRequireCoverLetter(false);
+    setAttachments(previous => ({ ...previous, coverLetter: null }));
+    inMemorySendEmailDrafts.delete(sendEmailDraftKey(user?.uid));
+    showToast('success', 'Details cleared', 'Your application details are ready for a new email.');
   };
 
   const isFormValid =
@@ -1135,6 +1176,16 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     Copied!
                   </span>
                 )}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-900 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                onClick={handleClearDetails}
+                title="Clear application details"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Clear details</span>
               </motion.button>
               <motion.button
                 whileHover={{ scale: canSendEmail ? 1.03 : 1 }}

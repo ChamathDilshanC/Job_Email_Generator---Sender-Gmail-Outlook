@@ -48,9 +48,9 @@ export interface CoverLetterInput {
 
 export function getLengthGuidance(length: CoverLetterLength): string {
   return {
-    short: 'Target approximately 150-220 words.',
-    standard: 'Target approximately 250-350 words.',
-    detailed: 'Target approximately 400-550 words.',
+    short: 'MANDATORY LENGTH: 150-220 words for the letter body. Use 3 concise paragraphs and do not exceed 220 words.',
+    standard: 'MANDATORY LENGTH: 250-350 words for the letter body. Use 4 balanced paragraphs and do not fall below 250 words.',
+    detailed: 'MANDATORY LENGTH: 400-550 words for the letter body. Use 5-6 developed paragraphs and do not fall below 400 words.',
   }[length];
 }
 

@@ -36,6 +36,7 @@ import {
   TemplateType,
 } from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
+import type { CoverLetter } from '@/lib/coverLetter';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -252,6 +253,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     cv: File | null;
     coverLetter: File | null;
   }>({ cv: null, coverLetter: null });
+  const [savedCoverLetters, setSavedCoverLetters] = useState<CoverLetter[]>([]);
+  const [selectedSavedCoverLetter, setSelectedSavedCoverLetter] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [requireCoverLetter, setRequireCoverLetter] = useState(false);
   // On by default per user preference - knowing whether a recruiter opened
@@ -376,6 +379,29 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     aiInstructions,
     user?.uid,
   ]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    fetch(`/api/cover-letter?userId=${encodeURIComponent(user.uid)}`)
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('Could not load cover letters')))
+      .then(data => setSavedCoverLetters(data.coverLetters || []))
+      .catch(() => setSavedCoverLetters([]));
+  }, [user?.uid]);
+
+  const attachSavedCoverLetter = (id: string) => {
+    setSelectedSavedCoverLetter(id);
+    const letter = savedCoverLetters.find(item => item.id === id);
+    if (!letter) {
+      setAttachments(previous => ({ ...previous, coverLetter: null }));
+      return;
+    }
+    const fileName = `${(letter.name || `${letter.companyName}_${letter.position}`).replace(/[^\w.-]+/g, '_')}.txt`;
+    setAttachments(previous => ({
+      ...previous,
+      coverLetter: new File([letter.content], fileName, { type: 'text/plain' }),
+    }));
+    showToast('success', 'Saved cover letter attached', `${letter.name || letter.companyName} is ready to send.`);
+  };
 
   // Load the CV file tagged to a resume profile (if any) and drop it
   // straight into the attachment slot, so picking a profile is enough to
@@ -1510,6 +1536,33 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 onCheckedChange={setRequireCoverLetter}
                 aria-label="Require Cover Letter"
               />
+            </div>
+            <div className="mt-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Attach a saved cover letter</p>
+                  <p className="text-xs text-muted-foreground">Select one generated in Cover Letter Builder.</p>
+                </div>
+              </div>
+              <select
+                className="form-select w-full"
+                value={selectedSavedCoverLetter}
+                onChange={event => attachSavedCoverLetter(event.target.value)}
+                aria-label="Select a saved cover letter"
+              >
+                <option value="">Choose a saved cover letter...</option>
+                {savedCoverLetters.map(letter => (
+                  <option key={letter.id} value={letter.id}>
+                    {letter.name || `${letter.companyName} - ${letter.position}`} · {new Date(letter.updatedAt).toLocaleDateString()}
+                  </option>
+                ))}
+              </select>
+              {selectedSavedCoverLetter && attachments.coverLetter && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Saved cover letter selected
+                </p>
+              )}
             </div>
           </div>
 

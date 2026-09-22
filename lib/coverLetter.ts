@@ -11,6 +11,7 @@ export interface CoverLetter {
   id: string;
   profileId: string;
   profileName?: string;
+  name?: string;
   companyName: string;
   position: string;
   jobUrl?: string;

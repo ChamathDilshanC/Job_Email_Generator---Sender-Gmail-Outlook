@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const id = body.id || randomUUID();
     const existing = await collection.findOne({ _id: id, userId });
     const document = {
-      userId, profileId, profileName: body.profileName || '',
+      userId, profileId, profileName: body.profileName || '', name: body.name?.trim() || `${companyName.trim()} - ${position.trim()}`,
       companyName: companyName.trim(), position: position.trim(),
       jobUrl: body.jobUrl?.trim() || '', jobDescription: jobDescription.trim(),
       length: body.length, tone: body.tone, additionalInstructions: body.additionalInstructions?.trim() || '',

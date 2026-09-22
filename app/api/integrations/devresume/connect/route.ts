@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const user = await getGoogleUser(request);
   if (!user) return NextResponse.json({ error: "Sign in with Google first" }, { status: 401 });
   const { code } = await request.json().catch(() => ({}));
-  if (typeof code !== "string" || code.length < 20) {
+  if (typeof code !== "string" || (code.length < 20 && !/^\d{6}$/.test(code.trim()))) {
     return NextResponse.json({ error: "A valid DevResume code is required" }, { status: 400 });
   }
   const devResumeUrl = process.env.DEVRESUME_APP_URL;

@@ -19,7 +19,7 @@ function htmlEscape(value: string): string {
 export function exportCoverLetterPdf(letter: CoverLetter, resume: ResumeData | null) {
   const name = resume?.personalInfo.fullName || 'Applicant';
   const contact = [resume?.personalInfo.email, resume?.personalInfo.phone, resume?.personalInfo.location].filter(Boolean).join(' · ');
-  const paragraphs = stripLeadingGreeting(letter.content).split(/\n\s*\n/).map(p => `<p>${htmlEscape(p).replace(/\n/g, '<br>')}</p>`).join('');
+  const paragraphs = stripLeadingGreeting(letter.content).split(/\n\s*\n/).map(p => `<p class="body-copy">${htmlEscape(p).replace(/\n/g, '<br>')}</p>`).join('');
   const printWindow = window.open('', '_blank');
   if (!printWindow) throw new Error('Please allow popups to export the PDF.');
   const theme = letter.template || 'minimal';
@@ -34,7 +34,7 @@ export function exportCoverLetterPdf(letter: CoverLetter, resume: ResumeData | n
           : theme === 'classic'
             ? `body{font-family:Georgia,serif;color:#303030}header{border-bottom:1px solid #c9b18b;padding-bottom:18px}h1{font-size:19pt}.accent{color:#8a5a16}`
             : `body{font-family:Arial;color:#303030}header{border-bottom:1px solid #cfcfcf;padding-bottom:18px}h1{letter-spacing:3px;text-transform:uppercase}.accent{color:#555}`;
-  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title></title><style>@page{size:A4;margin:0}html,body{width:210mm;height:297mm;margin:0;overflow:hidden}body{box-sizing:border-box;padding:12mm;font-size:9pt;line-height:1.28;max-height:297mm}header{margin-bottom:12px}h1{font-size:17pt;margin:0 0 3pt}.muted{color:#526071;font-size:8.5pt}.date{margin:10pt 0}.date,header,body>div,p{break-inside:avoid}p{margin:0 0 6pt}.closing{margin-top:10pt}.accent{font-weight:bold}</style><style>${styles}</style></head><body>${letter.includeContactHeader ? `<header><h1>${htmlEscape(name)}</h1><div class="muted">${htmlEscape(contact)}</div><div class="accent">${htmlEscape(letter.position)}</div></header>` : ''}<div class="date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div><div>${htmlEscape(letter.hiringManagerName || 'Hiring Manager')}<br>${htmlEscape(letter.hiringManagerTitle || '')}<br>${htmlEscape(letter.companyName)}<br>${htmlEscape(letter.companyAddress || '')}</div><p>Dear ${htmlEscape(letter.hiringManagerName || 'Hiring Manager')},</p>${paragraphs}<p class="closing">Sincerely,<br>${htmlEscape(name)}</p></body></html>`);
+  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title></title><style>@page{size:A4;margin:0}html,body{width:210mm;height:297mm;margin:0;overflow:hidden}body{box-sizing:border-box;padding:12mm;font-size:9pt;line-height:1.28;max-height:297mm}header{margin-bottom:12px}h1{font-size:17pt;margin:0 0 3pt}.muted{color:#526071;font-size:8.5pt}.date{margin:10pt 0}.date,header,body>div,p{break-inside:avoid}p{margin:0 0 6pt}.body-copy{text-align:justify}.closing{margin-top:10pt}.accent{font-weight:bold}</style><style>${styles}</style></head><body>${letter.includeContactHeader ? `<header><h1>${htmlEscape(name)}</h1><div class="muted">${htmlEscape(contact)}</div><div class="accent">${htmlEscape(letter.position)}</div></header>` : ''}<div class="date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div><div>${htmlEscape(letter.hiringManagerName || 'Hiring Manager')}<br>${htmlEscape(letter.hiringManagerTitle || '')}<br>${htmlEscape(letter.companyName)}<br>${htmlEscape(letter.companyAddress || '')}</div><p>Dear ${htmlEscape(letter.hiringManagerName || 'Hiring Manager')},</p>${paragraphs}<p class="closing">Sincerely,<br>${htmlEscape(name)}</p></body></html>`);
   printWindow.document.close();
   printWindow.onload = () => {
     printWindow.document.title = '';
@@ -52,7 +52,7 @@ export async function exportCoverLetterDocx(letter: CoverLetter, resume: ResumeD
     new Paragraph({ text: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), spacing: { before: 360, after: 360 } }),
     new Paragraph({ children: [new TextRun(letter.hiringManagerName || 'Hiring Manager'), new TextRun({ text: `\n${letter.hiringManagerTitle || ''}\n${letter.companyName}\n${letter.companyAddress || ''}` })] }),
     new Paragraph({ text: `Dear ${letter.hiringManagerName || 'Hiring Manager'},`, spacing: { before: 360, after: 240 } }),
-    ...stripLeadingGreeting(letter.content).split(/\n\s*\n/).map(text => new Paragraph({ text, spacing: { after: 240 }, style: 'Normal' })),
+    ...stripLeadingGreeting(letter.content).split(/\n\s*\n/).map(text => new Paragraph({ text, alignment: 'both', spacing: { after: 240 }, style: 'Normal' })),
     new Paragraph({ text: `Sincerely,\n${name}`, spacing: { before: 240 } }),
   ];
   const document = new Document({ sections: [{ properties: {}, children }], styles: { default: { document: { run: { font: 'Arial', size: 22 } } } } });

@@ -1401,38 +1401,6 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               </Field>
             )}
 
-            <Field label="CV Source" icon={<FileText className="h-3.5 w-3.5 text-primary" />}>
-              <div className="space-y-2">
-                <select
-                  className="form-select"
-                  value={cvSource}
-                  onChange={event => {
-                    const source = event.target.value as 'profile' | 'devresume';
-                    setCvSource(source);
-                    if (source === 'profile') {
-                      setDevResumeUpdatedAt(null);
-                      applyCvForProfile(selectedProfileId);
-                    } else {
-                      void loadDevResume();
-                    }
-                  }}
-                >
-                  <option value="profile">JobMail Resume Profile CV</option>
-                  <option value="devresume">DevResume Google Drive CV</option>
-                </select>
-                {cvSource === 'devresume' && (
-                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/15 bg-primary/[0.03] px-3 py-2 text-xs">
-                    <span className="text-muted-foreground">
-                      {devResumeUpdatedAt ? `Drive updated ${new Date(devResumeUpdatedAt).toLocaleString()}` : 'Latest Drive resume will be loaded for this email.'}
-                    </span>
-                    <button type="button" className="font-semibold text-primary hover:underline" onClick={() => void loadDevResume()} disabled={isLoadingDevResume}>
-                      {isLoadingDevResume ? 'Loading...' : 'Refresh from Drive'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </Field>
-
             <Field label="Send Via" icon={<Send className="h-3.5 w-3.5 text-primary" />}>
               <div className="inline-flex rounded-lg border border-border p-1">
                 {(['gmail', 'outlook'] as const).map(client => (
@@ -1795,6 +1763,42 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
           {/* File Upload Sections */}
           <div className="mt-6 px-6 pb-6">
+            <div className="mb-4 rounded-xl border border-primary/20 bg-primary/[0.03] p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+                <FileText className="h-4 w-4 text-primary" />
+                CV / Resume source
+              </div>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Choose your saved JobMail CV or the latest CV from your connected DevResume Google Drive.
+              </p>
+              <select
+                className="form-select"
+                value={cvSource}
+                onChange={event => {
+                  const source = event.target.value as 'profile' | 'devresume';
+                  setCvSource(source);
+                  if (source === 'profile') {
+                    setDevResumeUpdatedAt(null);
+                    applyCvForProfile(selectedProfileId);
+                  } else {
+                    void loadDevResume();
+                  }
+                }}
+              >
+                <option value="profile">JobMail Resume Profile CV</option>
+                <option value="devresume">DevResume Google Drive CV</option>
+              </select>
+              {cvSource === 'devresume' && (
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/15 bg-background px-3 py-2 text-xs">
+                  <span className="text-muted-foreground">
+                    {devResumeUpdatedAt ? `Drive updated ${new Date(devResumeUpdatedAt).toLocaleString()}` : 'Latest Drive resume will be loaded for this email.'}
+                  </span>
+                  <button type="button" className="font-semibold text-primary hover:underline" onClick={() => void loadDevResume()} disabled={isLoadingDevResume}>
+                    {isLoadingDevResume ? 'Loading...' : 'Refresh from Drive'}
+                  </button>
+                </div>
+              )}
+            </div>
             {isCvAutoLoaded && attachments.cv && (
               <p className="mb-3 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">

@@ -55,7 +55,6 @@ export function Dashboard() {
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
-            <ThemeToggle />
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold tracking-tight">
                 JobMail
@@ -64,6 +63,12 @@ export function Dashboard() {
                 Professional Job Applications
               </span>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary sm:inline-flex">
+              v1.5.0
+            </span>
+            <ThemeToggle />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto min-h-0">

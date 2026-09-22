@@ -2,6 +2,7 @@ import type { ElementType } from 'react';
 
 export type PageType =
   | 'send-email'
+  | 'cover-letter'
   | 'templates'
   | 'resume'
   | 'history'

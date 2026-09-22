@@ -44,7 +44,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const TOKEN_KEY = 'google_oauth_token';
 const TOKEN_TIMESTAMP_KEY = 'google_oauth_token_timestamp';
 const TOKEN_EXPIRES_IN_KEY = 'google_oauth_token_expires_in';
+const ACCESS_TOKEN_TIMESTAMP_KEY = 'google_oauth_access_token_timestamp';
 const USER_KEY = 'google_oauth_user';
+// Keep the signed-in browser session for 48 hours. Google access tokens are
+// usually shorter-lived, so this controls session persistence rather than
+// extending Google's token validity.
+const SESSION_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -76,12 +81,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const storedToken = localStorage.getItem(TOKEN_KEY);
       const tokenTimestamp = localStorage.getItem(TOKEN_TIMESTAMP_KEY);
-      const expiresIn = localStorage.getItem(TOKEN_EXPIRES_IN_KEY);
       const storedUser = localStorage.getItem(USER_KEY);
 
-      const maxAgeMs = (expiresIn ? parseInt(expiresIn) : 3600) * 1000;
       const isTokenExpired = tokenTimestamp
-        ? Date.now() - parseInt(tokenTimestamp) > maxAgeMs
+        ? Date.now() - parseInt(tokenTimestamp) > SESSION_MAX_AGE_MS
         : true;
 
       if (storedToken && storedUser && !isTokenExpired) {
@@ -100,6 +103,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(TOKEN_TIMESTAMP_KEY);
         localStorage.removeItem(TOKEN_EXPIRES_IN_KEY);
+        localStorage.removeItem(ACCESS_TOKEN_TIMESTAMP_KEY);
         localStorage.removeItem(USER_KEY);
         setAuthState(prev => ({ ...prev, isLoading: false }));
       }
@@ -164,7 +168,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         localStorage.setItem(TOKEN_KEY, accessToken);
         localStorage.setItem(TOKEN_TIMESTAMP_KEY, Date.now().toString());
-        localStorage.setItem(TOKEN_EXPIRES_IN_KEY, String(expiresIn || 3600));
+        localStorage.setItem(ACCESS_TOKEN_TIMESTAMP_KEY, Date.now().toString());
+        // Persist the browser session for 48 hours. Keep the provider's
+        // expiry separately for consumers that need the original value.
+        localStorage.setItem(
+          TOKEN_EXPIRES_IN_KEY,
+          String(expiresIn || 3600)
+        );
         localStorage.setItem(USER_KEY, JSON.stringify(authUser));
 
         setAuthState({
@@ -254,11 +264,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // The implicit OAuth flow used here doesn't support silent token refresh -
-  // once the access token expires the user needs to sign in again.
   const refreshToken = async () => {
-    return authState.accessToken;
+    const userId = authState.user?.uid;
+    if (!userId) return null;
+
+    try {
+      const response = await fetch('/api/auth/google/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (!response.ok) return null;
+
+      const { accessToken, expiresIn } = await response.json();
+      if (!accessToken) return null;
+
+      localStorage.setItem(TOKEN_KEY, accessToken);
+      localStorage.setItem(
+        ACCESS_TOKEN_TIMESTAMP_KEY,
+        Date.now().toString()
+      );
+      localStorage.setItem(TOKEN_EXPIRES_IN_KEY, String(expiresIn || 3600));
+      setAuthState(previous => ({ ...previous, accessToken }));
+      return accessToken;
+    } catch (error) {
+      console.error('Google access token refresh failed:', error);
+      return null;
+    }
   };
+
+  // Refresh the short-lived Google access token while preserving the
+  // original 48-hour browser session window.
+  useEffect(() => {
+    if (!authState.isAuthenticated || !authState.user) return;
+
+    const refreshIfNeeded = () => {
+      const issuedAt = Number(
+        localStorage.getItem(ACCESS_TOKEN_TIMESTAMP_KEY) || 0
+      );
+      const expiresIn = Number(
+        localStorage.getItem(TOKEN_EXPIRES_IN_KEY) || 3600
+      );
+      if (Date.now() - issuedAt >= Math.max(60, expiresIn - 300) * 1000) {
+        void refreshToken();
+      }
+    };
+
+    refreshIfNeeded();
+    const interval = window.setInterval(refreshIfNeeded, 60_000);
+    window.addEventListener('focus', refreshIfNeeded);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshIfNeeded);
+    };
+  }, [authState.isAuthenticated, authState.user]);
 
   const value: AuthContextType = {
     ...authState,

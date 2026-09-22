@@ -5,7 +5,7 @@ import { NavHeader } from '@/components/sidebar-01/nav-header';
 import { NavMain } from '@/components/sidebar-01/nav-main';
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { BookOpen, CalendarClock, Clock, FileCode, FileText, Home, Mail, User } from 'lucide-react';
+import { CalendarClock, Clock, FileText, Home, Mail, ScrollText, User } from 'lucide-react';
 import type { NavItem, PageType, SidebarData } from './types';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -47,7 +47,14 @@ export function AppSidebar({
       title: 'Email Templates',
       url: '#',
       icon: Mail,
+    },
+    {
+      id: 'cover-letter',
+      title: 'Cover Letter',
+      url: '#',
+      icon: ScrollText,
       isActive: false,
+      isLocked: !isAuthenticated,
     },
     {
       id: 'history',

@@ -40,16 +40,23 @@ import { showToast } from '@/lib/toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
+  BriefcaseBusiness,
+  CalendarClock,
   CheckCircle2,
   ChevronDown,
   Copy,
+  FileText,
+  Link2,
   LogOut,
   Mail,
   Paperclip,
   Pencil,
   Send,
+  UserRound,
+  WandSparkles,
   Trash2,
   XCircle,
+  Sparkles,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -118,6 +125,7 @@ interface SendEmailProps {
 function Field({
   label,
   required,
+  icon,
   action,
   hint,
   className = '',
@@ -125,6 +133,7 @@ function Field({
 }: {
   label: string;
   required?: boolean;
+  icon?: ReactNode;
   action?: ReactNode;
   hint?: ReactNode;
   className?: string;
@@ -133,7 +142,8 @@ function Field({
   return (
     <div className={className}>
       <div className="mb-1.5 flex min-h-6 items-center justify-between gap-2">
-        <label className="text-xs font-medium text-muted-foreground">
+        <label className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          {icon}
           {label}
           {required && <RequiredStar />}
         </label>
@@ -142,6 +152,61 @@ function Field({
       {children}
       {hint}
     </div>
+  );
+}
+
+function FlowStep({
+  number,
+  icon,
+  title,
+  description,
+  active = false,
+}: {
+  number: string;
+  icon: ReactNode;
+  title: string;
+  description: string;
+  active?: boolean;
+}) {
+  return (
+    <div className={`flex min-w-0 items-center gap-2.5 ${active ? 'text-foreground' : 'text-muted-foreground'}`}>
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background'}`}>
+        {active ? icon : number}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold">{title}</p>
+        <p className="hidden truncate text-[11px] sm:block">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function AiField({
+  label,
+  value,
+  onChange,
+  options,
+  multiline = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options?: string[];
+  multiline?: boolean;
+}) {
+  return (
+    <label className="block text-xs font-medium text-muted-foreground">
+      {label}
+      {options ? (
+        <select className="form-select mt-1.5" value={value} onChange={e => onChange(e.target.value)}>
+          {options.map(option => <option key={option} value={option}>{option[0].toUpperCase() + option.slice(1)}</option>)}
+        </select>
+      ) : multiline ? (
+        <textarea className="form-textarea mt-1.5 min-h-[110px] w-full" value={value} onChange={e => onChange(e.target.value)} />
+      ) : (
+        <input className="form-input mt-1.5 w-full" value={value} onChange={e => onChange(e.target.value)} />
+      )}
+    </label>
   );
 }
 
@@ -174,6 +239,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>(
     TemplateType.PROFESSIONAL_INTRO
   );
+  const [emailGenerationMode, setEmailGenerationMode] = useState<'template' | 'ai'>('template');
+  const [jobDescription, setJobDescription] = useState('');
+  const [aiTone, setAiTone] = useState('professional');
+  const [aiLength, setAiLength] = useState('standard');
+  const [aiInstructions, setAiInstructions] = useState('');
+  const [aiGeneratedEmail, setAiGeneratedEmail] = useState<{ subject: string; bodyHtml: string; body: string } | null>(null);
+  const [isGeneratingAiEmail, setIsGeneratingAiEmail] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [isLoadingResume, setIsLoadingResume] = useState(false);
   const [resumeProfiles, setResumeProfiles] = useState<ResumeProfileSummary[]>(
@@ -404,6 +476,43 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       );
     } finally {
       setIsParsingJobUrl(false);
+    }
+  };
+
+  const handleGenerateAiEmail = async () => {
+    if (!user?.uid || !selectedProfileId || !resumeData || !formData.companyName || !formData.position || !jobDescription.trim()) {
+      showToast('warning', 'Missing Information', 'Add a resume, company, position, and job description first.');
+      return;
+    }
+    setIsGeneratingAiEmail(true);
+    try {
+      const response = await fetch('/api/email/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          profileId: selectedProfileId,
+          companyName: formData.companyName,
+          position: formData.position,
+          jobDescription,
+          tone: aiTone,
+          length: aiLength,
+          additionalInstructions: aiInstructions,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not generate email.');
+      const bodyHtml = result.body
+        .split(/\n\s*\n/)
+        .map((paragraph: string) => `<p>${paragraph.replace(/[&<>"']/g, (char: string) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] || char)}</p>`)
+        .join('');
+      setAiGeneratedEmail({ subject: result.subject, bodyHtml, body: result.body });
+      setEditedBodyHtml(null);
+      showToast('success', 'AI email generated', 'Review the email and edit it before sending.');
+    } catch (error) {
+      showToast('error', 'AI generation failed', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setIsGeneratingAiEmail(false);
     }
   };
 
@@ -838,7 +947,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const canSendEmail = isFormValid && isFileUploadValid() && !!resumeData;
 
   // Generate email preview
-  const generatedEmail = isFormValid
+  const templateEmail = isFormValid
     ? resumeData
       ? generateEmailFromTemplate(selectedTemplate, resumeData, {
           companyName: formData.companyName,
@@ -848,6 +957,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         })
       : generateEmail(formData)
     : null;
+  const generatedEmail = emailGenerationMode === 'ai' && aiGeneratedEmail
+    ? aiGeneratedEmail
+    : templateEmail;
 
   // The actual body that gets edited/sent: the user's manual Quill edits
   // once they've made any, otherwise whatever the template generator
@@ -947,9 +1059,19 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
           {/* Header */}
           <div className="flex flex-col gap-4 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-foreground">
-              Application Details
-            </h2>
+            <div>
+              <div className="mb-1 flex items-center gap-2">
+                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                  <Mail className="h-4 w-4" />
+                </div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Application Details
+                </h2>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Add the job details, personalize your message, and send when ready.
+              </p>
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               {isAuthenticated && userEmail ? (
                 <div className="flex items-center gap-2">
@@ -1033,15 +1155,27 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </div>
           </div>
 
+          <div className="border-b border-border bg-muted/20 px-6 py-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              <FlowStep number="1" icon={<BriefcaseBusiness className="h-4 w-4" />} title="Job details" description="Company and role" active={Boolean(formData.companyName && formData.position)} />
+              <FlowStep number="2" icon={<UserRound className="h-4 w-4" />} title="Recipient" description="Where to send" active={Boolean(formData.recipientEmail)} />
+              <FlowStep number="3" icon={<WandSparkles className="h-4 w-4" />} title="Personalize" description="Template or AI" active={Boolean(resumeData)} />
+              <FlowStep number="4" icon={<Send className="h-4 w-4" />} title="Review & send" description="Ready to deliver" active={Boolean(canSendEmail)} />
+            </div>
+          </div>
+
           {/* Auto-fill from Job URL */}
-          <div className="px-6 pt-6">
-            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-              Paste Job URL (optional)
-            </label>
-            <div className="flex gap-2">
+          <div className="mx-6 mt-6 rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <Link2 className="h-4 w-4 text-primary" />
+              <label className="text-xs font-semibold text-foreground">
+                Import a job posting <span className="font-normal text-muted-foreground">(optional)</span>
+              </label>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="url"
-                className="form-input flex-1"
+                className="form-input flex-1 bg-background"
                 placeholder="e.g., https://boards.greenhouse.io/company/jobs/12345"
                 value={jobUrl}
                 onChange={e => setJobUrl(e.target.value)}
@@ -1050,22 +1184,25 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 type="button"
                 onClick={handleAutoFillFromUrl}
                 disabled={!jobUrl.trim() || isParsingJobUrl}
-                className="whitespace-nowrap rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isParsingJobUrl ? 'Reading…' : 'Auto-fill'}
+                <WandSparkles className="h-4 w-4" />
+                {isParsingJobUrl ? 'Reading…' : 'Auto-fill details'}
               </button>
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <FileText className="h-3.5 w-3.5 shrink-0" />
               Works best on Greenhouse/Lever/Workday and similar job boards.
               LinkedIn&apos;s login-walled listings may not auto-fill reliably.
             </p>
           </div>
 
           {/* Fields */}
-          <div className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
             <Field
               label="Company Name"
               required
+              icon={<BriefcaseBusiness className="h-3.5 w-3.5 text-primary" />}
               action={
                 <div className="flex gap-1">
                   <button
@@ -1097,7 +1234,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               />
             </Field>
 
-            <Field label="Position" required action={requiredBadge}>
+            <Field label="Position" required icon={<FileText className="h-3.5 w-3.5 text-primary" />} action={requiredBadge}>
               <input
                 type="text"
                 name="position"
@@ -1108,7 +1245,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               />
             </Field>
 
-            <Field label="Recipient Email" required action={requiredBadge}>
+            <Field label="Recipient Email" required icon={<Mail className="h-3.5 w-3.5 text-primary" />} action={requiredBadge}>
               <input
                 type="email"
                 name="recipientEmail"
@@ -1120,7 +1257,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </Field>
 
             {resumeProfiles.length > 1 && (
-              <Field label="Resume Profile">
+              <Field label="Resume Profile" icon={<UserRound className="h-3.5 w-3.5 text-primary" />}>
                 <select
                   className="form-select"
                   value={selectedProfileId}
@@ -1136,7 +1273,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               </Field>
             )}
 
-            <Field label="Send Via">
+            <Field label="Send Via" icon={<Send className="h-3.5 w-3.5 text-primary" />}>
               <div className="inline-flex rounded-lg border border-border p-1">
                 {(['gmail', 'outlook'] as const).map(client => (
                   <button
@@ -1159,7 +1296,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </Field>
 
             {emailClient === 'gmail' && (
-              <Field label="When to Send" className="sm:col-span-2">
+              <Field label="When to Send" icon={<CalendarClock className="h-3.5 w-3.5 text-primary" />} className="sm:col-span-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="inline-flex rounded-lg border border-border p-1">
                     {(['now', 'schedule'] as const).map(mode => (
@@ -1202,6 +1339,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
             <Field
               label="Email Template"
+              icon={<WandSparkles className="h-3.5 w-3.5 text-primary" />}
               className="sm:col-span-2"
               action={
                 <span
@@ -1230,7 +1368,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 )
               }
             >
-              <select
+              <div className="mb-3 grid max-w-md grid-cols-2 rounded-xl border border-border bg-muted/30 p-1">
+                <button type="button" onClick={() => setEmailGenerationMode('template')} className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${emailGenerationMode === 'template' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><FileText className="h-4 w-4" />Template</button>
+                <button type="button" onClick={() => setEmailGenerationMode('ai')} className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${emailGenerationMode === 'ai' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><Sparkles className="h-4 w-4" />Generate with AI</button>
+              </div>
+              {emailGenerationMode === 'template' ? <select
                 className="form-select"
                 value={selectedTemplate}
                 onChange={e => {
@@ -1247,7 +1389,22 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     {template.name}
                   </option>
                 ))}
-              </select>
+              </select> : <div className="space-y-4 rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-primary/10 p-2 text-primary"><Sparkles className="h-4 w-4" /></div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Create a tailored email with AI</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">JobMail will use only facts from the selected resume profile.</p>
+                  </div>
+                </div>
+                <AiField label="Job Description" value={jobDescription} onChange={setJobDescription} multiline />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <AiField label="Tone" value={aiTone} onChange={setAiTone} options={['professional', 'confident', 'friendly', 'concise', 'enthusiastic']} />
+                  <AiField label="Length" value={aiLength} onChange={setAiLength} options={['short', 'standard', 'detailed']} />
+                </div>
+                <AiField label="Additional Instructions (optional)" value={aiInstructions} onChange={setAiInstructions} multiline />
+                <button type="button" onClick={handleGenerateAiEmail} disabled={isGeneratingAiEmail || !jobDescription.trim()} className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"><Sparkles />{isGeneratingAiEmail ? 'Generating...' : 'Generate with AI'}</button>
+              </div>}
             </Field>
           </div>
 
@@ -1309,11 +1466,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               onClick={() => setShowAdditionalDetails(v => !v)}
               className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
-              <span>
-                Additional Details{' '}
+              <span className="inline-flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <span>Additional Details{' '}
                 <span className="font-normal text-muted-foreground">
                   (optional — for outreach, referral, interview &amp; offer
                   templates)
+                </span>
                 </span>
               </span>
               <motion.span

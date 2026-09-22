@@ -18,6 +18,7 @@ import Profile from '../pages/Profile';
 import ResumeBuilder from '../pages/ResumeBuilder';
 import Scheduled from '../pages/Scheduled';
 import SendEmail from '../pages/SendEmail';
+import CoverLetter from '../pages/CoverLetter';
 
 export function Dashboard() {
   const [activePage, setActivePage] = useState<PageType>('send-email');
@@ -28,6 +29,8 @@ export function Dashboard() {
         return <SendEmail onNavigate={setActivePage} />;
       case 'templates':
         return <EmailTemplates />;
+      case 'cover-letter':
+        return <CoverLetter />;
       case 'resume':
         return <ResumeBuilder />;
       case 'history':

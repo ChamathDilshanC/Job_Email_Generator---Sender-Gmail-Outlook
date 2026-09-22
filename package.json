@@ -33,6 +33,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "docx": "^9.7.1",
     "framer-motion": "^12.23.26",
     "goey-toast": "^0.5.0",
     "googleapis": "^169.0.0",

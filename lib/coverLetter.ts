@@ -5,6 +5,7 @@ export type CoverLetterTone =
   | 'friendly'
   | 'concise'
   | 'enthusiastic';
+export type CoverLetterTemplate = 'minimal' | 'corporate' | 'editorial';
 
 export interface CoverLetter {
   id: string;
@@ -21,6 +22,7 @@ export interface CoverLetter {
   hiringManagerTitle?: string;
   companyAddress?: string;
   includeContactHeader: boolean;
+  template: CoverLetterTemplate;
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -40,6 +42,7 @@ export interface CoverLetterInput {
   hiringManagerTitle?: string;
   companyAddress?: string;
   includeContactHeader?: boolean;
+  template?: CoverLetterTemplate;
   content?: string;
 }
 

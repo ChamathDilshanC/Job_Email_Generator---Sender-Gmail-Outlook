@@ -1,5 +1,5 @@
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from 'docx';
-import type { CoverLetter } from '@/lib/coverLetter';
+import type { CoverLetter, CoverLetterTemplate } from '@/lib/coverLetter';
 import { getCoverLetterFilename } from '@/lib/coverLetter';
 import type { ResumeData } from '@/lib/resumeDataService';
 
@@ -22,7 +22,13 @@ export function exportCoverLetterPdf(letter: CoverLetter, resume: ResumeData | n
   const paragraphs = letter.content.split(/\n\s*\n/).map(p => `<p>${htmlEscape(p).replace(/\n/g, '<br>')}</p>`).join('');
   const printWindow = window.open('', '_blank');
   if (!printWindow) throw new Error('Please allow popups to export the PDF.');
-  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Cover Letter</title><style>@page{size:A4;margin:22mm}body{font-family:Arial,sans-serif;color:#172033;font-size:11pt;line-height:1.6}h1{font-size:20pt;margin:0 0 4pt}h2{font-size:11pt;margin:22pt 0 4pt}p{margin:0 0 12pt}.muted{color:#526071;font-size:10pt}.date{margin:22pt 0}.closing{margin-top:22pt}</style></head><body>${letter.includeContactHeader ? `<h1>${htmlEscape(name)}</h1><div class="muted">${htmlEscape(contact)}</div>` : ''}<div class="date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div><div>${htmlEscape(letter.hiringManagerName || 'Hiring Manager')}<br>${htmlEscape(letter.hiringManagerTitle || '')}<br>${htmlEscape(letter.companyName)}<br>${htmlEscape(letter.companyAddress || '')}</div><p>Dear ${htmlEscape(letter.hiringManagerName || 'Hiring Manager')},</p>${paragraphs}<p class="closing">Sincerely,<br>${htmlEscape(name)}</p></body></html>`);
+  const theme = letter.template || 'minimal';
+  const styles = theme === 'corporate'
+    ? `body{border-left:9px solid #1555b5;padding-left:30px;font-family:Arial;color:#26364b}header{border-bottom:2px solid #1555b5;padding-bottom:22px}h1{color:#1555b5} .accent{color:#1555b5}`
+    : theme === 'editorial'
+      ? `body{font-family:Arial;color:#252525;border-top:10px solid #d71920;padding-top:28px}header{border-bottom:1px solid #d71920;padding-bottom:22px}h1{letter-spacing:3px;text-transform:uppercase}.accent{color:#d71920}`
+      : `body{font-family:Arial;color:#303030}header{border-bottom:1px solid #cfcfcf;padding-bottom:22px}h1{letter-spacing:3px;text-transform:uppercase}.accent{color:#555}`;
+  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Cover Letter</title><style>@page{size:A4;margin:22mm}body{font-size:11pt;line-height:1.6}header{margin-bottom:28px}h1{font-size:20pt;margin:0 0 4pt}.muted{color:#526071;font-size:10pt}.date{margin:22pt 0}p{margin:0 0 12pt}.closing{margin-top:22pt}.accent{font-weight:bold}</style><style>${styles}</style></head><body>${letter.includeContactHeader ? `<header><h1>${htmlEscape(name)}</h1><div class="muted">${htmlEscape(contact)}</div><div class="accent">${htmlEscape(letter.position)}</div></header>` : ''}<div class="date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div><div>${htmlEscape(letter.hiringManagerName || 'Hiring Manager')}<br>${htmlEscape(letter.hiringManagerTitle || '')}<br>${htmlEscape(letter.companyName)}<br>${htmlEscape(letter.companyAddress || '')}</div><p>Dear ${htmlEscape(letter.hiringManagerName || 'Hiring Manager')},</p>${paragraphs}<p class="closing">Sincerely,<br>${htmlEscape(name)}</p></body></html>`);
   printWindow.document.close();
   printWindow.onload = () => { printWindow.focus(); printWindow.print(); };
 }
@@ -30,8 +36,9 @@ export function exportCoverLetterPdf(letter: CoverLetter, resume: ResumeData | n
 export async function exportCoverLetterDocx(letter: CoverLetter, resume: ResumeData | null) {
   const name = resume?.personalInfo.fullName || 'Applicant';
   const contact = [resume?.personalInfo.email, resume?.personalInfo.phone, resume?.personalInfo.location].filter(Boolean).join(' · ');
+  const accent = letter.template === 'editorial' ? 'D71920' : letter.template === 'corporate' ? '1555B5' : '555555';
   const children = [
-    ...(letter.includeContactHeader ? [new Paragraph({ children: [new TextRun({ text: name, bold: true, size: 34 })] }), new Paragraph({ children: [new TextRun({ text: contact, color: '526071' })] })] : []),
+    ...(letter.includeContactHeader ? [new Paragraph({ children: [new TextRun({ text: name, bold: true, size: 34, color: accent, allCaps: letter.template === 'editorial' })] }), new Paragraph({ children: [new TextRun({ text: `${contact}\n${letter.position}`, color: '526071' })] })] : []),
     new Paragraph({ text: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), spacing: { before: 360, after: 360 } }),
     new Paragraph({ children: [new TextRun(letter.hiringManagerName || 'Hiring Manager'), new TextRun({ text: `\n${letter.hiringManagerTitle || ''}\n${letter.companyName}\n${letter.companyAddress || ''}` })] }),
     new Paragraph({ text: `Dear ${letter.hiringManagerName || 'Hiring Manager'},`, spacing: { before: 360, after: 240 } }),

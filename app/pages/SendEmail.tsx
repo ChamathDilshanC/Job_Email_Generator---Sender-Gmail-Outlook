@@ -161,6 +161,18 @@ function Field({
   );
 }
 
+function ValidationMark({ complete }: { complete: boolean }) {
+  return complete ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+      <CheckCircle2 className="h-3 w-3" /> Complete
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+      Required
+    </span>
+  );
+}
+
 function FlowStep({
   number,
   icon,
@@ -193,24 +205,30 @@ function AiField({
   onChange,
   options,
   multiline = false,
+  required = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   options?: string[];
   multiline?: boolean;
+  required?: boolean;
 }) {
+  const complete = !required || Boolean(value.trim());
   return (
     <label className="block text-xs font-medium text-muted-foreground">
-      {label}
+      <span className="flex items-center justify-between gap-2">
+        <span>{label}{required ? ' *' : ''}</span>
+        {required && <ValidationMark complete={complete} />}
+      </span>
       {options ? (
-        <select className="form-select mt-1.5" value={value} onChange={e => onChange(e.target.value)}>
+        <select aria-invalid={required && !complete} className={`form-select mt-1.5 ${required ? (complete ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700') : ''}`} value={value} onChange={e => onChange(e.target.value)}>
           {options.map(option => <option key={option} value={option}>{option[0].toUpperCase() + option.slice(1)}</option>)}
         </select>
       ) : multiline ? (
-        <textarea className="form-textarea mt-1.5 min-h-[110px] w-full" value={value} onChange={e => onChange(e.target.value)} />
+        <textarea aria-invalid={required && !complete} className={`form-textarea mt-1.5 min-h-[110px] w-full ${required ? (complete ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700') : ''}`} value={value} onChange={e => onChange(e.target.value)} />
       ) : (
-        <input className="form-input mt-1.5 w-full" value={value} onChange={e => onChange(e.target.value)} />
+        <input aria-invalid={required && !complete} className={`form-input mt-1.5 w-full ${required ? (complete ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700') : ''}`} value={value} onChange={e => onChange(e.target.value)} />
       )}
     </label>
   );
@@ -968,6 +986,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
   const isFormValid =
     formData.companyName && formData.position && formData.recipientEmail;
+  const hasCompany = Boolean(formData.companyName.trim());
+  const hasPosition = Boolean(formData.position.trim());
+  const hasRecipient = Boolean(formData.recipientEmail.trim());
+  const hasAiJobDescription = emailGenerationMode !== 'ai' || Boolean(jobDescription.trim());
 
   // Check if file upload requirements are met
   const isFileUploadValid = () => {
@@ -985,7 +1007,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   };
 
   // Send button should only be enabled when form is valid AND files are uploaded AND resume data exists
-  const canSendEmail = isFormValid && isFileUploadValid() && !!resumeData;
+  const canSendEmail = isFormValid && hasAiJobDescription && isFileUploadValid() && !!resumeData;
 
   // Generate email preview
   const templateEmail = isFormValid
@@ -1255,7 +1277,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               required
               icon={<BriefcaseBusiness className="h-3.5 w-3.5 text-primary" />}
               action={
-                <div className="flex gap-1">
+                <div className="flex items-center gap-1">
+                  <ValidationMark complete={hasCompany} />
                   <button
                     type="button"
                     onClick={handleEditCompany}
@@ -1278,29 +1301,32 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               <input
                 type="text"
                 name="companyName"
-                className="form-input"
+                aria-invalid={!hasCompany}
+                className={`form-input ${hasCompany ? 'border-emerald-400 bg-emerald-50/40 pr-10 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
                 placeholder="e.g., Google, Microsoft"
                 value={formData.companyName}
                 onChange={handleInputChange}
               />
             </Field>
 
-            <Field label="Position" required icon={<FileText className="h-3.5 w-3.5 text-primary" />} action={requiredBadge}>
+            <Field label="Position" required icon={<FileText className="h-3.5 w-3.5 text-primary" />} action={<ValidationMark complete={hasPosition} />}>
               <input
                 type="text"
                 name="position"
-                className="form-input"
+                aria-invalid={!hasPosition}
+                className={`form-input ${hasPosition ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
                 placeholder="e.g., Full Stack Developer"
                 value={formData.position}
                 onChange={handleInputChange}
               />
             </Field>
 
-            <Field label="Recipient Email" required icon={<Mail className="h-3.5 w-3.5 text-primary" />} action={requiredBadge}>
+            <Field label="Recipient Email" required icon={<Mail className="h-3.5 w-3.5 text-primary" />} action={<ValidationMark complete={hasRecipient} />}>
               <input
                 type="email"
                 name="recipientEmail"
-                className="form-input"
+                aria-invalid={!hasRecipient}
+                className={`form-input ${hasRecipient ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
                 placeholder="e.g., hr@company.com"
                 value={formData.recipientEmail}
                 onChange={handleInputChange}
@@ -1308,9 +1334,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </Field>
 
             {resumeProfiles.length > 1 && (
-              <Field label="Resume Profile" icon={<UserRound className="h-3.5 w-3.5 text-primary" />}>
+              <Field label="Resume Profile" icon={<UserRound className="h-3.5 w-3.5 text-primary" />} action={<ValidationMark complete={Boolean(selectedProfileId && resumeData)} />}>
                 <select
-                  className="form-select"
+                  aria-invalid={!selectedProfileId || !resumeData}
+                  className={`form-select ${selectedProfileId && resumeData ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
                   value={selectedProfileId}
                   onChange={e => handleProfileChange(e.target.value)}
                 >
@@ -1448,7 +1475,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     <p className="mt-0.5 text-xs text-muted-foreground">JobMail will use only facts from the selected resume profile.</p>
                   </div>
                 </div>
-                <AiField label="Job Description" value={jobDescription} onChange={setJobDescription} multiline />
+                <div className={`rounded-lg ${jobDescription.trim() ? 'ring-1 ring-emerald-400' : 'ring-1 ring-amber-300'}`}>
+                  <AiField label="Job Description" value={jobDescription} onChange={setJobDescription} multiline required />
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <AiField label="Tone" value={aiTone} onChange={setAiTone} options={['professional', 'confident', 'friendly', 'concise', 'enthusiastic']} />
                   <AiField label="Length" value={aiLength} onChange={setAiLength} options={['short', 'standard', 'detailed']} />
@@ -1680,8 +1709,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             />
 
             {/* Upload Status Indicators */}
-            <div className="mt-4 rounded-lg border border-blue-100 dark:border-[#818cf8]/25 bg-[#f0f7ff] dark:bg-[#818cf8]/10 p-4">
-              <div className="mb-2 text-sm font-semibold text-[#1a5490] dark:text-[#a5b4fc]">
+            <div className={`mt-4 rounded-lg border p-4 ${isFileUploadValid() ? 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20' : 'border-blue-100 bg-[#f0f7ff] dark:border-[#818cf8]/25 dark:bg-[#818cf8]/10'}`}>
+              <div className={`mb-2 flex items-center gap-2 text-sm font-semibold ${isFileUploadValid() ? 'text-emerald-700 dark:text-emerald-300' : 'text-[#1a5490] dark:text-[#a5b4fc]'}`}>
+                {isFileUploadValid() ? <CheckCircle2 className="h-4 w-4" /> : <Paperclip className="h-4 w-4" />}
                 Upload Requirements
               </div>
               <div className="flex flex-col gap-1.5">
@@ -1729,6 +1759,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   </div>
                 )}
               </div>
+              {isFileUploadValid() && (
+                <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> All required files are ready
+                </p>
+              )}
               <AnimatePresence>
                 {!canSendEmail && isFormValid && (
                   <motion.div

@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
       hiringManagerTitle: body.hiringManagerTitle?.trim() || '',
       companyAddress: body.companyAddress?.trim() || '',
       includeContactHeader: body.includeContactHeader !== false,
+      template: body.template || 'minimal',
       content: content.trim(), updatedAt: now,
       ...(existing ? {} : { _id: id, createdAt: now }),
     };

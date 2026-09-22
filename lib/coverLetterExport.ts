@@ -34,9 +34,13 @@ export function exportCoverLetterPdf(letter: CoverLetter, resume: ResumeData | n
           : theme === 'classic'
             ? `body{font-family:Georgia,serif;color:#303030}header{border-bottom:1px solid #c9b18b;padding-bottom:18px}h1{font-size:19pt}.accent{color:#8a5a16}`
             : `body{font-family:Arial;color:#303030}header{border-bottom:1px solid #cfcfcf;padding-bottom:18px}h1{letter-spacing:3px;text-transform:uppercase}.accent{color:#555}`;
-  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Cover Letter</title><style>@page{size:A4;margin:16mm}body{font-size:10pt;line-height:1.42;max-height:265mm;overflow:hidden}header{margin-bottom:18px}h1{font-size:18pt;margin:0 0 4pt}.muted{color:#526071;font-size:9pt}.date{margin:14pt 0}p{margin:0 0 8pt}.closing{margin-top:14pt}.accent{font-weight:bold}</style><style>${styles}</style></head><body>${letter.includeContactHeader ? `<header><h1>${htmlEscape(name)}</h1><div class="muted">${htmlEscape(contact)}</div><div class="accent">${htmlEscape(letter.position)}</div></header>` : ''}<div class="date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div><div>${htmlEscape(letter.hiringManagerName || 'Hiring Manager')}<br>${htmlEscape(letter.hiringManagerTitle || '')}<br>${htmlEscape(letter.companyName)}<br>${htmlEscape(letter.companyAddress || '')}</div><p>Dear ${htmlEscape(letter.hiringManagerName || 'Hiring Manager')},</p>${paragraphs}<p class="closing">Sincerely,<br>${htmlEscape(name)}</p></body></html>`);
+  printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title></title><style>@page{size:A4;margin:0}html,body{width:210mm;height:297mm;margin:0;overflow:hidden}body{box-sizing:border-box;padding:12mm;font-size:9pt;line-height:1.28;max-height:297mm}header{margin-bottom:12px}h1{font-size:17pt;margin:0 0 3pt}.muted{color:#526071;font-size:8.5pt}.date{margin:10pt 0}.date,header,body>div,p{break-inside:avoid}p{margin:0 0 6pt}.closing{margin-top:10pt}.accent{font-weight:bold}</style><style>${styles}</style></head><body>${letter.includeContactHeader ? `<header><h1>${htmlEscape(name)}</h1><div class="muted">${htmlEscape(contact)}</div><div class="accent">${htmlEscape(letter.position)}</div></header>` : ''}<div class="date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div><div>${htmlEscape(letter.hiringManagerName || 'Hiring Manager')}<br>${htmlEscape(letter.hiringManagerTitle || '')}<br>${htmlEscape(letter.companyName)}<br>${htmlEscape(letter.companyAddress || '')}</div><p>Dear ${htmlEscape(letter.hiringManagerName || 'Hiring Manager')},</p>${paragraphs}<p class="closing">Sincerely,<br>${htmlEscape(name)}</p></body></html>`);
   printWindow.document.close();
-  printWindow.onload = () => { printWindow.focus(); printWindow.print(); };
+  printWindow.onload = () => {
+    printWindow.document.title = '';
+    printWindow.focus();
+    printWindow.print();
+  };
 }
 
 export async function exportCoverLetterDocx(letter: CoverLetter, resume: ResumeData | null) {

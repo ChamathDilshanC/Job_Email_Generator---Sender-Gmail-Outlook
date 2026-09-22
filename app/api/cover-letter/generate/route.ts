@@ -11,10 +11,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { userId, profileId, companyName, position, jobDescription, length, tone } = body;
-    if (!userId || !profileId || !companyName?.trim() || !position?.trim() || !jobDescription?.trim()) {
-      return NextResponse.json({ error: 'Resume profile, company, position, and job description are required.' }, { status: 400 });
+    if (!userId || !profileId || !companyName?.trim() || !position?.trim()) {
+      return NextResponse.json({ error: 'Resume profile, company, and position are required.' }, { status: 400 });
     }
-    if (jobDescription.length > MAX_JOB_DESCRIPTION || !lengths.has(length) || !tones.has(tone)) {
+    if ((jobDescription || '').length > MAX_JOB_DESCRIPTION || !lengths.has(length) || !tones.has(tone)) {
       return NextResponse.json({ error: 'Invalid cover letter request.' }, { status: 400 });
     }
     const client = await clientPromise;

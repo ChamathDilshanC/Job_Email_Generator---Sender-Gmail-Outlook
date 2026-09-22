@@ -55,6 +55,10 @@ export function getLengthGuidance(length: CoverLetterLength): string {
   }[length];
 }
 
+export function stripLeadingGreeting(content: string): string {
+  return content.trim().replace(/^dear\s+(?:[^,\n]+|hiring manager)\s*,?\s*/i, '').trim();
+}
+
 export function sanitizeDownloadName(value: string): string {
   return value
     .normalize('NFKD')

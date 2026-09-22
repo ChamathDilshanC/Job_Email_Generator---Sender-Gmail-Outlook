@@ -1,6 +1,6 @@
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from 'docx';
 import type { CoverLetter, CoverLetterTemplate } from '@/lib/coverLetter';
-import { getCoverLetterFilename } from '@/lib/coverLetter';
+import { getCoverLetterFilename, stripLeadingGreeting } from '@/lib/coverLetter';
 import type { ResumeData } from '@/lib/resumeDataService';
 
 function download(blob: Blob, filename: string) {
@@ -19,7 +19,7 @@ function htmlEscape(value: string): string {
 export function exportCoverLetterPdf(letter: CoverLetter, resume: ResumeData | null) {
   const name = resume?.personalInfo.fullName || 'Applicant';
   const contact = [resume?.personalInfo.email, resume?.personalInfo.phone, resume?.personalInfo.location].filter(Boolean).join(' · ');
-  const paragraphs = letter.content.split(/\n\s*\n/).map(p => `<p>${htmlEscape(p).replace(/\n/g, '<br>')}</p>`).join('');
+  const paragraphs = stripLeadingGreeting(letter.content).split(/\n\s*\n/).map(p => `<p>${htmlEscape(p).replace(/\n/g, '<br>')}</p>`).join('');
   const printWindow = window.open('', '_blank');
   if (!printWindow) throw new Error('Please allow popups to export the PDF.');
   const theme = letter.template || 'minimal';
@@ -48,7 +48,7 @@ export async function exportCoverLetterDocx(letter: CoverLetter, resume: ResumeD
     new Paragraph({ text: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), spacing: { before: 360, after: 360 } }),
     new Paragraph({ children: [new TextRun(letter.hiringManagerName || 'Hiring Manager'), new TextRun({ text: `\n${letter.hiringManagerTitle || ''}\n${letter.companyName}\n${letter.companyAddress || ''}` })] }),
     new Paragraph({ text: `Dear ${letter.hiringManagerName || 'Hiring Manager'},`, spacing: { before: 360, after: 240 } }),
-    ...letter.content.split(/\n\s*\n/).map(text => new Paragraph({ text, spacing: { after: 240 }, style: 'Normal' })),
+    ...stripLeadingGreeting(letter.content).split(/\n\s*\n/).map(text => new Paragraph({ text, spacing: { after: 240 }, style: 'Normal' })),
     new Paragraph({ text: `Sincerely,\n${name}`, spacing: { before: 240 } }),
   ];
   const document = new Document({ sections: [{ properties: {}, children }], styles: { default: { document: { run: { font: 'Arial', size: 22 } } } } });

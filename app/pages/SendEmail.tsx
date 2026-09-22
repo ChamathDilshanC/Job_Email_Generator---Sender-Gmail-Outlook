@@ -1793,8 +1793,108 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="mx-6 mb-6 overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm scroll-mt-6"
+                className="mx-6 mb-6 scroll-mt-6"
               >
+                <div
+                  className={`mb-4 rounded-2xl border p-4 shadow-sm ${
+                    canSendEmail
+                      ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-900/60 dark:bg-emerald-950/20'
+                      : 'border-amber-200 bg-amber-50/70 dark:border-amber-900/60 dark:bg-amber-950/20'
+                  }`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`mt-0.5 rounded-full p-1.5 ${
+                          canSendEmail
+                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-300'
+                            : 'bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-300'
+                        }`}
+                      >
+                        {canSendEmail ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : (
+                          <AlertTriangle className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-foreground">
+                          {canSendEmail
+                            ? 'Everything is ready to send'
+                            : 'Complete the required details'}
+                        </h3>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {canSendEmail
+                            ? 'All required application details and files have been verified.'
+                            : 'Review the items below before sending your application.'}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                        canSendEmail
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                      }`}
+                    >
+                      {canSendEmail ? 'Verified' : 'Action needed'}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {[
+                      { label: 'Company name', complete: hasCompany },
+                      { label: 'Position', complete: hasPosition },
+                      { label: 'Recipient email', complete: hasRecipient },
+                      { label: 'Resume profile', complete: Boolean(resumeData) },
+                      { label: 'CV attachment', complete: Boolean(attachments.cv) },
+                      ...(requireCoverLetter
+                        ? [
+                            {
+                              label: 'Cover letter attachment',
+                              complete: Boolean(attachments.coverLetter),
+                            },
+                          ]
+                        : []),
+                      ...(emailGenerationMode === 'ai'
+                        ? [
+                            {
+                              label: 'Job description',
+                              complete: hasAiJobDescription,
+                            },
+                          ]
+                        : []),
+                    ].map(item => (
+                      <div
+                        key={item.label}
+                        className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs ${
+                          item.complete
+                            ? 'border-emerald-200/80 bg-white/70 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300'
+                            : 'border-amber-200/80 bg-white/70 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-300'
+                        }`}
+                      >
+                        <span className="font-medium">{item.label}</span>
+                        <span className="flex items-center gap-1 font-semibold">
+                          {item.complete ? (
+                            <>
+                              <CheckCircle2 className="h-4 w-4" />
+                              Done
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="h-4 w-4" />
+                              Required
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800">
                 <div className="flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-5 py-3">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
@@ -1879,6 +1979,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                       .join(', ')}
                   </div>
                 )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

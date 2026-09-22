@@ -5,7 +5,7 @@ export type CoverLetterTone =
   | 'friendly'
   | 'concise'
   | 'enthusiastic';
-export type CoverLetterTemplate = 'minimal' | 'corporate' | 'editorial';
+export type CoverLetterTemplate = 'minimal' | 'corporate' | 'editorial' | 'executive' | 'modern' | 'classic';
 
 export interface CoverLetter {
   id: string;

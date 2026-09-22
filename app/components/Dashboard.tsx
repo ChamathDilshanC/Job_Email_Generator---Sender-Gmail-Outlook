@@ -55,6 +55,7 @@ export function Dashboard() {
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
+            <ThemeToggle />
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold tracking-tight">
                 JobMail
@@ -64,7 +65,6 @@ export function Dashboard() {
               </span>
             </div>
           </div>
-          <ThemeToggle />
         </header>
         <main className="flex-1 overflow-y-auto min-h-0">
           <div className="px-4 sm:px-8 pt-4 pb-24">

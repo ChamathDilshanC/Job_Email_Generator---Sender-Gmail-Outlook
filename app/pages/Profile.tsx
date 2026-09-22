@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Download,
   Info,
+  Link2,
   LogOut,
   SettingsIcon,
   Trash2,
@@ -25,7 +26,11 @@ import {
 import { useEffect, useState } from 'react';
 
 export default function Profile() {
-  const { user, isAuthenticated, handleSignOut } = useAuth();
+  const { user, isAuthenticated, accessToken, handleSignOut } = useAuth();
+  const [devResumeCode, setDevResumeCode] = useState('');
+  const [devResumeStatus, setDevResumeStatus] = useState(false);
+  const [connectionMessage, setConnectionMessage] = useState('');
+  const [isConnecting, setIsConnecting] = useState(false);
   const [emailStats, setEmailStats] = useState({
     total: 0,
     sent: 0,
@@ -72,6 +77,35 @@ export default function Profile() {
 
     fetchStats();
   }, [isAuthenticated, user?.uid]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !accessToken) return;
+    fetch('/api/integrations/devresume/status', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }).then(response => response.json()).then(data => setDevResumeStatus(data.connected === true));
+  }, [isAuthenticated, accessToken]);
+
+  async function connectDevResume() {
+    if (!accessToken || !devResumeCode.trim()) return;
+    setIsConnecting(true);
+    setConnectionMessage('');
+    try {
+      const response = await fetch('/api/integrations/devresume/connect', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: devResumeCode.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Connection failed');
+      setDevResumeStatus(true);
+      setDevResumeCode('');
+      setConnectionMessage('DevResume is connected to this JobMail account.');
+    } catch (error) {
+      setConnectionMessage(error instanceof Error ? error.message : 'Connection failed');
+    } finally {
+      setIsConnecting(false);
+    }
+  }
 
   // Get user info from Google account
   const displayName = user?.displayName || 'User';
@@ -266,6 +300,40 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
+            </motion.div>
+
+            <motion.div
+              variants={fadeInUp}
+              className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm md:p-8"
+            >
+              <div className="mb-4 flex items-center gap-2">
+                <Link2 className="h-5 w-5 text-[#3b3be3]" />
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Connect DevResume</h2>
+              </div>
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                Generate a connection code in DevResume, then paste it here. Each account can have only one connection.
+              </p>
+              <div className={`mb-4 rounded-lg px-3 py-2 text-sm ${devResumeStatus ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400' : 'bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}>
+                {devResumeStatus ? 'Connected to DevResume' : 'Not connected'}
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  value={devResumeCode}
+                  onChange={event => setDevResumeCode(event.target.value)}
+                  placeholder="Paste your DevResume connection code"
+                  aria-label="DevResume connection code"
+                  className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 font-mono text-xs dark:border-gray-700 dark:bg-gray-800"
+                />
+                <button
+                  type="button"
+                  onClick={connectDevResume}
+                  disabled={isConnecting || !devResumeCode.trim()}
+                  className="rounded-lg bg-[#3b3be3] px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isConnecting ? 'Connecting…' : 'Connect'}
+                </button>
+              </div>
+              {connectionMessage && <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">{connectionMessage}</p>}
             </motion.div>
 
             {/* Advanced Settings */}

@@ -2,6 +2,7 @@
 
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
+import { OtpInput } from '@/components/ui/otp-input';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
@@ -317,12 +318,13 @@ export default function Profile() {
                 {devResumeStatus ? 'Connected to DevResume' : 'Not connected'}
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <input
+                <OtpInput
                   value={devResumeCode}
-                  onChange={event => setDevResumeCode(event.target.value)}
-                  placeholder="Paste your DevResume connection code"
+                  onChange={setDevResumeCode}
+                  length={6}
                   aria-label="DevResume connection code"
-                  className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 font-mono text-xs dark:border-gray-700 dark:bg-gray-800"
+                  className="min-w-0 flex-1"
+                  size="md"
                 />
                 <button
                   type="button"

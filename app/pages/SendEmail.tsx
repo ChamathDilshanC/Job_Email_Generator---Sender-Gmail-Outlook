@@ -7,6 +7,15 @@ import { GoogleSignInButton } from '@/components/google-sign-in';
 import JobFileUpload from '@/components/job-file-upload';
 import type { PageType } from '@/components/sidebar-01/types';
 import { RequiredStar } from '@/components/ui/required-star';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { copyToClipboard } from '@/lib/emailClient';
@@ -302,9 +311,21 @@ function AiField({
         {required && <ValidationMark complete={complete} />}
       </span>
       {options ? (
-        <select aria-invalid={required && !complete} className={`form-select mt-1.5 ${required ? (complete ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700') : ''}`} value={value} onChange={e => onChange(e.target.value)}>
-          {options.map(option => <option key={option} value={option}>{option[0].toUpperCase() + option.slice(1)}</option>)}
-        </select>
+        <Select value={value} onValueChange={onChange}>
+          <SelectTrigger
+            aria-invalid={required && !complete}
+            className={`mt-1.5 ${required ? (complete ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700') : ''}`}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map(option => (
+              <SelectItem key={option} value={option}>
+                {option[0].toUpperCase() + option.slice(1)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       ) : multiline ? (
         <textarea aria-invalid={required && !complete} className={`form-textarea mt-1.5 min-h-[110px] w-full ${required ? (complete ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700') : ''}`} value={value} onChange={e => onChange(e.target.value)} />
       ) : (
@@ -1576,19 +1597,22 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
             {resumeProfiles.length > 1 && (
               <Field label="Resume Profile" icon={<UserRound className="h-3.5 w-3.5 text-primary" />} action={<ValidationMark complete={Boolean(selectedProfileId && resumeData)} />}>
-                <select
+                <Select value={selectedProfileId} onValueChange={handleProfileChange}>
+                  <SelectTrigger
                   aria-invalid={!selectedProfileId || !resumeData}
-                  className={`form-select ${selectedProfileId && resumeData ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
-                  value={selectedProfileId}
-                  onChange={e => handleProfileChange(e.target.value)}
-                >
-                  {resumeProfiles.map(profile => (
-                    <option key={profile.profileId} value={profile.profileId}>
+                  className={`h-10 ${selectedProfileId && resumeData ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
+                  >
+                    <SelectValue placeholder="Select a resume profile" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {resumeProfiles.map(profile => (
+                      <SelectItem key={profile.profileId} value={profile.profileId}>
                       {profile.profileName}
                       {profile.isDefault ? ' (Default)' : ''}
-                    </option>
-                  ))}
-                </select>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             )}
 
@@ -1691,11 +1715,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 <button type="button" onClick={() => setEmailGenerationMode('template')} className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${emailGenerationMode === 'template' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><FileText className="h-4 w-4" />Template</button>
                 <button type="button" onClick={() => setEmailGenerationMode('ai')} className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${emailGenerationMode === 'ai' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><Sparkles className="h-4 w-4" />Generate with AI</button>
               </div>
-              {emailGenerationMode === 'template' ? <select
-                className="form-select"
-                value={selectedTemplate}
-                onChange={e => {
-                  const next = parseInt(e.target.value) as TemplateType;
+              {emailGenerationMode === 'template' ? <Select
+                value={selectedTemplate.toString()}
+                onValueChange={value => {
+                  const next = parseInt(value, 10) as TemplateType;
                   setSelectedTemplate(next);
                   // Shared with the Email Templates page's own selector, so
                   // whichever page you pick a template from wins on remount.
@@ -1703,28 +1726,35 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 }}
                 disabled={!resumeData}
               >
+                <SelectTrigger className="h-11 w-full rounded-xl bg-background shadow-sm">
+                  <SelectValue placeholder="Choose an email template" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[min(28rem,var(--radix-select-content-available-height))]">
                 {favoriteTemplateIds.length > 0 && (
-                  <optgroup label="♥ Favorites">
+                  <SelectGroup>
+                    <SelectLabel>♥ Favorites</SelectLabel>
                     {favoriteTemplateIds.map(id => {
                       const template = TEMPLATE_METADATA.find(item => item.id === id);
                       return template ? (
-                        <option key={`favorite-${template.id}`} value={template.id}>
+                        <SelectItem key={`favorite-${template.id}`} value={template.id.toString()}>
                           ♥ {template.name}
-                        </option>
+                        </SelectItem>
                       ) : null;
                     })}
-                  </optgroup>
+                  </SelectGroup>
                 )}
-                <optgroup label="All templates">
+                <SelectGroup>
+                <SelectLabel>All templates</SelectLabel>
                 {TEMPLATE_METADATA.filter(
                   template => !favoriteTemplateIds.includes(template.id)
                 ).map(template => (
-                  <option key={template.id} value={template.id}>
+                  <SelectItem key={template.id} value={template.id.toString()}>
                     {template.name}
-                  </option>
+                  </SelectItem>
                 ))}
-                </optgroup>
-              </select> : <div className="space-y-4 rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
+                </SelectGroup>
+                </SelectContent>
+              </Select> : <div className="space-y-4 rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-primary/10 p-2 text-primary"><Sparkles className="h-4 w-4" /></div>
                   <div>
@@ -1782,37 +1812,37 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-xs font-medium text-muted-foreground">
                     Length
-                    <select
-                      className="form-select mt-1.5 w-full"
+                    <Select
                       value={coverLetterLength}
-                      onChange={event =>
-                        setCoverLetterLength(
-                          event.target.value as CoverLetter['length']
-                        )
-                      }
+                      onValueChange={value => setCoverLetterLength(value as CoverLetter['length'])}
                     >
-                      <option value="short">Short (150-220 words)</option>
-                      <option value="standard">Standard (250-350 words)</option>
-                      <option value="detailed">Detailed (400-550 words)</option>
-                    </select>
+                      <SelectTrigger className="mt-1.5 w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="short">Short (150-220 words)</SelectItem>
+                        <SelectItem value="standard">Standard (250-350 words)</SelectItem>
+                        <SelectItem value="detailed">Detailed (400-550 words)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </label>
                   <label className="text-xs font-medium text-muted-foreground">
                     Tone
-                    <select
-                      className="form-select mt-1.5 w-full"
+                    <Select
                       value={coverLetterTone}
-                      onChange={event =>
-                        setCoverLetterTone(
-                          event.target.value as CoverLetter['tone']
-                        )
-                      }
+                      onValueChange={value => setCoverLetterTone(value as CoverLetter['tone'])}
                     >
-                      <option value="professional">Professional</option>
-                      <option value="confident">Confident</option>
-                      <option value="friendly">Friendly</option>
-                      <option value="concise">Concise</option>
-                      <option value="enthusiastic">Enthusiastic</option>
-                    </select>
+                      <SelectTrigger className="mt-1.5 w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="confident">Confident</SelectItem>
+                        <SelectItem value="friendly">Friendly</SelectItem>
+                        <SelectItem value="concise">Concise</SelectItem>
+                        <SelectItem value="enthusiastic">Enthusiastic</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </label>
                 </div>
                 <label className="block text-xs font-medium text-muted-foreground">
@@ -1841,19 +1871,22 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   <p className="text-xs text-muted-foreground">Select one generated in Cover Letter Builder.</p>
                 </div>
               </div>
-              <select
-                className="form-select w-full"
+              <Select
                 value={selectedSavedCoverLetter}
-                onChange={event => attachSavedCoverLetter(event.target.value)}
+                onValueChange={attachSavedCoverLetter}
                 aria-label="Select a saved cover letter"
               >
-                <option value="">Choose a saved cover letter...</option>
+                <SelectTrigger className="h-11 w-full rounded-xl">
+                  <SelectValue placeholder="Choose a saved cover letter..." />
+                </SelectTrigger>
+                <SelectContent>
                 {savedCoverLetters.map(letter => (
-                  <option key={letter.id} value={letter.id}>
+                  <SelectItem key={letter.id} value={letter.id}>
                     {letter.name || `${letter.companyName} - ${letter.position}`} · {new Date(letter.updatedAt).toLocaleDateString()}
-                  </option>
+                  </SelectItem>
                 ))}
-              </select>
+                </SelectContent>
+              </Select>
               {selectedSavedCoverLetter && attachments.coverLetter && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                   <CheckCircle2 className="h-3.5 w-3.5" /> Saved cover letter selected
@@ -2017,15 +2050,23 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                       <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                         Offer Decision
                       </label>
-                      <select
-                        name="decision"
-                        className="form-select"
+                      <Select
                         value={additionalDetails.decision}
-                        onChange={handleAdditionalDetailChange}
+                        onValueChange={value =>
+                          setAdditionalDetails(current => ({
+                            ...current,
+                            decision: value as AdditionalDetails['decision'],
+                          }))
+                        }
                       >
-                        <option value="accept">Accepting</option>
-                        <option value="decline">Declining</option>
-                      </select>
+                        <SelectTrigger className="h-10 w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="accept">Accepting</SelectItem>
+                          <SelectItem value="decline">Declining</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </motion.div>
@@ -2043,11 +2084,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               <p className="mb-3 text-xs text-muted-foreground">
                 Choose your saved JobMail CV or the latest CV from your connected DevResume Google Drive.
               </p>
-              <select
-                className="form-select"
+              <Select
                 value={cvSource}
-                onChange={event => {
-                  const source = event.target.value as 'profile' | 'devresume';
+                onValueChange={value => {
+                  const source = value as 'profile' | 'devresume';
                   setCvSource(source);
                   if (source === 'profile') {
                     setDevResumeUpdatedAt(null);
@@ -2057,9 +2097,14 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   }
                 }}
               >
-                <option value="profile">JobMail Resume Profile CV</option>
-                <option value="devresume">DevResume Google Drive CV</option>
-              </select>
+                <SelectTrigger className="h-11 w-full rounded-xl bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="profile">JobMail Resume Profile CV</SelectItem>
+                  <SelectItem value="devresume">DevResume Google Drive CV</SelectItem>
+                </SelectContent>
+              </Select>
               {cvSource === 'devresume' && (
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/15 bg-background px-3 py-2 text-xs">
                   <span className="text-muted-foreground">

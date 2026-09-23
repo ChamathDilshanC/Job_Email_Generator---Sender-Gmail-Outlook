@@ -1542,7 +1542,7 @@ export default function ResumeBuilder() {
             stretching to match the taller content column — a grid item's
             sticky containing block is still the full row height regardless
             of align-self, so it stays pinned while that column scrolls. */}
-        <div className="flex flex-col lg:grid lg:grid-cols-[220px_1fr] lg:items-start gap-4 lg:gap-6">
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[150px_minmax(0,1fr)] lg:items-start lg:gap-8">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
             className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:inset-auto lg:top-6 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
@@ -1551,7 +1551,7 @@ export default function ResumeBuilder() {
                 : '-translate-x-full lg:translate-x-0'
             }`}
           >
-            <div className="h-full lg:h-auto flex flex-col gap-2 p-4 lg:p-0 overflow-y-auto lg:overflow-visible">
+            <div className="flex h-full flex-col gap-2 overflow-y-auto p-4 lg:h-auto lg:overflow-visible lg:p-0">
               {/* Mobile Close Button */}
               <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -1636,7 +1636,7 @@ export default function ResumeBuilder() {
                   }
                 }}
                 dotColor="#4f46e5"
-                className="gap-2 pl-4"
+                className="gap-3 pl-3"
               />
               <div className="hidden">
               <div

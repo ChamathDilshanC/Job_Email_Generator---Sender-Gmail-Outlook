@@ -157,7 +157,7 @@ export function BounceSidebar({
         const icon = typeof item === "string" ? undefined : item.icon;
         const isActive = index === activeIndex;
         const itemClassName = cn(
-          "flex w-full cursor-pointer items-center rounded-lg p-1 text-left text-sm transition-colors duration-200",
+          "flex w-full cursor-pointer items-center gap-3 rounded-lg p-1 text-left text-sm transition-colors duration-200",
           isActive ? "text-foreground" : "text-foreground/50",
         );
 

@@ -75,11 +75,11 @@ export default function DocsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 pb-16">
+    <div className="w-full flex flex-col lg:flex-row gap-10 pb-16">
       {/* Compact contents rail with the shared animated bounce navigation. */}
       <div className="w-full flex-shrink-0 lg:w-56">
-        <div className="sticky top-20 rounded-2xl border border-border/70 bg-background/80 p-4 shadow-sm backdrop-blur-sm">
-          <div className="mb-3 flex items-center gap-2 border-b border-border/60 px-2 pb-3">
+        <div className="sticky top-20 p-1">
+          <div className="mb-4 flex items-center gap-2 px-2 pb-3">
             <FileCode className="h-4 w-4 text-primary" />
             <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Documentation Index
@@ -102,27 +102,27 @@ export default function DocsPage() {
       </div>
 
       {/* Main Documentation Content */}
-      <div className="flex-1 space-y-10 min-w-0">
+      <div className="min-w-0 flex-1 space-y-16">
         {/* Section 1: Overview & Features */}
-        <section id="overview" className="p-7 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider">
+        <section id="overview" className="scroll-mt-24 space-y-5">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
             <Sparkles className="w-3.5 h-3.5" /> Overview
           </div>
-          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
             JobMail Technical Documentation
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
             Welcome to the official developer & user documentation for JobMail — the ultra-modern job application email generator, ATS PDF resume builder, and recruiter outreach platform.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 gap-x-10 gap-y-5 border-t border-border/60 pt-6 sm:grid-cols-2">
             {[
               { title: 'AI Resume Auto-Fill', desc: 'Scan uploaded PDF resumes using Google Gemini AI to auto-populate all profile fields, projects, dates, and links.' },
               { title: 'GitHub Repo Importer', desc: 'Auto-fetch open-source repositories from any GitHub username or URL with descriptions, topics, star counts, and language tags.' },
               { title: 'ATS PDF Exporter', desc: 'Generate high-score ATS-friendly resumes in Modern, Classic, Executive, and Minimalist themes.' },
               { title: 'Emoji-Free Templates', desc: '10+ recruiter-centric email templates styled with clean tables guaranteed to bypass email spam filters.' },
             ].map((card, i) => (
-              <div key={i} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60">
+              <div key={i} className="border-b border-border/50 pb-4">
                 <h4 className="font-bold text-xs text-gray-900 dark:text-white mb-1">{card.title}</h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-normal">{card.desc}</p>
               </div>
@@ -131,9 +131,9 @@ export default function DocsPage() {
         </section>
 
         {/* Section 2: AI Resume Parser */}
-        <section id="resume-ai" className="p-7 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+        <section id="resume-ai" className="scroll-mt-24 space-y-5 border-t border-border/60 pt-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+            <div className="text-blue-600 dark:text-blue-400">
               <Bot className="w-5 h-5" />
             </div>
             <div>
@@ -161,16 +161,16 @@ export default function DocsPage() {
             <div>{`}`}</div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+          <div className="flex items-center gap-3 border-l-2 border-emerald-500 pl-3 text-xs text-emerald-800 dark:text-emerald-300">
             <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
             <span><strong>Automatic Persistence:</strong> Parsed data is automatically stored in <code className="font-mono">localStorage</code> & updated across all application pages without re-uploading.</span>
           </div>
         </section>
 
         {/* Section 3: GitHub Repo Importer */}
-        <section id="github-import" className="p-7 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+        <section id="github-import" className="scroll-mt-24 space-y-5 border-t border-border/60 pt-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
+            <div className="text-gray-900 dark:text-white">
               <Github className="w-5 h-5" />
             </div>
             <div>
@@ -188,15 +188,15 @@ export default function DocsPage() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
-            <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60">
+            <div className="border-b border-border/50 pb-3">
               <div className="font-bold text-gray-900 dark:text-white mb-1">1. URL Sanitization</div>
               <div className="text-gray-500 dark:text-gray-400">Extracts clean username from standard GitHub URLs.</div>
             </div>
-            <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60">
+            <div className="border-b border-border/50 pb-3">
               <div className="font-bold text-gray-900 dark:text-white mb-1">2. Auto-Select Filter</div>
               <div className="text-gray-500 dark:text-gray-400">Filters non-fork repos with stars & descriptions by default.</div>
             </div>
-            <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60">
+            <div className="border-b border-border/50 pb-3">
               <div className="font-bold text-gray-900 dark:text-white mb-1">3. In-Modal Editing</div>
               <div className="text-gray-500 dark:text-gray-400">Edit titles, roles & descriptions before importing to resume.</div>
             </div>
@@ -204,9 +204,9 @@ export default function DocsPage() {
         </section>
 
         {/* Section 4: ATS PDF Export */}
-        <section id="ats-pdf" className="p-7 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+        <section id="ats-pdf" className="scroll-mt-24 space-y-5 border-t border-border/60 pt-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
+            <div className="text-purple-600 dark:text-purple-400">
               <FileText className="w-5 h-5" />
             </div>
             <div>
@@ -223,26 +223,54 @@ export default function DocsPage() {
             Generates high-scoring ATS-friendly PDF resumes in multiple themes:
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="p-3 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/30 text-center font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 border-t border-border/60 pt-5 text-xs sm:grid-cols-4">
+            <div className="border-b border-border/50 pb-3 font-bold text-indigo-600 dark:text-indigo-400">
               Modern Tech
             </div>
-            <div className="p-3 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/30 text-center font-bold text-blue-600 dark:text-blue-400">
+            <div className="border-b border-border/50 pb-3 font-bold text-blue-600 dark:text-blue-400">
               Classic Executive
             </div>
-            <div className="p-3 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/30 text-center font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="border-b border-border/50 pb-3 font-bold text-emerald-600 dark:text-emerald-400">
               Minimalist Clean
             </div>
-            <div className="p-3 rounded-xl border border-purple-200 dark:border-purple-900 bg-purple-50/50 dark:bg-purple-950/30 text-center font-bold text-purple-600 dark:text-purple-400">
+            <div className="border-b border-border/50 pb-3 font-bold text-purple-600 dark:text-purple-400">
               Single-Page Compact
             </div>
           </div>
         </section>
 
-        {/* Section 5: API Reference */}
-        <section id="api-reference" className="p-7 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+        {/* Section 5: Email Template Engine */}
+        <section id="email-templates" className="scroll-mt-24 space-y-5 border-t border-border/60 pt-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+            <div className="text-rose-600 dark:text-rose-400">
+              <Mail className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Email Template Engine
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Recruiter-ready application messaging with favorite templates
+              </p>
+            </div>
+          </div>
+          <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+            Choose from structured application, referral, networking, interview,
+            and follow-up templates. Favorite templates are surfaced first in the
+            Send Email selector, while AI generation can tailor the message to the
+            selected role and resume profile.
+          </p>
+          <div className="flex flex-wrap gap-x-8 gap-y-3 border-t border-border/60 pt-5 text-xs text-gray-600 dark:text-gray-300">
+            <span><strong className="text-foreground">10+</strong> recruiter workflows</span>
+            <span><strong className="text-foreground">ATS-friendly</strong> plain structure</span>
+            <span><strong className="text-foreground">Favorites</strong> user-scoped</span>
+          </div>
+        </section>
+
+        {/* Section 5: API Reference */}
+        <section id="api-reference" className="scroll-mt-24 space-y-5 border-t border-border/60 pt-10">
+          <div className="flex items-center gap-3">
+            <div className="text-amber-600 dark:text-amber-400">
               <Terminal className="w-5 h-5" />
             </div>
             <div>
@@ -256,7 +284,7 @@ export default function DocsPage() {
           </div>
 
           <div className="space-y-3 text-xs">
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-2">
+            <div className="space-y-2 border-b border-border/60 pb-4">
               <div className="flex items-center justify-between font-mono">
                 <span className="font-bold text-emerald-600 dark:text-emerald-400">POST /api/send-email</span>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Auth Required</span>
@@ -264,7 +292,7 @@ export default function DocsPage() {
               <p className="text-gray-600 dark:text-gray-400 text-[11px]">Dispatches recruiter emails via Gmail OAuth 2.0 or Outlook SMTP transport.</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-2">
+            <div className="space-y-2 border-b border-border/60 pb-4">
               <div className="flex items-center justify-between font-mono">
                 <span className="font-bold text-blue-600 dark:text-blue-400">GET /api/github/repos?username=...</span>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Public</span>
@@ -272,7 +300,7 @@ export default function DocsPage() {
               <p className="text-gray-600 dark:text-gray-400 text-[11px]">Fetches public GitHub repositories with topics, languages, and star metrics.</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-2">
+            <div className="space-y-2 border-b border-border/60 pb-4">
               <div className="flex items-center justify-between font-mono">
                 <span className="font-bold text-purple-600 dark:text-purple-400">POST /api/parse-resume</span>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">Auth Required</span>

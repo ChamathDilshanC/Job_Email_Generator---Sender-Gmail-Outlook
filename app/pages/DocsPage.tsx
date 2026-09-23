@@ -78,7 +78,7 @@ export default function DocsPage() {
     <div className="w-full flex flex-col lg:flex-row gap-10 pb-16">
       {/* Compact contents rail with the shared animated bounce navigation. */}
       <div className="w-full flex-shrink-0 lg:w-56">
-        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto overscroll-contain p-1 pr-2 [scrollbar-color: hsl(var(--muted-foreground)/.35)_transparent] [scrollbar-width:thin]">
+        <div className="sticky top-20 p-1 pr-2">
           <div className="mb-4 flex items-center gap-2 px-2 pb-3">
             <FileCode className="h-4 w-4 text-primary" />
             <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">

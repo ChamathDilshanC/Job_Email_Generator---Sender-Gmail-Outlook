@@ -1545,13 +1545,13 @@ export default function ResumeBuilder() {
         <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[150px_minmax(0,1fr)] lg:items-start lg:gap-8">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
-            className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:top-4 lg:h-[calc(100vh-7rem)] lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
+            className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:top-4 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
               isMobileSidebarOpen
                 ? 'translate-x-0'
                 : '-translate-x-full lg:translate-x-0'
             }`}
           >
-            <div className="flex h-full flex-col gap-2 overflow-y-auto p-4 lg:overflow-y-auto lg:p-0">
+            <div className="flex h-full flex-col gap-2 overflow-hidden p-4 lg:h-auto lg:overflow-visible lg:p-0">
               {/* Mobile Close Button */}
               <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">

@@ -1,6 +1,6 @@
 {
   "name": "job-email-generator",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "author": "ChamathDilshanC <dilshancolonne123@gmail.com>",
   "private": true,
   "scripts": {

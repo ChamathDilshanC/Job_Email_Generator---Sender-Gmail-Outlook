@@ -50,9 +50,9 @@ export function Dashboard() {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="h-screen min-h-0 overflow-hidden">
       <AppSidebar onNavigate={setActivePage} activePage={activePage} />
-      <SidebarInset>
+      <SidebarInset className="h-full min-h-0 overflow-hidden">
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
@@ -72,8 +72,8 @@ export function Dashboard() {
             <ThemeToggle />
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-4 sm:px-8 pt-4 pb-24">
+        <main className="min-h-0 flex-1 overflow-hidden">
+          <div className="h-full min-h-0 overflow-y-auto px-4 pb-24 pt-4 sm:px-8">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activePage}

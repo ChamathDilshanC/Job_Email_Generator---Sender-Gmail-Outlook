@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import packageJson from '../../package.json';
 import DocsPage from '../pages/DocsPage';
 import EmailTemplates from '../pages/EmailTemplates';
 import GuidePage from '../pages/GuidePage';
@@ -66,7 +67,7 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary sm:inline-flex">
-              v1.5.0
+              v{packageJson.version}
             </span>
             <ThemeToggle />
           </div>

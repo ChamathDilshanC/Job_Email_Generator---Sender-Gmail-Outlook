@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { motion, useAnimate } from "motion/react";
 import { arc } from "motion";
@@ -13,7 +20,7 @@ const useIsomorphicLayoutEffect =
 
 export type BounceSidebarItem =
   | string
-  | { label: string; href?: string }
+  | { label: string; href?: string; icon?: ReactNode }
   | { label: string; heading: true };
 
 export type BounceSidebarProps = Omit<ComponentProps<"ul">, "onChange"> & {
@@ -147,6 +154,7 @@ export function BounceSidebar({
         }
 
         const href = typeof item === "string" ? undefined : item.href;
+        const icon = typeof item === "string" ? undefined : item.icon;
         const isActive = index === activeIndex;
         const itemClassName = cn(
           "flex w-full cursor-pointer items-center rounded-lg p-1 text-left text-sm transition-colors duration-200",
@@ -168,6 +176,7 @@ export function BounceSidebar({
                 onClick={() => select(index)}
                 className={itemClassName}
               >
+                {icon}
                 {label}
               </MotionLink>
             ) : (
@@ -178,6 +187,7 @@ export function BounceSidebar({
                 onClick={() => select(index)}
                 className={itemClassName}
               >
+                {icon}
                 {label}
               </motion.button>
             )}

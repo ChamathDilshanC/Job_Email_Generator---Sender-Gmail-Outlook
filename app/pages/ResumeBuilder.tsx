@@ -38,7 +38,17 @@ import {
   getPositionSuggestions,
 } from '@/lib/skillsApiClient';
 import { showToast } from '@/lib/toast';
+import { BounceSidebar } from '@/components/ui/bounce-sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
+import {
+  BriefcaseBusiness,
+  FolderKanban,
+  Github,
+  GraduationCap,
+  Layers3,
+  Upload,
+  UserRound,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PhoneInput from 'react-phone-number-input';
 import en from 'react-phone-number-input/locale/en';
@@ -1564,6 +1574,71 @@ export default function ResumeBuilder() {
                   </svg>
                 </button>
               </div>
+              <BounceSidebar
+                items={[
+                  {
+                    label: 'Resume',
+                    icon: <Upload className="h-4 w-4 shrink-0" />,
+                  },
+                  {
+                    label: 'Personal Info',
+                    icon: <UserRound className="h-4 w-4 shrink-0" />,
+                  },
+                  {
+                    label: 'Experience',
+                    icon: <BriefcaseBusiness className="h-4 w-4 shrink-0" />,
+                  },
+                  {
+                    label: 'Education',
+                    icon: <GraduationCap className="h-4 w-4 shrink-0" />,
+                  },
+                  {
+                    label: 'Projects',
+                    icon: <FolderKanban className="h-4 w-4 shrink-0" />,
+                  },
+                  {
+                    label: 'GitHub Import',
+                    icon: <Github className="h-4 w-4 shrink-0" />,
+                  },
+                  {
+                    label: 'Skills',
+                    icon: <Layers3 className="h-4 w-4 shrink-0" />,
+                  },
+                ]}
+                value={Math.max(
+                  0,
+                  ['resume', 'personal', 'experience', 'education', 'projects', 'github', 'skills'].indexOf(
+                    activeSection
+                  )
+                )}
+                onChange={index => {
+                  const section = [
+                    'resume',
+                    'personal',
+                    'experience',
+                    'education',
+                    'projects',
+                    'github',
+                    'skills',
+                  ][index];
+                  if (section === 'github') {
+                    setIsGithubModalOpen(true);
+                    setIsMobileSidebarOpen(false);
+                  } else if (section && (section === 'resume' || canAccessSection(section))) {
+                    setActiveSection(section);
+                    setIsMobileSidebarOpen(false);
+                  } else {
+                    showAlert(
+                      'Step Locked',
+                      'Please complete previous steps first!',
+                      'warning'
+                    );
+                  }
+                }}
+                dotColor="#4f46e5"
+                className="gap-2 pl-4"
+              />
+              <div className="hidden">
               <div
                 className={`flex items-center gap-3 py-3.5 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg cursor-pointer transition-all duration-200 text-sm min-w-[160px] lg:min-w-0 flex-shrink-0 ${
                   activeSection === 'resume'
@@ -1783,6 +1858,7 @@ export default function ResumeBuilder() {
                 Skills
               </div>
             </div>
+              </div>
           </div>
 
           {/* Main Content Area */}

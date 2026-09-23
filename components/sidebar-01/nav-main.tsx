@@ -24,6 +24,9 @@ export function NavMain({ items, onNavigate }: NavMainProps) {
         <BounceSidebar
           items={items.map(item => ({
             label: item.isLocked ? `${item.title}  🔒` : item.title,
+            icon: item.icon ? (
+              <item.icon className="mr-2 h-4 w-4 shrink-0 opacity-80" />
+            ) : undefined,
           }))}
           value={Math.max(
             0,

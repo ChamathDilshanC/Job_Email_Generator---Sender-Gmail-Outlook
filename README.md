@@ -63,7 +63,48 @@ Signed-out visitors land on a marketing landing page; signing in switches to the
 
 ![Profile](docs/screenshots/profile.png)
 
+## 🔗 DevResume integration
+
+JobMail can connect to DevResume so the latest resume PDF can be selected as
+the CV source for an application. The connection is intentionally explicit:
+
+```mermaid
+sequenceDiagram
+    participant D as DevResume
+    participant J as JobMail Profile
+    participant DB as JobMail MongoDB
+    D->>D: Generate short-lived connection code
+    D-->>J: User pastes code
+    J->>D: Verify code over server-to-server secret
+    D-->>J: Return DevResume account id
+    J->>DB: Store one-to-one account link
+    J-->>D: Latest resume PDF available to JobMail
+    J->>DB: Delete account link when user chooses Disconnect
+```
+
+Users can disconnect at any time from **Profile → Connect DevResume →
+Disconnect**. Disconnecting removes only the integration link; it does not
+delete either product's resume data.
+
 ## 🏗 Architecture
+
+### Product capability map
+
+```mermaid
+quadrantChart
+    title JobMail capability map
+    x-axis Setup effort --> Automation
+    y-axis Manual --> AI assisted
+    quadrant-1 High leverage
+    quadrant-2 Guided workflows
+    quadrant-3 Basic tools
+    quadrant-4 Integrations
+    Resume builder: [0.38, 0.72]
+    AI resume parsing: [0.58, 0.92]
+    Email templates: [0.42, 0.55]
+    Gmail scheduling: [0.86, 0.67]
+    DevResume sync: [0.91, 0.84]
+```
 
 ### System overview
 

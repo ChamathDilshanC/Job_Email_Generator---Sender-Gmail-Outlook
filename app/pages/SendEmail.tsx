@@ -36,6 +36,7 @@ import {
   TemplateType,
 } from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
+import { loadFavoriteTemplateIds } from '@/lib/favoriteTemplates';
 import type { CoverLetter } from '@/lib/coverLetter';
 import { stripLeadingGreeting } from '@/lib/coverLetter';
 import { jsPDF } from 'jspdf';
@@ -119,6 +120,9 @@ interface SendEmailDraft {
   aiTone: string;
   aiLength: string;
   aiInstructions: string;
+  coverLetterLength: CoverLetter['length'];
+  coverLetterTone: CoverLetter['tone'];
+  coverLetterInstructions: string;
 }
 
 function sendEmailDraftKey(uid?: string | null): string {
@@ -129,6 +133,79 @@ const inMemorySendEmailDrafts = new Map<string, SendEmailDraft>();
 
 interface SendEmailProps {
   onNavigate?: (page: PageType) => void;
+}
+
+function createCoverLetterPdfFile(
+  letter: CoverLetter,
+  resumeData: ResumeData | null,
+  fallbackName: string
+): File {
+  const resumeName = resumeData?.personalInfo.fullName || fallbackName;
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+  const margin = 18;
+  const pageWidth = 210;
+  const contentWidth = pageWidth - margin * 2;
+  const accent =
+    letter.template === 'editorial'
+      ? '#D71920'
+      : letter.template === 'corporate'
+        ? '#1555B5'
+        : '#334155';
+
+  pdf.setDrawColor(accent);
+  pdf.setLineWidth(0.8);
+  pdf.line(margin, 12, pageWidth - margin, 12);
+  pdf.setTextColor('#172033');
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(16);
+  pdf.text(resumeName, margin, 24);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  pdf.setTextColor('#526071');
+  const contact = [
+    resumeData?.personalInfo.email,
+    resumeData?.personalInfo.phone,
+    resumeData?.personalInfo.location,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  if (contact) pdf.text(contact, margin, 30);
+  pdf.setTextColor(accent);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(letter.position, margin, contact ? 36 : 30);
+
+  let y = contact ? 48 : 42;
+  pdf.setTextColor('#172033');
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.text(
+    new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }),
+    margin,
+    y
+  );
+  y += 10;
+  pdf.text(`Dear ${letter.hiringManagerName || 'Hiring Manager'},`, margin, y);
+  y += 8;
+  const paragraphs = stripLeadingGreeting(letter.content)
+    .split(/\n\s*\n/)
+    .filter(Boolean);
+  for (const paragraph of paragraphs) {
+    const lines = pdf.splitTextToSize(
+      paragraph.replace(/\s+/g, ' ').trim(),
+      contentWidth
+    );
+    pdf.text(lines, margin, y, { align: 'justify', maxWidth: contentWidth });
+    y += lines.length * 4.5 + 4;
+  }
+  y += 3;
+  pdf.text(['Sincerely,', resumeName], margin, y);
+
+  const filename = `${(letter.name || `${letter.companyName}_${letter.position}`).replace(/[^\w.-]+/g, '_')}.pdf`;
+  return new File([pdf.output('blob')], filename, { type: 'application/pdf' });
 }
 
 function Field({
@@ -262,6 +339,12 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [isLoadingDevResume, setIsLoadingDevResume] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [requireCoverLetter, setRequireCoverLetter] = useState(false);
+  const [coverLetterLength, setCoverLetterLength] =
+    useState<CoverLetter['length']>('standard');
+  const [coverLetterTone, setCoverLetterTone] =
+    useState<CoverLetter['tone']>('professional');
+  const [coverLetterInstructions, setCoverLetterInstructions] = useState('');
+  const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
   // On by default per user preference - knowing whether a recruiter opened
   // the email is worth more here than the small deliverability risk from
   // the tracking pixel. Still user-toggleable per send.
@@ -340,6 +423,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setAiTone(draft.aiTone);
     setAiLength(draft.aiLength);
     setAiInstructions(draft.aiInstructions);
+    setCoverLetterLength(draft.coverLetterLength || 'standard');
+    setCoverLetterTone(draft.coverLetterTone || 'professional');
+    setCoverLetterInstructions(draft.coverLetterInstructions || '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
@@ -364,6 +450,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       aiTone,
       aiLength,
       aiInstructions,
+      coverLetterLength,
+      coverLetterTone,
+      coverLetterInstructions,
     });
   }, [
     formData,
@@ -382,6 +471,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     aiTone,
     aiLength,
     aiInstructions,
+    coverLetterLength,
+    coverLetterTone,
+    coverLetterInstructions,
     user?.uid,
   ]);
 
@@ -400,48 +492,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       setAttachments(previous => ({ ...previous, coverLetter: null }));
       return;
     }
-    const resumeName = resumeData?.personalInfo.fullName || user?.displayName || 'Applicant';
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
-    const margin = 18;
-    const pageWidth = 210;
-    const contentWidth = pageWidth - margin * 2;
-    const accent = letter.template === 'editorial' ? '#D71920' : letter.template === 'corporate' ? '#1555B5' : '#334155';
-    pdf.setDrawColor(accent);
-    pdf.setLineWidth(0.8);
-    pdf.line(margin, 12, pageWidth - margin, 12);
-    pdf.setTextColor('#172033');
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(16);
-    pdf.text(resumeName, margin, 24);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(9);
-    pdf.setTextColor('#526071');
-    const contact = [resumeData?.personalInfo.email, resumeData?.personalInfo.phone, resumeData?.personalInfo.location].filter(Boolean).join(' · ');
-    if (contact) pdf.text(contact, margin, 30);
-    pdf.setTextColor(accent);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(letter.position, margin, contact ? 36 : 30);
-    let y = contact ? 48 : 42;
-    pdf.setTextColor('#172033');
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), margin, y);
-    y += 10;
-    pdf.text(`Dear ${letter.hiringManagerName || 'Hiring Manager'},`, margin, y);
-    y += 8;
-    const paragraphs = stripLeadingGreeting(letter.content).split(/\n\s*\n/).filter(Boolean);
-    for (const paragraph of paragraphs) {
-      const lines = pdf.splitTextToSize(paragraph.replace(/\s+/g, ' ').trim(), contentWidth);
-      pdf.text(lines, margin, y, { align: 'justify', maxWidth: contentWidth });
-      y += lines.length * 4.5 + 4;
-    }
-    y += 3;
-    pdf.text(['Sincerely,', resumeName], margin, y);
-    const blob = pdf.output('blob');
-    const fileName = `${(letter.name || `${letter.companyName}_${letter.position}`).replace(/[^\w.-]+/g, '_')}.pdf`;
     setAttachments(previous => ({
       ...previous,
-      coverLetter: new File([blob], fileName, { type: 'application/pdf' }),
+      coverLetter: createCoverLetterPdfFile(
+        letter,
+        resumeData,
+        user?.displayName || 'Applicant'
+      ),
     }));
     showToast('success', 'Cover letter PDF attached', `${letter.name || letter.companyName} is ready to send.`);
   };
@@ -685,7 +742,95 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
   // Validate the form, then open the preview modal instead of sending
   // immediately — the actual send happens from the modal's confirm action.
-  const handleOpenPreview = (e: FormEvent) => {
+  const generateRequiredCoverLetter = async (): Promise<boolean> => {
+    if (!requireCoverLetter) return true;
+    if (!user?.uid || !selectedProfileId || !resumeData) {
+      showToast(
+        'warning',
+        'Resume Profile Required',
+        'Select a completed resume profile before generating the required cover letter.'
+      );
+      return false;
+    }
+
+    setIsGeneratingCoverLetter(true);
+    try {
+      const generationResponse = await fetch('/api/cover-letter/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          profileId: selectedProfileId,
+          companyName: formData.companyName,
+          position: formData.position,
+          jobDescription,
+          length: coverLetterLength,
+          tone: coverLetterTone,
+          additionalInstructions: coverLetterInstructions,
+        }),
+      });
+      const generationData = await generationResponse.json();
+      if (!generationResponse.ok) {
+        throw new Error(generationData.error || 'Could not generate cover letter.');
+      }
+
+      const saveResponse = await fetch('/api/cover-letter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.uid,
+          profileId: selectedProfileId,
+          profileName: resumeProfiles.find(
+            profile => profile.profileId === selectedProfileId
+          )?.profileName,
+          name: `${formData.companyName.trim()} - ${formData.position.trim()}`,
+          companyName: formData.companyName,
+          position: formData.position,
+          jobDescription,
+          length: coverLetterLength,
+          tone: coverLetterTone,
+          additionalInstructions: coverLetterInstructions,
+          content: stripLeadingGreeting(generationData.content || ''),
+        }),
+      });
+      const saveData = await saveResponse.json();
+      if (!saveResponse.ok || !saveData.coverLetter) {
+        throw new Error(saveData.error || 'Could not save cover letter.');
+      }
+
+      const letter = saveData.coverLetter as CoverLetter;
+      setSavedCoverLetters(previous => [
+        letter,
+        ...previous.filter(item => item.id !== letter.id),
+      ]);
+      setSelectedSavedCoverLetter(letter.id);
+      setAttachments(previous => ({
+        ...previous,
+        coverLetter: createCoverLetterPdfFile(
+          letter,
+          resumeData,
+          user.displayName || 'Applicant'
+        ),
+      }));
+      showToast(
+        'success',
+        'Cover Letter Ready',
+        `A tailored PDF for ${formData.companyName.trim()} was saved and attached.`
+      );
+      return true;
+    } catch (error) {
+      showToast(
+        'error',
+        'Could Not Prepare Cover Letter',
+        error instanceof Error ? error.message : 'Please try again.'
+      );
+      return false;
+    } finally {
+      setIsGeneratingCoverLetter(false);
+    }
+  };
+
+  const handleOpenPreview = async (e: FormEvent) => {
     e.preventDefault();
 
     if (
@@ -701,8 +846,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       return;
     }
 
+    const coverLetterReady = await generateRequiredCoverLetter();
+    if (!coverLetterReady) return;
+
     // Check if files are uploaded
-    if (!isFileUploadValid()) {
+    if (!isFileUploadValid(coverLetterReady)) {
       showToast(
         'warning',
         'Missing Files',
@@ -1082,14 +1230,14 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const hasAiJobDescription = emailGenerationMode !== 'ai' || Boolean(jobDescription.trim());
 
   // Check if file upload requirements are met
-  const isFileUploadValid = () => {
+  const isFileUploadValid = (coverLetterReady = false) => {
     // CV is always required
     if (!attachments.cv) {
       return false;
     }
 
     // If cover letter is required, check if it's uploaded
-    if (requireCoverLetter && !attachments.coverLetter) {
+    if (requireCoverLetter && !attachments.coverLetter && !coverLetterReady) {
       return false;
     }
 
@@ -1098,6 +1246,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
   // Send button should only be enabled when form is valid AND files are uploaded AND resume data exists
   const canSendEmail = isFormValid && hasAiJobDescription && isFileUploadValid() && !!resumeData;
+  const favoriteTemplateIds = loadFavoriteTemplateIds(user?.uid);
 
   // Generate email preview
   const templateEmail = isFormValid
@@ -1304,11 +1453,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 whileTap={{ scale: canSendEmail ? 0.97 : 1 }}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handleOpenPreview}
-                disabled={isSending}
+                disabled={isSending || isGeneratingCoverLetter}
               >
                 <Send className="h-4 w-4" />
-                {isSending
-                  ? 'Sending...'
+                {isGeneratingCoverLetter
+                  ? 'Preparing Cover Letter...'
+                  : isSending
+                    ? 'Sending...'
                   : sendMode === 'schedule' && emailClient === 'gmail'
                     ? 'Review & Schedule'
                     : emailClient === 'gmail'
@@ -1552,11 +1703,27 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 }}
                 disabled={!resumeData}
               >
-                {TEMPLATE_METADATA.map(template => (
+                {favoriteTemplateIds.length > 0 && (
+                  <optgroup label="♥ Favorites">
+                    {favoriteTemplateIds.map(id => {
+                      const template = TEMPLATE_METADATA.find(item => item.id === id);
+                      return template ? (
+                        <option key={`favorite-${template.id}`} value={template.id}>
+                          ♥ {template.name}
+                        </option>
+                      ) : null;
+                    })}
+                  </optgroup>
+                )}
+                <optgroup label="All templates">
+                {TEMPLATE_METADATA.filter(
+                  template => !favoriteTemplateIds.includes(template.id)
+                ).map(template => (
                   <option key={template.id} value={template.id}>
                     {template.name}
                   </option>
                 ))}
+                </optgroup>
               </select> : <div className="space-y-4 rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-primary/10 p-2 text-primary"><Sparkles className="h-4 w-4" /></div>
@@ -1601,6 +1768,71 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 aria-label="Require Cover Letter"
               />
             </div>
+            {requireCoverLetter && (
+              <div className="mt-3 space-y-3 rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    Cover letter details
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Company and position come from this form. Choose the
+                    builder options that are not available here.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Length
+                    <select
+                      className="form-select mt-1.5 w-full"
+                      value={coverLetterLength}
+                      onChange={event =>
+                        setCoverLetterLength(
+                          event.target.value as CoverLetter['length']
+                        )
+                      }
+                    >
+                      <option value="short">Short (150-220 words)</option>
+                      <option value="standard">Standard (250-350 words)</option>
+                      <option value="detailed">Detailed (400-550 words)</option>
+                    </select>
+                  </label>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Tone
+                    <select
+                      className="form-select mt-1.5 w-full"
+                      value={coverLetterTone}
+                      onChange={event =>
+                        setCoverLetterTone(
+                          event.target.value as CoverLetter['tone']
+                        )
+                      }
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="confident">Confident</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="concise">Concise</option>
+                      <option value="enthusiastic">Enthusiastic</option>
+                    </select>
+                  </label>
+                </div>
+                <label className="block text-xs font-medium text-muted-foreground">
+                  Additional instructions (optional)
+                  <textarea
+                    className="form-textarea mt-1.5 min-h-[80px] w-full"
+                    value={coverLetterInstructions}
+                    onChange={event =>
+                      setCoverLetterInstructions(event.target.value)
+                    }
+                    placeholder="Mention a project, skill, or emphasis for this application..."
+                    maxLength={2000}
+                  />
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  The letter is generated and saved automatically when you
+                  continue to preview.
+                </p>
+              </div>
+            )}
             <div className="mt-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-4">
               <div className="mb-2 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" />

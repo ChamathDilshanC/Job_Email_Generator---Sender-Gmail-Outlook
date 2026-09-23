@@ -304,9 +304,9 @@ export default function ResumeBuilder() {
       id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 8)}`,
     }));
 
-  // Applies AI-parsed resume content into the wizard. Only touches local
-  // component state — the user still saves each step (exactly like manual
-  // entry) so nothing hits MongoDB until they click Save & Continue.
+  // Applies AI-parsed resume content into the wizard. The auto-save effect
+  // below persists the parsed content without requiring every step to be
+  // completed manually.
   const applyParsedResumeData = useCallback(
     (parsed: ParsedResumeContent) => {
       if (
@@ -365,7 +365,7 @@ export default function ResumeBuilder() {
       showToast(
         'info',
         'Review Your Details',
-        'Go through each step and click Save & Continue to store the auto-filled information.'
+        'Your fields were auto-filled. Review them while the resume saves automatically.'
       );
     },
     [hasExistingWizardData]
@@ -831,6 +831,46 @@ export default function ResumeBuilder() {
     projects,
     position,
     selectedSkills,
+  ]);
+
+  // Persist AI-filled and manually edited fields after a short quiet period.
+  // This is intentionally separate from the local draft effect: the draft
+  // keeps navigation resilient while this call makes the data available to
+  // email generation and other devices without requiring wizard completion.
+  useEffect(() => {
+    if (
+      !hasLoadedOnceRef.current ||
+      !user?.uid ||
+      !activeProfileId ||
+      !hasUnsavedChanges
+    ) {
+      return;
+    }
+
+    autoSaveResumeData(
+      user.uid,
+      {
+        personalInfo,
+        socialLinks,
+        workExperiences,
+        education: educations,
+        projects,
+        skills: { position, selectedSkills },
+      },
+      { profileId: activeProfileId },
+      2000
+    );
+  }, [
+    user?.uid,
+    activeProfileId,
+    personalInfo,
+    socialLinks,
+    workExperiences,
+    educations,
+    projects,
+    position,
+    selectedSkills,
+    hasUnsavedChanges,
   ]);
 
   // Helper function to show a notification (title/description/type stayed

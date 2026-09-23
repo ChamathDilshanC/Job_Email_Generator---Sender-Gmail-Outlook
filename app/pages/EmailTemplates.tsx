@@ -10,6 +10,8 @@ import {
   TemplateType,
 } from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
+import { loadFavoriteTemplateIds, toggleFavoriteTemplate } from '@/lib/favoriteTemplates';
+import { Heart } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 const CATEGORY_TABS = Object.values(TemplateCategory);
@@ -33,8 +35,10 @@ export default function EmailTemplates() {
     bodyText: string;
     bodyHtml: string;
   } | null>(null);
+  const [favoriteTemplateIds, setFavoriteTemplateIds] = useState<TemplateType[]>([]);
   // Load resume data and selected template on component mount
   useEffect(() => {
+    setFavoriteTemplateIds(loadFavoriteTemplateIds(user?.uid));
     // Load selected template from localStorage
     const savedTemplateId = localStorage.getItem('selectedTemplateId');
     if (savedTemplateId) {
@@ -56,6 +60,10 @@ export default function EmailTemplates() {
 
     fetchResumeData();
   }, [user?.uid]);
+
+  const handleToggleFavorite = (templateId: TemplateType) => {
+    setFavoriteTemplateIds(toggleFavoriteTemplate(user?.uid, templateId));
+  };
 
   const visibleTemplates = useMemo(
     () => TEMPLATE_METADATA.filter(template => template.category === activeCategory),
@@ -196,6 +204,18 @@ export default function EmailTemplates() {
                         </span>
                       )}
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFavorite(template.id)}
+                      aria-label={`${favoriteTemplateIds.includes(template.id) ? 'Remove' : 'Add'} ${template.name} favorite`}
+                      title={favoriteTemplateIds.includes(template.id) ? 'Remove from favorites' : 'Add to favorites'}
+                      className="rounded-full p-2 text-rose-500 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30"
+                    >
+                      <Heart
+                        className="h-5 w-5"
+                        fill={favoriteTemplateIds.includes(template.id) ? 'currentColor' : 'none'}
+                      />
+                    </button>
                     {isSelected && (
                       <div className="flex items-center gap-1 text-[#22c55e]">
                         <svg

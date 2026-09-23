@@ -27,3 +27,21 @@ export async function GET(request: NextRequest) {
   const connection = await client.db("job_email_generator").collection("devresume_connections").findOne(filter, { projection: { _id: 0, jobmailEmail: 1, connectedAt: 1 } });
   return NextResponse.json({ connected: !!connection, email: connection?.jobmailEmail || null, connectedAt: connection?.connectedAt || null });
 }
+
+export async function DELETE(request: NextRequest) {
+  const user = await getGoogleUser(request);
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const client = await clientPromise;
+    const result = await client
+      .db('job_email_generator')
+      .collection('devresume_connections')
+      .deleteOne({ jobmailUserId: user.id });
+
+    return NextResponse.json({ disconnected: result.deletedCount > 0 });
+  } catch (error) {
+    console.error('Error disconnecting DevResume:', error);
+    return NextResponse.json({ error: 'Could not disconnect DevResume.' }, { status: 500 });
+  }
+}

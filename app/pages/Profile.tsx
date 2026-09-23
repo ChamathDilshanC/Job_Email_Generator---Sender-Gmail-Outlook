@@ -32,6 +32,7 @@ export default function Profile() {
   const [devResumeStatus, setDevResumeStatus] = useState(false);
   const [connectionMessage, setConnectionMessage] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [emailStats, setEmailStats] = useState({
     total: 0,
     sent: 0,
@@ -106,6 +107,35 @@ export default function Profile() {
     } finally {
       setIsConnecting(false);
     }
+  }
+
+  function disconnectDevResume() {
+      setConfirmDialog({
+        open: true,
+        title: 'Disconnect DevResume?',
+        description: 'This removes the link between DevResume and JobMail. Your JobMail resume data will not be deleted.',
+        type: 'warning',
+        onConfirm: async () => {
+          if (!accessToken) return;
+          setIsDisconnecting(true);
+          setConnectionMessage('');
+          try {
+            const response = await fetch('/api/integrations/devresume/status', {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Disconnect failed');
+            setDevResumeStatus(false);
+            setConnectionMessage('DevResume was disconnected from this JobMail account.');
+          } catch (error) {
+            setConnectionMessage(error instanceof Error ? error.message : 'Disconnect failed');
+          } finally {
+            setIsDisconnecting(false);
+            setConfirmDialog(previous => ({ ...previous, open: false }));
+          }
+        },
+      });
   }
 
   // Get user info from Google account
@@ -334,6 +364,16 @@ export default function Profile() {
                 >
                   {isConnecting ? 'Connecting…' : 'Connect'}
                 </button>
+                {devResumeStatus && (
+                  <button
+                    type="button"
+                    onClick={disconnectDevResume}
+                    disabled={isDisconnecting}
+                    className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/30"
+                  >
+                    {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
+                  </button>
+                )}
               </div>
               {connectionMessage && <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">{connectionMessage}</p>}
             </motion.div>

@@ -21,7 +21,8 @@ import {
   Terminal,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { BounceSidebar } from '@/components/ui/bounce-sidebar';
+import { useEffect, useMemo, useState } from 'react';
 
 const DOC_SECTIONS = [
   { id: 'overview', title: 'Overview & Features', icon: Sparkles },
@@ -34,6 +35,36 @@ const DOC_SECTIONS = [
 
 export default function DocsPage() {
   const [activeSection, setActiveSection] = useState('overview');
+  const sectionItems = useMemo(
+    () => [
+      { label: 'Contents', heading: true as const },
+      ...DOC_SECTIONS.map(section => ({
+        label: section.title,
+        href: `#${section.id}`,
+      })),
+    ],
+    []
+  );
+
+  useEffect(() => {
+    const sections = DOC_SECTIONS.map(section => document.getElementById(section.id)).filter(
+      (section): section is HTMLElement => Boolean(section)
+    );
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) setActiveSection(visible.target.id);
+      },
+      { rootMargin: '-16% 0px -68% 0px', threshold: 0 }
+    );
+
+    sections.forEach(section => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
@@ -45,35 +76,28 @@ export default function DocsPage() {
 
   return (
     <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 pb-16">
-      {/* Left Sidebar Table of Contents (Chunkr-style layout) */}
-      <div className="w-full lg:w-64 flex-shrink-0">
-        <div className="sticky top-20 p-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-3">
-          <div className="flex items-center gap-2 px-2 pb-2 border-b border-gray-100 dark:border-gray-800">
-            <FileCode className="w-4 h-4 text-indigo-500" />
-            <h3 className="font-bold text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+      {/* Compact contents rail with the shared animated bounce navigation. */}
+      <div className="w-full flex-shrink-0 lg:w-56">
+        <div className="sticky top-20 rounded-2xl border border-border/70 bg-background/80 p-4 shadow-sm backdrop-blur-sm">
+          <div className="mb-3 flex items-center gap-2 border-b border-border/60 px-2 pb-3">
+            <FileCode className="h-4 w-4 text-primary" />
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Documentation Index
             </h3>
           </div>
-          <nav className="space-y-1">
-            {DOC_SECTIONS.map(sec => {
-              const Icon = sec.icon;
-              const isActive = activeSection === sec.id;
-              return (
-                <button
-                  key={sec.id}
-                  onClick={() => scrollToSection(sec.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl transition-all ${
-                    isActive
-                      ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate">{sec.title}</span>
-                </button>
-              );
-            })}
-          </nav>
+          <BounceSidebar
+            items={sectionItems}
+            value={Math.max(
+              1,
+              DOC_SECTIONS.findIndex(section => section.id === activeSection) + 1
+            )}
+            onChange={index => {
+              const section = DOC_SECTIONS[index - 1];
+              if (section) scrollToSection(section.id);
+            }}
+            dotColor="#4f46e5"
+            className="gap-1 pl-4"
+          />
         </div>
       </div>
 

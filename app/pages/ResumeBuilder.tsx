@@ -1312,7 +1312,7 @@ export default function ResumeBuilder() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto w-full max-w-[1500px] p-4 md:p-6 lg:px-10 lg:py-8">
+      <div className="mx-auto w-full max-w-[1360px] p-4 md:p-6 lg:px-8 lg:py-6">
         {user && (
           <ResumeProfileSwitcher
             profiles={profiles}
@@ -1329,7 +1329,7 @@ export default function ResumeBuilder() {
         {/* Desktop Header */}
         <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-5xl font-bold mb-1 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-4xl font-bold mb-1 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
               Template Information
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">

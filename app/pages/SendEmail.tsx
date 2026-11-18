@@ -2210,6 +2210,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               </p>
             )}
             <JobFileUpload
+              lockedFileName={
+                cvSource === 'devresume' && attachments.cv
+                  ? attachments.cv.name
+                  : undefined
+              }
               onFilesChange={files => {
                 // A manual change to the CV slot overrides whatever was
                 // auto-loaded from the resume profile.

@@ -357,7 +357,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   }>({ cv: null, coverLetter: null });
   const [savedCoverLetters, setSavedCoverLetters] = useState<CoverLetter[]>([]);
   const [selectedSavedCoverLetter, setSelectedSavedCoverLetter] = useState('');
-  const [cvSource, setCvSource] = useState<'profile' | 'devresume'>('profile');
+  const [cvSource, setCvSource] = useState<'profile' | 'devresume'>('devresume');
   const [devResumeUpdatedAt, setDevResumeUpdatedAt] = useState<string | null>(null);
   const [isLoadingDevResume, setIsLoadingDevResume] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -595,7 +595,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         setSelectedProfileId(cachedProfileId);
         setResumeData(cached.data);
         setIsLoadingResume(false);
-        if (cachedProfileId) applyCvForProfile(cachedProfileId);
+        if (cvSource === 'profile' && cachedProfileId) {
+          applyCvForProfile(cachedProfileId);
+        } else {
+          loadDevResume();
+        }
       } else {
         setIsLoadingResume(true);
       }
@@ -614,7 +618,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         setSelectedProfileId(defaultProfileId || '');
         setResumeData(data);
         setCachedData(cacheKey, { profiles, data });
-        if (defaultProfileId) applyCvForProfile(defaultProfileId);
+        if (cvSource === 'profile' && defaultProfileId) {
+          applyCvForProfile(defaultProfileId);
+        } else {
+          loadDevResume();
+        }
       } catch (error) {
         console.error('Error loading resume data:', error);
       } finally {
@@ -637,7 +645,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     try {
       const data = await loadResumeData(user?.uid, profileId);
       setResumeData(data);
-      await applyCvForProfile(profileId);
+      if (cvSource === 'profile') {
+        await applyCvForProfile(profileId);
+      } else {
+        await loadDevResume();
+      }
     } catch (error) {
       console.error('Error loading resume profile:', error);
     } finally {
@@ -2146,6 +2158,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
                 <FileText className="h-4 w-4 text-primary" />
                 CV / Resume source
+                {attachments.cv && (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                )}
               </div>
               <p className="mb-3 text-xs text-muted-foreground">
                 Choose your saved JobMail CV or the latest CV from your connected DevResume Google Drive.
@@ -2174,7 +2189,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               {cvSource === 'devresume' && (
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-xs">
                   <span className="text-muted-foreground">
-                    {devResumeUpdatedAt ? `Drive updated ${new Date(devResumeUpdatedAt).toLocaleString()}` : 'Latest Drive resume will be loaded for this email.'}
+                    {attachments.cv
+                      ? `${attachments.cv.name} · ${devResumeUpdatedAt ? `Updated ${new Date(devResumeUpdatedAt).toLocaleString()}` : 'Loaded from DevResume Drive'}`
+                      : 'Latest Drive resume will be loaded for this email.'}
                   </span>
                   <button type="button" className="font-semibold text-primary hover:underline" onClick={() => void loadDevResume()} disabled={isLoadingDevResume}>
                     {isLoadingDevResume ? 'Loading...' : 'Refresh from Drive'}

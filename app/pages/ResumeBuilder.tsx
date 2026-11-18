@@ -1312,7 +1312,7 @@ export default function ResumeBuilder() {
       </div>
 
       {/* Main Content */}
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="mx-auto w-full max-w-[1500px] p-4 md:p-6 lg:px-10 lg:py-8">
         {user && (
           <ResumeProfileSwitcher
             profiles={profiles}
@@ -1329,7 +1329,7 @@ export default function ResumeBuilder() {
         {/* Desktop Header */}
         <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-4xl font-bold mb-1 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-5xl font-bold mb-1 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
               Template Information
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
@@ -1542,7 +1542,7 @@ export default function ResumeBuilder() {
             stretching to match the taller content column — a grid item's
             sticky containing block is still the full row height regardless
             of align-self, so it stays pinned while that column scrolls. */}
-        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[150px_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start lg:gap-10">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
             className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:top-4 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${

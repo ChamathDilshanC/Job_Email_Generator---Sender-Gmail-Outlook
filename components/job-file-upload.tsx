@@ -154,7 +154,7 @@ export default function JobFileUpload({
         </h3>
 
         <div
-          className="flex min-h-36 cursor-pointer justify-center rounded-xl border border-dashed border-border px-5 py-8 transition-colors hover:border-primary/50 hover:bg-primary/[0.025]"
+          className="flex min-h-36 cursor-pointer justify-center rounded-2xl border border-dashed border-primary/20 bg-gradient-to-br from-primary/[0.035] via-background to-muted/40 px-5 py-8 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
           onDragOver={e => e.preventDefault()}
           onDrop={handleCvDrop}
           onClick={() => cvInputRef.current?.click()}
@@ -231,7 +231,7 @@ export default function JobFileUpload({
         </h3>
 
         <div
-          className="flex min-h-36 cursor-pointer justify-center rounded-xl border border-dashed border-border px-5 py-8 transition-colors hover:border-primary/50 hover:bg-primary/[0.025]"
+          className="flex min-h-36 cursor-pointer justify-center rounded-2xl border border-dashed border-primary/20 bg-gradient-to-br from-primary/[0.035] via-background to-muted/40 px-5 py-8 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
           onDragOver={e => e.preventDefault()}
           onDrop={handleClDrop}
           onClick={() => clInputRef.current?.click()}

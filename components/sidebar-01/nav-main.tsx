@@ -2,6 +2,7 @@
 
 import { AlertDialog } from '@/components/alert-dialog';
 import { BounceSidebar } from '@/components/ui/bounce-sidebar';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useState } from 'react';
 import type { NavItem, PageType } from './types';
 
@@ -11,6 +12,8 @@ interface NavMainProps {
 }
 
 export function NavMain({ items, onNavigate }: NavMainProps) {
+  const { state, isMobile } = useSidebar();
+  const iconOnly = state === 'collapsed' && !isMobile;
   const [alertDialog, setAlertDialog] = useState<{
     open: boolean;
     title: string;
@@ -50,7 +53,8 @@ export function NavMain({ items, onNavigate }: NavMainProps) {
             onNavigate?.(item.id as PageType);
           }}
           dotColor="#4f46e5"
-          className="gap-2 pl-4"
+          iconOnly={iconOnly}
+          className={iconOnly ? 'items-center gap-1 px-1' : 'gap-2 pl-4'}
         />
       </div>
 

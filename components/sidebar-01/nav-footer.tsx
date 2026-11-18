@@ -36,6 +36,7 @@ export function NavFooter({ user, onNavigate, activePage }: NavFooterProps) {
             isActive={activePage === 'guide'}
             onClick={() => onNavigate?.('guide')}
             className="gap-3 group"
+            tooltip="Guide Flow"
             style={
               activePage === 'guide'
                 ? {
@@ -46,9 +47,9 @@ export function NavFooter({ user, onNavigate, activePage }: NavFooterProps) {
             }
           >
             <BookOpen className="h-5 w-5 flex-shrink-0" />
-            <span className="font-medium">Guide Flow</span>
+            <span className="font-medium group-data-[collapsible=icon]:hidden">Guide Flow</span>
             <ExternalLink
-              className={`h-4 w-4 ml-auto flex-shrink-0 transition-opacity ${
+              className={`h-4 w-4 ml-auto flex-shrink-0 group-data-[collapsible=icon]:hidden transition-opacity ${
                 activePage === 'guide'
                   ? 'text-white opacity-100'
                   : 'text-muted-foreground opacity-60 group-hover:opacity-100'
@@ -62,6 +63,7 @@ export function NavFooter({ user, onNavigate, activePage }: NavFooterProps) {
             isActive={activePage === 'docs'}
             onClick={() => onNavigate?.('docs')}
             className="gap-3 group"
+            tooltip="Documentation"
             style={
               activePage === 'docs'
                 ? {
@@ -72,9 +74,9 @@ export function NavFooter({ user, onNavigate, activePage }: NavFooterProps) {
             }
           >
             <FileCode className="h-5 w-5 flex-shrink-0" />
-            <span className="font-medium">Documentation</span>
+            <span className="font-medium group-data-[collapsible=icon]:hidden">Documentation</span>
             <ExternalLink
-              className={`h-4 w-4 ml-auto flex-shrink-0 transition-opacity ${
+              className={`h-4 w-4 ml-auto flex-shrink-0 group-data-[collapsible=icon]:hidden transition-opacity ${
                 activePage === 'docs'
                   ? 'text-white opacity-100'
                   : 'text-muted-foreground opacity-60 group-hover:opacity-100'
@@ -95,9 +97,10 @@ export function NavFooter({ user, onNavigate, activePage }: NavFooterProps) {
               <SidebarMenuButton
                 onClick={() => setShowLogoutConfirm(true)}
                 className="gap-3 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                tooltip="Log Out"
               >
                 <LogOut className="h-5 w-5" />
-                <span>Log Out</span>
+                <span className="group-data-[collapsible=icon]:hidden">Log Out</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -105,7 +108,7 @@ export function NavFooter({ user, onNavigate, activePage }: NavFooterProps) {
         </>
       )}
 
-      <div className="flex flex-col items-center justify-center gap-3 p-4">
+      <div className="flex flex-col items-center justify-center gap-3 p-4 group-data-[collapsible=icon]:hidden">
         <NextImage
           src="/logosm.png"
           alt="JobMail"

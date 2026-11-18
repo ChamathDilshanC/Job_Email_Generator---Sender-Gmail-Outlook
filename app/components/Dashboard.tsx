@@ -40,6 +40,8 @@ export function Dashboard() {
         return <Scheduled />;
       case 'profile':
         return <Profile />;
+      case 'settings':
+        return <Profile settingsMode />;
       case 'guide':
         return <GuidePage />;
       case 'docs':

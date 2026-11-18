@@ -3,6 +3,8 @@
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
 import { OtpInput } from '@/components/ui/otp-input';
+import { Switch } from '@/components/ui/switch';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
@@ -26,8 +28,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export default function Profile() {
+export default function Profile({ settingsMode = false }: { settingsMode?: boolean } = {}) {
   const { user, isAuthenticated, accessToken, handleSignOut } = useAuth();
+  const { open, setOpen } = useSidebar();
   const [devResumeCode, setDevResumeCode] = useState('');
   const [devResumeStatus, setDevResumeStatus] = useState(false);
   const [connectionMessage, setConnectionMessage] = useState('');
@@ -154,7 +157,7 @@ export default function Profile() {
           className="mb-8"
         >
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Profile
+            {settingsMode ? 'Settings' : 'Profile'}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Manage your personal information and preferences
@@ -202,7 +205,7 @@ export default function Profile() {
       >
         <motion.div variants={fadeInUp} className="mb-8">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Profile
+            {settingsMode ? 'Settings' : 'Profile'}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Manage your personal information and preferences
@@ -396,6 +399,25 @@ export default function Profile() {
                 animate="visible"
                 className="flex flex-col"
               >
+                <motion.div
+                  variants={fadeInUp}
+                  className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 py-4"
+                >
+                  <div>
+                    <h3 className="mb-1 font-medium text-gray-900 dark:text-gray-100">
+                      Expanded Sidebar
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Show navigation labels. Turn off to use icon-only mode.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={open}
+                    onCheckedChange={setOpen}
+                    aria-label="Expanded Sidebar"
+                  />
+                </motion.div>
+
                 {/* Clear Cache */}
                 <motion.div
                   variants={fadeInUp}

@@ -8,6 +8,7 @@ export type PageType =
   | 'history'
   | 'scheduled'
   | 'profile'
+  | 'settings'
   | 'guide'
   | 'docs';
 

@@ -29,6 +29,7 @@ export type BounceSidebarProps = Omit<ComponentProps<"ul">, "onChange"> & {
   defaultValue?: number;
   onChange?: (index: number) => void;
   dotColor?: string;
+  iconOnly?: boolean;
 };
 
 export function BounceSidebar({
@@ -37,6 +38,7 @@ export function BounceSidebar({
   defaultValue = 0,
   onChange,
   dotColor = "#FC4C01",
+  iconOnly = false,
   className,
   ...props
 }: BounceSidebarProps) {
@@ -118,7 +120,7 @@ export function BounceSidebar({
   return (
     <ul
       data-slot="bounce-sidebar"
-      className={cn("relative flex flex-col gap-1 pl-6", className)}
+      className={cn("relative flex flex-col gap-1", iconOnly ? "pl-0" : "pl-6", className)}
       {...props}
     >
       <span
@@ -129,7 +131,7 @@ export function BounceSidebar({
           width: dotSize,
           height: dotSize,
           backgroundColor: dotColor,
-          opacity: ready ? 1 : 0,
+          opacity: iconOnly ? 0 : ready ? 1 : 0,
         }}
       />
 
@@ -158,6 +160,7 @@ export function BounceSidebar({
         const isActive = index === activeIndex;
         const itemClassName = cn(
           "flex w-full cursor-pointer items-center gap-3 rounded-lg p-1 text-left text-sm transition-colors duration-200",
+          iconOnly && "justify-center px-2 py-2",
           isActive ? "text-foreground" : "text-foreground/50",
         );
 
@@ -167,6 +170,7 @@ export function BounceSidebar({
             ref={(el) => {
               itemRefs.current[index] = el;
             }}
+            className={iconOnly ? "group relative" : undefined}
           >
             {href ? (
               <MotionLink
@@ -175,9 +179,15 @@ export function BounceSidebar({
                 data-active={isActive}
                 onClick={() => select(index)}
                 className={itemClassName}
+                title={iconOnly ? label : undefined}
               >
                 {icon}
-                {label}
+                {!iconOnly && label}
+                {iconOnly && (
+                  <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    {label}
+                  </span>
+                )}
               </MotionLink>
             ) : (
               <motion.button
@@ -186,9 +196,15 @@ export function BounceSidebar({
                 data-active={isActive}
                 onClick={() => select(index)}
                 className={itemClassName}
+                title={iconOnly ? label : undefined}
               >
                 {icon}
-                {label}
+                {!iconOnly && label}
+                {iconOnly && (
+                  <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                    {label}
+                  </span>
+                )}
               </motion.button>
             )}
           </li>

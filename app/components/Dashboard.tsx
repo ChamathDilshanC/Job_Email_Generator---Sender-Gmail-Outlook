@@ -70,7 +70,7 @@ export function Dashboard() {
         expandedPinned={sidebarExpanded}
         onExpandedPinnedChange={updateSidebarExpanded}
       />
-      <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden">
+      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
@@ -89,8 +89,8 @@ export function Dashboard() {
             <ThemeToggle />
           </div>
         </header>
-        <main className="min-h-0 flex-1 overflow-hidden">
-          <div className="h-full min-h-0 overflow-y-auto px-4 pb-24 pt-4 sm:px-8">
+        <main className="min-h-0 flex-1 overflow-y-auto">
+          <div className="px-4 pb-24 pt-4 sm:px-8">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activePage}

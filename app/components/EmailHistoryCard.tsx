@@ -164,6 +164,11 @@ export default function EmailHistoryCard({
               <Eye className="h-3 w-3" /> Opened
             </span>
           )}
+          {!(email.firstOpenedAt || email.lastOpenedAt || (email.openCount || 0) > 0) && (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-800/60 dark:text-gray-400">
+              Not opened
+            </span>
+          )}
         </div>
       )}
 

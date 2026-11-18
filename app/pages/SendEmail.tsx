@@ -59,6 +59,7 @@ import {
   Copy,
   FileText,
   Link2,
+  Loader2,
   LogOut,
   Mail,
   Paperclip,
@@ -69,6 +70,7 @@ import {
   Trash2,
   XCircle,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -366,6 +368,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     useState<CoverLetter['tone']>('professional');
   const [coverLetterInstructions, setCoverLetterInstructions] = useState('');
   const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
+  const [coverLetterProgress, setCoverLetterProgress] = useState(0);
   // On by default per user preference - knowing whether a recruiter opened
   // the email is worth more here than the small deliverability risk from
   // the tracking pixel. Still user-toggleable per send.
@@ -763,7 +766,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
   // Validate the form, then open the preview modal instead of sending
   // immediately — the actual send happens from the modal's confirm action.
-  const generateRequiredCoverLetter = async (): Promise<boolean> => {
+  const generateRequiredCoverLetter = async (force = false): Promise<boolean> => {
     if (!requireCoverLetter) return true;
     if (!user?.uid || !selectedProfileId || !resumeData) {
       showToast(
@@ -774,7 +777,21 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       return false;
     }
 
+    if (!force && attachments.coverLetter && selectedSavedCoverLetter) {
+      return true;
+    }
+
+    if (!formData.companyName.trim() || !formData.position.trim()) {
+      showToast(
+        'warning',
+        'Job Details Required',
+        'Enter the company name and position before generating a cover letter.'
+      );
+      return false;
+    }
+
     setIsGeneratingCoverLetter(true);
+    setCoverLetterProgress(12);
     try {
       const generationResponse = await fetch('/api/cover-letter/generate', {
         method: 'POST',
@@ -794,6 +811,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       if (!generationResponse.ok) {
         throw new Error(generationData.error || 'Could not generate cover letter.');
       }
+      setCoverLetterProgress(58);
 
       const saveResponse = await fetch('/api/cover-letter', {
         method: 'POST',
@@ -818,6 +836,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       if (!saveResponse.ok || !saveData.coverLetter) {
         throw new Error(saveData.error || 'Could not save cover letter.');
       }
+      setCoverLetterProgress(88);
 
       const letter = saveData.coverLetter as CoverLetter;
       setSavedCoverLetters(previous => [
@@ -833,6 +852,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           user.displayName || 'Applicant'
         ),
       }));
+      setCoverLetterProgress(100);
       showToast(
         'success',
         'Cover Letter Ready',
@@ -848,6 +868,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       return false;
     } finally {
       setIsGeneratingCoverLetter(false);
+      window.setTimeout(() => setCoverLetterProgress(0), 900);
     }
   };
 
@@ -867,7 +888,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       return;
     }
 
-    const coverLetterReady = await generateRequiredCoverLetter();
+    const coverLetterReady = await generateRequiredCoverLetter(false);
     if (!coverLetterReady) return;
 
     // Check if files are uploaded
@@ -1851,6 +1872,61 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   The letter is generated and saved automatically when you
                   continue to preview.
                 </p>
+              </div>
+            )}
+            {requireCoverLetter && (
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={() => void generateRequiredCoverLetter(true)}
+                  disabled={
+                    isGeneratingCoverLetter ||
+                    !formData.companyName.trim() ||
+                    !formData.position.trim()
+                  }
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                >
+                  {isGeneratingCoverLetter ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating & Saving...
+                    </>
+                  ) : attachments.coverLetter ? (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      Regenerate Cover Letter
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generate & Save Cover Letter
+                    </>
+                  )}
+                </button>
+                {(isGeneratingCoverLetter || coverLetterProgress === 100) && (
+                  <div className="mt-3 max-w-md">
+                    <div className="mb-1 flex items-center justify-between text-xs font-medium text-muted-foreground">
+                      <span>
+                        {coverLetterProgress === 100
+                          ? 'Cover letter ready'
+                          : 'Preparing cover letter'}
+                      </span>
+                      <span>{coverLetterProgress}%</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-[width] duration-500"
+                        style={{ width: `${coverLetterProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {attachments.coverLetter && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {attachments.coverLetter.name} is attached
+                  </p>
+                )}
               </div>
             )}
             <div className="mt-6 border-t border-border/70 pt-6">

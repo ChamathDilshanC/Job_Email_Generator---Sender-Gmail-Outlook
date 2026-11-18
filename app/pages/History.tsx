@@ -38,6 +38,9 @@ export default function History() {
   const [emailHistory, setEmailHistory] = useState<EmailHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<
+    'opened' | 'not_opened' | 'sent' | 'pending' | 'failed' | 'all'
+  >('opened');
   const [selectedEmail, setSelectedEmail] = useState<EmailHistory | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
@@ -117,13 +120,25 @@ export default function History() {
     return () => clearInterval(intervalId);
   }, [user?.uid]);
 
-  // Filter emails based on search query
-  const filteredEmails = emailHistory.filter(
-    email =>
+  const isOpened = (email: EmailHistory) =>
+    Boolean(email.firstOpenedAt || email.lastOpenedAt || (email.openCount || 0) > 0);
+
+  // Opened is the default view. Status and text filters combine rather than
+  // replacing each other so users can narrow the selected folder quickly.
+  const filteredEmails = emailHistory.filter(email => {
+    const matchesSearch =
       email.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       email.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      email.recipientEmail.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      email.recipientEmail.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'opened' && isOpened(email)) ||
+      (statusFilter === 'not_opened' && !isOpened(email)) ||
+      email.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   // Calculate stats
   const totalSent = emailHistory.filter(e => e.status === 'sent').length;
@@ -255,6 +270,15 @@ export default function History() {
     },
   ];
 
+  const statusCounts = {
+    opened: emailHistory.filter(isOpened).length,
+    not_opened: emailHistory.filter(email => !isOpened(email)).length,
+    sent: emailHistory.filter(email => email.status === 'sent').length,
+    pending: emailHistory.filter(email => email.status === 'pending').length,
+    failed: emailHistory.filter(email => email.status === 'failed').length,
+    all: emailHistory.length,
+  };
+
   return (
     <>
       <motion.div
@@ -306,7 +330,7 @@ export default function History() {
               variants={fadeInUp}
               whileHover={{ y: -3 }}
               transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-              className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm hover:shadow-lg dark:hover:shadow-black/40"
+              className="flex items-center gap-4 border-b border-gray-200 py-4 dark:border-gray-800"
             >
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bgClass}`}
@@ -337,7 +361,7 @@ export default function History() {
                 variants={fadeInUp}
                 whileHover={{ y: -3 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                className="flex items-center gap-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm hover:shadow-lg dark:hover:shadow-black/40"
+                className="flex items-center gap-4 border-b border-gray-200 py-4 dark:border-gray-800"
               >
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.bgClass}`}
@@ -365,10 +389,34 @@ export default function History() {
               placeholder="Search by company, position, or email..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 py-3 pl-12 pr-4 transition-all focus:border-transparent focus:ring-2 focus:ring-[#3b3be3] dark:focus:ring-[#818cf8]"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 py-3 pl-12 pr-4 transition-all focus:border-primary focus:ring-2 focus:ring-primary/10"
             />
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           </div>
+        </motion.div>
+
+        <motion.div variants={fadeInUp} className="mb-6 flex flex-wrap gap-2">
+          {([
+            ['opened', 'Opened'],
+            ['not_opened', 'Not Opened'],
+            ['sent', 'Sent'],
+            ['pending', 'Pending'],
+            ['failed', 'Failed'],
+            ['all', 'All'],
+          ] as const).map(([status, label]) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                statusFilter === status
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300'
+              }`}
+            >
+              {label} ({statusCounts[status]})
+            </button>
+          ))}
         </motion.div>
 
         {/* Content */}

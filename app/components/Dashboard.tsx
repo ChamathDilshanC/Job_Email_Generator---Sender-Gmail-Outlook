@@ -3,13 +3,8 @@
 import { AppSidebar } from '@/components/sidebar-01/app-sidebar';
 import type { PageType } from '@/components/sidebar-01/types';
 import { ThemeToggle } from '@/components/theme-toggle';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import packageJson from '../../package.json';
 import DocsPage from '../pages/DocsPage';
 import EmailTemplates from '../pages/EmailTemplates';
@@ -23,6 +18,16 @@ import CoverLetter from '../pages/CoverLetter';
 
 export function Dashboard() {
   const [activePage, setActivePage] = useState<PageType>('send-email');
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+
+  useEffect(() => {
+    setSidebarExpanded(localStorage.getItem('jobmail-sidebar-expanded') === 'true');
+  }, []);
+
+  const updateSidebarExpanded = (expanded: boolean) => {
+    setSidebarExpanded(expanded);
+    localStorage.setItem('jobmail-sidebar-expanded', String(expanded));
+  };
 
   const renderPage = () => {
     switch (activePage) {
@@ -41,7 +46,13 @@ export function Dashboard() {
       case 'profile':
         return <Profile />;
       case 'settings':
-        return <Profile settingsMode />;
+        return (
+          <Profile
+            settingsMode
+            sidebarExpanded={sidebarExpanded}
+            onSidebarExpandedChange={updateSidebarExpanded}
+          />
+        );
       case 'guide':
         return <GuidePage />;
       case 'docs':
@@ -52,12 +63,16 @@ export function Dashboard() {
   };
 
   return (
-    <SidebarProvider className="h-screen min-h-0 overflow-hidden">
-      <AppSidebar onNavigate={setActivePage} activePage={activePage} />
-      <SidebarInset className="h-full min-h-0 overflow-hidden">
+    <div className="flex h-screen min-h-0 w-full overflow-hidden">
+      <AppSidebar
+        onNavigate={setActivePage}
+        activePage={activePage}
+        expandedPinned={sidebarExpanded}
+        onExpandedPinnedChange={updateSidebarExpanded}
+      />
+      <div className="h-full min-h-0 min-w-0 flex-1 overflow-hidden">
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold tracking-tight">
                 JobMail
@@ -130,7 +145,7 @@ export function Dashboard() {
             </p>
           </footer>
         </main>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   );
 }

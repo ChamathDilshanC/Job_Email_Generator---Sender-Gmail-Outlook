@@ -4,7 +4,6 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { GoogleSignInButton } from '@/components/google-sign-in';
 import { OtpInput } from '@/components/ui/otp-input';
 import { Switch } from '@/components/ui/switch';
-import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteEmailFromHistory,
@@ -28,9 +27,16 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export default function Profile({ settingsMode = false }: { settingsMode?: boolean } = {}) {
+export default function Profile({
+  settingsMode = false,
+  sidebarExpanded = false,
+  onSidebarExpandedChange,
+}: {
+  settingsMode?: boolean;
+  sidebarExpanded?: boolean;
+  onSidebarExpandedChange?: (expanded: boolean) => void;
+} = {}) {
   const { user, isAuthenticated, accessToken, handleSignOut } = useAuth();
-  const { open, setOpen } = useSidebar();
   const [devResumeCode, setDevResumeCode] = useState('');
   const [devResumeStatus, setDevResumeStatus] = useState(false);
   const [connectionMessage, setConnectionMessage] = useState('');
@@ -215,7 +221,7 @@ export default function Profile({ settingsMode = false }: { settingsMode?: boole
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
           {/* Sidebar */}
           <motion.div variants={fadeInUp} className="flex flex-col gap-6">
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-8 text-center shadow-sm">
+            <div className="pb-8 text-center">
               <div className="relative mx-auto mb-6 h-32 w-32">
                 {photoURL ? (
                   <img
@@ -281,7 +287,7 @@ export default function Profile({ settingsMode = false }: { settingsMode?: boole
           <div className="flex flex-col gap-6">
             <motion.div
               variants={fadeInUp}
-              className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm md:p-8"
+              className="border-b border-gray-200 pb-8 dark:border-gray-800"
             >
               <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-gray-100">
                 Account Information
@@ -338,7 +344,7 @@ export default function Profile({ settingsMode = false }: { settingsMode?: boole
 
             <motion.div
               variants={fadeInUp}
-              className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm md:p-8"
+              className="border-b border-gray-200 py-8 dark:border-gray-800"
             >
               <div className="mb-4 flex items-center gap-2">
                 <Link2 className="h-5 w-5 text-[#3b3be3]" />
@@ -384,7 +390,7 @@ export default function Profile({ settingsMode = false }: { settingsMode?: boole
             {/* Advanced Settings */}
             <motion.div
               variants={fadeInUp}
-              className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm md:p-8"
+              className="py-8"
             >
               <div className="mb-6 flex items-center gap-2">
                 <SettingsIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -412,8 +418,10 @@ export default function Profile({ settingsMode = false }: { settingsMode?: boole
                     </p>
                   </div>
                   <Switch
-                    checked={open}
-                    onCheckedChange={setOpen}
+                    checked={sidebarExpanded}
+                    onCheckedChange={value =>
+                      onSidebarExpandedChange?.(value)
+                    }
                     aria-label="Expanded Sidebar"
                   />
                 </motion.div>

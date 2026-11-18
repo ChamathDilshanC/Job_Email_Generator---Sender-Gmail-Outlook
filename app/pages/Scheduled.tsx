@@ -26,6 +26,9 @@ import { useEffect, useState } from 'react';
 export default function Scheduled() {
   const { user, isAuthenticated, handleSignIn } = useAuth();
   const [scheduled, setScheduled] = useState<ScheduledEmail[]>([]);
+  const [statusFilter, setStatusFilter] = useState<
+    'pending' | 'sent' | 'failed' | 'cancelled' | 'all'
+  >('pending');
   const [isLoading, setIsLoading] = useState(true);
   const [hasBackgroundSend, setHasBackgroundSend] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -126,6 +129,19 @@ export default function Scheduled() {
     }
   };
 
+  const filteredScheduled =
+    statusFilter === 'all'
+      ? scheduled
+      : scheduled.filter(item => item.status === statusFilter);
+
+  const statusCounts = {
+    all: scheduled.length,
+    pending: scheduled.filter(item => item.status === 'pending').length,
+    sent: scheduled.filter(item => item.status === 'sent').length,
+    failed: scheduled.filter(item => item.status === 'failed').length,
+    cancelled: scheduled.filter(item => item.status === 'cancelled').length,
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="w-full">
@@ -182,19 +198,46 @@ export default function Scheduled() {
         )}
 
         <motion.div variants={fadeInUp}>
+          {!isLoading && scheduled.length > 0 && (
+            <div className="mb-5 flex flex-wrap gap-2">
+              {([
+                ['pending', 'Pending'],
+                ['sent', 'Sent'],
+                ['failed', 'Failed'],
+                ['cancelled', 'Cancelled'],
+                ['all', 'All'],
+              ] as const).map(([status, label]) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setStatusFilter(status)}
+                  className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                    statusFilter === status
+                      ? 'border-[#3b3be3] bg-[#3b3be3] text-white dark:border-[#818cf8] dark:bg-[#818cf8]'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  {label} ({statusCounts[status]})
+                </button>
+              ))}
+            </div>
+          )}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-[#3b3be3] dark:border-[#818cf8]" />
             </div>
-          ) : scheduled.length === 0 ? (
+          ) : filteredScheduled.length === 0 ? (
             <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-12 text-center">
               <CalendarClock className="mx-auto mb-4 h-16 w-16 text-gray-300 dark:text-gray-700" />
               <h3 className="mb-2 text-xl font-semibold text-gray-700 dark:text-gray-200">
-                No scheduled emails yet
+                {scheduled.length === 0
+                  ? 'No scheduled emails yet'
+                  : `No ${statusFilter === 'all' ? '' : statusFilter} scheduled emails`}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Choose "Schedule for Later" when sending an email to queue it
-                for a future time.
+                {scheduled.length === 0
+                  ? 'Choose "Schedule for Later" when sending an email to queue it for a future time.'
+                  : 'Choose another status filter to view different scheduled emails.'}
               </p>
             </div>
           ) : (
@@ -202,7 +245,7 @@ export default function Scheduled() {
               variants={staggerContainer(0.06)}
               className="grid grid-cols-1 gap-5"
             >
-              {scheduled.map(item => (
+              {filteredScheduled.map(item => (
                 <motion.div
                   key={item.id}
                   variants={fadeInUp}

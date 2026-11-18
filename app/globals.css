@@ -330,6 +330,43 @@ a {
   color: var(--text-muted);
 }
 
+.send-email-page {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+.send-email-window {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.send-email-window .form-input,
+.send-email-window .form-textarea,
+.send-email-window [role='combobox'] {
+  min-height: 44px;
+  border-radius: 10px;
+  background: var(--bg-input);
+  box-shadow: none;
+}
+
+.send-email-window .form-textarea {
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+}
+
+.send-email-window .form-textarea:focus {
+  background: var(--bg-card);
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;

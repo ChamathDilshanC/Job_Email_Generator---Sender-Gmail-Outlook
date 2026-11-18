@@ -146,27 +146,15 @@ export default function JobFileUpload({
   const { file: clFile } = clState;
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
       {/* CV Upload */}
       <form className="w-full" onSubmit={e => e.preventDefault()}>
-        <h3
-          style={{
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            marginBottom: '0.75rem',
-            background: 'var(--bg-input)',
-            padding: 'var(--spacing-md)',
-            borderRadius: 'var(--radius-sm)',
-          }}
-        >
+        <h3 className="mb-3 text-sm font-semibold text-foreground">
           CV / Resume
         </h3>
 
         <div
-          className="flex justify-center rounded-md border mt-2 border-dashed border-input px-6 py-12 cursor-pointer hover:bg-muted/50 transition-colors"
+          className="flex min-h-36 cursor-pointer justify-center rounded-xl border border-dashed border-border px-5 py-8 transition-colors hover:border-primary/50 hover:bg-primary/[0.025]"
           onDragOver={e => e.preventDefault()}
           onDrop={handleCvDrop}
           onClick={() => cvInputRef.current?.click()}
@@ -204,7 +192,7 @@ export default function JobFileUpload({
         </p>
 
         {cvFile && (
-          <Card className="relative mt-8 bg-muted p-4 gap-4">
+          <Card className="relative mt-3 border-0 bg-muted/60 p-4 shadow-none">
             <Button
               type="button"
               variant="ghost"
@@ -238,24 +226,12 @@ export default function JobFileUpload({
 
       {/* Cover Letter Upload */}
       <form className="w-full" onSubmit={e => e.preventDefault()}>
-        <h3
-          style={{
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            marginBottom: '0.75rem',
-            background: 'var(--bg-input)',
-            padding: 'var(--spacing-md)',
-            borderRadius: 'var(--radius-sm)',
-          }}
-        >
+        <h3 className="mb-3 text-sm font-semibold text-foreground">
           Cover Letter
         </h3>
 
         <div
-          className="flex justify-center rounded-md border mt-2 border-dashed border-input px-6 py-12 cursor-pointer hover:bg-muted/50 transition-colors"
+          className="flex min-h-36 cursor-pointer justify-center rounded-xl border border-dashed border-border px-5 py-8 transition-colors hover:border-primary/50 hover:bg-primary/[0.025]"
           onDragOver={e => e.preventDefault()}
           onDrop={handleClDrop}
           onClick={() => clInputRef.current?.click()}
@@ -293,7 +269,7 @@ export default function JobFileUpload({
         </p>
 
         {clFile && (
-          <Card className="relative mt-8 bg-muted p-4 gap-4">
+          <Card className="relative mt-3 border-0 bg-muted/60 p-4 shadow-none">
             <Button
               type="button"
               variant="ghost"

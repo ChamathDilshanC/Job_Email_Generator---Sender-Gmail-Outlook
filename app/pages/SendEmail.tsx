@@ -1304,7 +1304,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         variants={staggerContainer(0.08)}
         initial="hidden"
         animate="visible"
-        className="w-full"
+        className="send-email-page w-full"
       >
         <motion.div variants={fadeInUp} className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -1368,20 +1368,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
         <motion.div
           variants={fadeInUp}
-          className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+          className="send-email-window"
         >
-          {/* macOS-style window titlebar */}
-          <div className="relative flex items-center gap-1.5 border-b border-border bg-muted/40 px-5 py-3.5">
-            <span className="h-3 w-3 rounded-full bg-red-400/80" />
-            <span className="h-3 w-3 rounded-full bg-amber-400/80" />
-            <span className="h-3 w-3 rounded-full bg-emerald-400/80" />
-            <span className="absolute left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground">
-              Send Application Email
-            </span>
-          </div>
-
           {/* Header */}
-          <div className="flex flex-col gap-4 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-5 border-b border-border/70 pb-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="mb-1 flex items-center gap-2">
                 <div className="rounded-lg bg-primary/10 p-2 text-primary">
@@ -1490,7 +1480,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             </div>
           </div>
 
-          <div className="border-b border-border bg-muted/20 px-6 py-4">
+          <div className="border-b border-border/70 py-5">
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <FlowStep number="1" icon={<BriefcaseBusiness className="h-4 w-4" />} title="Job details" description="Company and role" active={Boolean(formData.companyName && formData.position)} />
               <FlowStep number="2" icon={<UserRound className="h-4 w-4" />} title="Recipient" description="Where to send" active={Boolean(formData.recipientEmail)} />
@@ -1500,7 +1490,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* Auto-fill from Job URL */}
-          <div className="mx-6 mt-6 rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
+          <div className="mt-7 border-b border-border/70 pb-7">
             <div className="mb-2 flex items-center gap-2">
               <Link2 className="h-4 w-4 text-primary" />
               <label className="text-xs font-semibold text-foreground">
@@ -1533,7 +1523,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* Fields */}
-          <div className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-6 py-8 sm:grid-cols-2">
             <Field
               label="Company Name"
               required
@@ -1564,7 +1554,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 type="text"
                 name="companyName"
                 aria-invalid={!hasCompany}
-                className={`form-input ${hasCompany ? 'border-emerald-400 bg-emerald-50/40 pr-10 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
+                className="form-input pr-10"
                 placeholder="e.g., Google, Microsoft"
                 value={formData.companyName}
                 onChange={handleInputChange}
@@ -1576,7 +1566,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 type="text"
                 name="position"
                 aria-invalid={!hasPosition}
-                className={`form-input ${hasPosition ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
+                className="form-input"
                 placeholder="e.g., Full Stack Developer"
                 value={formData.position}
                 onChange={handleInputChange}
@@ -1588,7 +1578,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 type="email"
                 name="recipientEmail"
                 aria-invalid={!hasRecipient}
-                className={`form-input ${hasRecipient ? 'border-emerald-400 bg-emerald-50/40 dark:border-emerald-700 dark:bg-emerald-950/20' : 'border-amber-300 dark:border-amber-700'}`}
+                className="form-input"
                 placeholder="e.g., hr@company.com"
                 value={formData.recipientEmail}
                 onChange={handleInputChange}
@@ -1754,7 +1744,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 ))}
                 </SelectGroup>
                 </SelectContent>
-              </Select> : <div className="space-y-4 rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
+              </Select> : <div className="space-y-5 border-t border-border/70 pt-5">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-primary/10 p-2 text-primary"><Sparkles className="h-4 w-4" /></div>
                   <div>
@@ -1776,8 +1766,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* Cover Letter Requirement Toggle */}
-          <div className="mt-6 px-6">
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
+          <div className="mt-8 border-t border-border/70 pt-7">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <label
                   htmlFor="require-cover-letter"
@@ -1799,7 +1789,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
               />
             </div>
             {requireCoverLetter && (
-              <div className="mt-3 space-y-3 rounded-xl border border-amber-200 bg-amber-50/60 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+              <div className="mt-5 space-y-4 border-l-2 border-primary/30 pl-5">
                 <div>
                   <p className="text-sm font-semibold text-foreground">
                     Cover letter details
@@ -1863,7 +1853,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 </p>
               </div>
             )}
-            <div className="mt-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-4">
+            <div className="mt-6 border-t border-border/70 pt-6">
               <div className="mb-2 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" />
                 <div>
@@ -1896,8 +1886,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* Open Tracking Toggle */}
-          <div className="mt-4 px-6">
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
+          <div className="mt-6 border-t border-border/70 pt-6">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <label
                   htmlFor="track-opens"
@@ -1922,11 +1912,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
 
           {/* Additional Details for scenario templates (cold outreach, referral,
               interview thank-you, follow-up, networking, offer response) */}
-          <div className="mt-6 px-6">
+          <div className="mt-6 border-t border-border/70 pt-6">
             <button
               type="button"
               onClick={() => setShowAdditionalDetails(v => !v)}
-              className="flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              className="flex w-full items-center justify-between py-2 text-left text-sm font-medium text-foreground transition-colors hover:text-primary"
             >
               <span className="inline-flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" />
@@ -2075,8 +2065,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           </div>
 
           {/* File Upload Sections */}
-          <div className="mt-6 px-6 pb-6">
-            <div className="mb-4 rounded-xl border border-primary/20 bg-primary/[0.03] p-4">
+          <div className="mt-8 border-t border-border/70 pt-7">
+            <div className="mb-6">
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
                 <FileText className="h-4 w-4 text-primary" />
                 CV / Resume source
@@ -2106,7 +2096,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 </SelectContent>
               </Select>
               {cvSource === 'devresume' && (
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/15 bg-background px-3 py-2 text-xs">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-xs">
                   <span className="text-muted-foreground">
                     {devResumeUpdatedAt ? `Drive updated ${new Date(devResumeUpdatedAt).toLocaleString()}` : 'Latest Drive resume will be loaded for this email.'}
                   </span>
@@ -2139,7 +2129,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             />
 
             {/* Upload Status Indicators */}
-            <div className={`mt-4 rounded-lg border p-4 ${isFileUploadValid() ? 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20' : 'border-blue-100 bg-[#f0f7ff] dark:border-[#818cf8]/25 dark:bg-[#818cf8]/10'}`}>
+            <div className={`mt-6 border-t pt-5 ${isFileUploadValid() ? 'border-emerald-200/70 dark:border-emerald-900/50' : 'border-border/70'}`}>
               <div className={`mb-2 flex items-center gap-2 text-sm font-semibold ${isFileUploadValid() ? 'text-emerald-700 dark:text-emerald-300' : 'text-[#1a5490] dark:text-[#a5b4fc]'}`}>
                 {isFileUploadValid() ? <CheckCircle2 className="h-4 w-4" /> : <Paperclip className="h-4 w-4" />}
                 Upload Requirements
@@ -2223,13 +2213,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="mx-6 mb-6 scroll-mt-6"
+                className="mt-8 border-t border-border/70 pt-7 scroll-mt-6"
               >
                 <div
-                  className={`mb-4 rounded-2xl border p-4 shadow-sm ${
+                  className={`mb-6 border-b pb-5 ${
                     canSendEmail
-                      ? 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-900/60 dark:bg-emerald-950/20'
-                      : 'border-amber-200 bg-amber-50/70 dark:border-amber-900/60 dark:bg-amber-950/20'
+                      ? 'border-emerald-200/70 dark:border-emerald-900/50'
+                      : 'border-amber-200/70 dark:border-amber-900/50'
                   }`}
                   role="status"
                   aria-live="polite"
@@ -2299,10 +2289,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                     ].map(item => (
                       <div
                         key={item.label}
-                        className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs ${
+                        className={`flex items-center justify-between border-b py-2 text-xs last:border-b-0 ${
                           item.complete
-                            ? 'border-emerald-200/80 bg-white/70 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300'
-                            : 'border-amber-200/80 bg-white/70 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-300'
+                            ? 'border-border/60 text-emerald-700 dark:text-emerald-300'
+                            : 'border-border/60 text-amber-700 dark:text-amber-300'
                         }`}
                       >
                         <span className="font-medium">{item.label}</span>
@@ -2324,8 +2314,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-800">
-                <div className="flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-5 py-3">
+                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-5 py-3">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium text-foreground">

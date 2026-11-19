@@ -1285,7 +1285,7 @@ export default function ResumeBuilder() {
   }
 
   return (
-    <div className="w-full min-h-full pb-8">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       {/* Sticky Mobile Header */}
       <div className="lg:hidden sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
         <button
@@ -1312,7 +1312,7 @@ export default function ResumeBuilder() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto w-full max-w-[1360px] p-4 md:p-6 lg:px-8 lg:py-6">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1360px] flex-1 flex-col p-4 md:p-6 lg:px-8 lg:py-6">
         {user && (
           <ResumeProfileSwitcher
             profiles={profiles}
@@ -1327,7 +1327,7 @@ export default function ResumeBuilder() {
         )}
 
         {/* Desktop Header */}
-        <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-2xl md:text-4xl font-bold mb-1 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
               Template Information
@@ -1353,7 +1353,7 @@ export default function ResumeBuilder() {
         </div>
 
         {/* Step Progress Indicator */}
-        <div className="mb-6 md:mb-8">
+        <div className="mb-4 shrink-0 md:mb-5">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             {/* Step 1: Personal Info */}
             <div className="flex flex-col items-center flex-1">
@@ -1542,7 +1542,7 @@ export default function ResumeBuilder() {
             stretching to match the taller content column — a grid item's
             sticky containing block is still the full row height regardless
             of align-self, so it stays pinned while that column scrolls. */}
-        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start lg:gap-10">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden lg:grid lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start lg:gap-10">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
             className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:top-4 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
@@ -1862,7 +1862,7 @@ export default function ResumeBuilder() {
           </div>
 
           {/* Main Content Area */}
-          <div className="min-w-0">
+          <div className="min-h-0 min-w-0">
             <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
@@ -1870,7 +1870,7 @@ export default function ResumeBuilder() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.25, ease: EASE }}
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 md:p-6 lg:p-8 shadow-sm"
+              className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-6 lg:p-8"
             >
               <h2 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6">
                 {activeSection === 'resume' && 'Resume'}
@@ -1881,6 +1881,7 @@ export default function ResumeBuilder() {
                 {activeSection === 'skills' && 'Skills & Expertise'}
               </h2>
 
+              <div className="min-h-0 flex-1 overflow-y-auto pr-1">
               {activeSection === 'resume' && (
                 <ResumeUploadSection
                   userId={user?.uid}
@@ -2534,6 +2535,7 @@ export default function ResumeBuilder() {
                   </div>
                 </div>
               )}
+              </div>
             </motion.div>
             </AnimatePresence>
           </div>

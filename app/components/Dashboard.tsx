@@ -5,6 +5,7 @@ import type { PageType } from '@/components/sidebar-01/types';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { pageFromPathname, routeForPage } from '@/lib/pageNavigation';
 import packageJson from '../../package.json';
 import DocsPage from '../pages/DocsPage';
 import EmailTemplates from '../pages/EmailTemplates';
@@ -19,10 +20,34 @@ import CoverLetter from '../pages/CoverLetter';
 export function Dashboard() {
   const [activePage, setActivePage] = useState<PageType>('send-email');
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const isWorkspacePage = activePage === 'cover-letter' || activePage === 'resume';
 
   useEffect(() => {
     setSidebarExpanded(localStorage.getItem('jobmail-sidebar-expanded') === 'true');
   }, []);
+
+  useEffect(() => {
+    const page = pageFromPathname(window.location.pathname);
+    setActivePage(page);
+    if (window.location.pathname === '/') {
+      window.history.replaceState(null, '', routeForPage(page));
+    }
+
+    const handlePopState = () => {
+      setActivePage(pageFromPathname(window.location.pathname));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateToPage = (page: PageType) => {
+    const route = routeForPage(page);
+    if (window.location.pathname !== route) {
+      window.history.pushState(null, '', route);
+    }
+    setActivePage(page);
+  };
 
   const updateSidebarExpanded = (expanded: boolean) => {
     setSidebarExpanded(expanded);
@@ -32,7 +57,7 @@ export function Dashboard() {
   const renderPage = () => {
     switch (activePage) {
       case 'send-email':
-        return <SendEmail onNavigate={setActivePage} />;
+        return <SendEmail onNavigate={navigateToPage} />;
       case 'templates':
         return <EmailTemplates />;
       case 'cover-letter':
@@ -58,14 +83,14 @@ export function Dashboard() {
       case 'docs':
         return <DocsPage />;
       default:
-        return <SendEmail onNavigate={setActivePage} />;
+        return <SendEmail onNavigate={navigateToPage} />;
     }
   };
 
   return (
     <div className="flex h-screen min-h-0 w-full overflow-hidden">
       <AppSidebar
-        onNavigate={setActivePage}
+        onNavigate={navigateToPage}
         activePage={activePage}
         expandedPinned={sidebarExpanded}
         onExpandedPinnedChange={updateSidebarExpanded}
@@ -89,8 +114,8 @@ export function Dashboard() {
             <ThemeToggle />
           </div>
         </header>
-        <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="px-4 pb-24 pt-4 sm:px-8">
+        <main className={`min-h-0 flex-1 ${isWorkspacePage ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+          <div className={`px-4 pt-4 sm:px-8 ${isWorkspacePage ? 'h-full min-h-0' : 'pb-24'}`}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={activePage}
@@ -103,7 +128,7 @@ export function Dashboard() {
               </motion.div>
             </AnimatePresence>
           </div>
-          <footer
+          {!isWorkspacePage && <footer
             style={{
               marginTop: '2rem',
               textAlign: 'center',
@@ -143,7 +168,7 @@ export function Dashboard() {
                 Portfolio
               </a>
             </p>
-          </footer>
+          </footer>}
         </main>
       </div>
     </div>

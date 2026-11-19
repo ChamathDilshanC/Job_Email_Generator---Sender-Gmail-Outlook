@@ -1285,7 +1285,7 @@ export default function ResumeBuilder() {
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-x-hidden overflow-y-auto">
       {/* Sticky Mobile Header */}
       <div className="lg:hidden sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
         <button

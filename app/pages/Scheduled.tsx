@@ -276,6 +276,39 @@ export default function Scheduled() {
                         minute: '2-digit',
                       })}
                     </p>
+                    <div className="mt-3 flex flex-wrap gap-2" aria-label="Attachment status">
+                      {[
+                        { label: 'CV', fileName: item.attachmentNames?.cv },
+                        {
+                          label: 'Cover letter',
+                          fileName: item.attachmentNames?.coverLetter,
+                        },
+                      ].map(attachment => {
+                        const attached = Boolean(attachment.fileName);
+                        return (
+                          <span
+                            key={attachment.label}
+                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                              attached
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/30 dark:text-emerald-300'
+                                : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-400'
+                            }`}
+                            title={
+                              attached
+                                ? attachment.fileName
+                                : `${attachment.label} not attached`
+                            }
+                          >
+                            {attached ? (
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                            ) : (
+                              <XCircle className="h-3.5 w-3.5" />
+                            )}
+                            {attachment.label}: {attached ? 'Attached' : 'Not attached'}
+                          </span>
+                        );
+                      })}
+                    </div>
                     {item.status === 'failed' && item.error && (
                       <p className="mt-2 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
                         <XCircle className="h-3.5 w-3.5" />

@@ -39,6 +39,7 @@ import {
 } from '@/lib/skillsApiClient';
 import { showToast } from '@/lib/toast';
 import { BounceSidebar } from '@/components/ui/bounce-sidebar';
+import { LiquidNavbar } from '@/components/ui/liquid-glass-navbar';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BriefcaseBusiness,
@@ -1286,8 +1287,9 @@ export default function ResumeBuilder() {
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-x-hidden overflow-y-auto">
-      {/* Sticky Mobile Header */}
-      <div className="lg:hidden sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
+      {/* Legacy mobile drawer trigger is retained for state compatibility but
+          the workspace now uses one horizontal navigation for every viewport. */}
+      <div className="hidden">
         <button
           onClick={() => setIsMobileSidebarOpen(true)}
           className="w-11 h-11 flex items-center justify-center bg-[#3b3be3] text-white rounded-lg hover:bg-[#2929c9] transition-all shadow-md"
@@ -1312,7 +1314,36 @@ export default function ResumeBuilder() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col p-3 md:p-4 lg:px-6 lg:py-3">
+      <div className="flex min-h-0 w-full flex-1 flex-col px-4 py-3 sm:px-6 lg:px-8">
+        {/* Compact workspace header */}
+        <div className="mb-3 flex shrink-0 flex-col gap-3 border-b border-slate-200/80 pb-3 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">
+              Resume workspace
+            </p>
+            <h1 className="text-xl font-semibold tracking-tight text-slate-950 dark:text-white md:text-2xl">
+              Resume Builder
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Build a recruiter-ready profile from one focused workspace.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleShareResume}
+              className="rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Share Link
+            </button>
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+            >
+              Export Resume
+            </button>
+          </div>
+        </div>
+
         {user && (
           <ResumeProfileSwitcher
             profiles={profiles}
@@ -1326,8 +1357,7 @@ export default function ResumeBuilder() {
           />
         )}
 
-        {/* Desktop Header */}
-        <div className="mb-2 flex shrink-0 flex-col justify-between gap-2 md:flex-row md:items-center">
+        <div className="hidden">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold mb-0.5 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
               Template Information
@@ -1353,7 +1383,7 @@ export default function ResumeBuilder() {
         </div>
 
         {/* Step Progress Indicator */}
-        <div className="mb-2 shrink-0">
+        <div className="hidden">
           <div className="mx-auto flex max-w-5xl items-center justify-between">
             {/* Step 1: Personal Info */}
             <div className="group flex flex-1 flex-col items-center rounded-xl border border-primary/20 bg-primary/[0.04] px-2 py-1.5 shadow-sm">
@@ -1529,6 +1559,30 @@ export default function ResumeBuilder() {
           </div>
         </div>
 
+        <LiquidNavbar
+          active={activeSection}
+          tone="light"
+          items={[
+            { id: 'resume', label: 'Resume', icon: <Upload className="h-3.5 w-3.5" />, complete: Boolean(cvFile) },
+            { id: 'personal', label: 'Personal Info', icon: <UserRound className="h-3.5 w-3.5" />, complete: stepsCompleted.personal },
+            { id: 'experience', label: 'Experience', icon: <BriefcaseBusiness className="h-3.5 w-3.5" />, complete: stepsCompleted.experience },
+            { id: 'education', label: 'Education', icon: <GraduationCap className="h-3.5 w-3.5" />, complete: stepsCompleted.education },
+            { id: 'projects', label: 'Projects', icon: <FolderKanban className="h-3.5 w-3.5" />, complete: stepsCompleted.projects },
+            { id: 'github', label: 'GitHub Import', icon: <Github className="h-3.5 w-3.5" /> },
+            { id: 'skills', label: 'Skills', icon: <Layers3 className="h-3.5 w-3.5" />, complete: stepsCompleted.skills },
+          ]}
+          onChange={section => {
+            if (section === 'github') {
+              setIsGithubModalOpen(true);
+            } else if (section === 'resume' || canAccessSection(section)) {
+              setActiveSection(section);
+            } else {
+              showAlert('Step Locked', 'Please complete previous steps first!', 'warning');
+            }
+          }}
+          className="mb-3 shrink-0"
+        />
+
         {/* Mobile Sidebar Overlay */}
         {isMobileSidebarOpen && (
           <div
@@ -1542,10 +1596,10 @@ export default function ResumeBuilder() {
             stretching to match the taller content column — a grid item's
             sticky containing block is still the full row height regardless
             of align-self, so it stays pinned while that column scrolls. */}
-        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden lg:grid lg:grid-cols-[160px_minmax(0,1fr)] lg:items-start lg:gap-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
-            className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:top-4 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
+            className={`hidden fixed inset-y-0 left-0 w-64 lg:sticky lg:top-4 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
               isMobileSidebarOpen
                 ? 'translate-x-0'
                 : '-translate-x-full lg:translate-x-0'
@@ -1866,6 +1920,7 @@ export default function ResumeBuilder() {
             <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
+              id={`resume-section-${activeSection}`}
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
@@ -2389,8 +2444,8 @@ export default function ResumeBuilder() {
                             key={index}
                             className={`flex items-center justify-between gap-2 py-2.5 px-4 border rounded-lg text-[13px] font-medium cursor-pointer transition-all duration-200 select-none ${
                               selectedSkills.includes(skill)
-                                ? 'bg-[#3b3be3] text-white border-[#3b3be3]'
-                                : 'bg-[#3b3be3] text-white border-[#3b3be3] hover:bg-[#5c5cff] hover:border-[#5c5cff] hover:-translate-y-0.5'
+                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                :                                 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-indigo-500/15'
                             } ${
                               selectedSkills.length >= 50 &&
                               !selectedSkills.includes(skill)
@@ -2493,7 +2548,7 @@ export default function ResumeBuilder() {
                         {selectedSkills.map((skill, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between gap-2 py-2.5 px-4 bg-blue-400 border border-blue-400 rounded-lg text-[13px] font-medium text-white select-none"
+                            className="flex items-center justify-between gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 select-none dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-300"
                           >
                             {skill}
                             <button

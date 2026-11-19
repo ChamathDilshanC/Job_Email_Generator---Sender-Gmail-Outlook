@@ -1,3 +1,5 @@
+import { normalizeEmailText } from './emailEncoding';
+
 export type EmailClient = 'gmail' | 'outlook';
 
 export interface EmailParams {
@@ -16,7 +18,7 @@ function openGmail(params: EmailParams): void {
   gmailUrl.searchParams.set('view', 'cm');
   gmailUrl.searchParams.set('fs', '1');
   gmailUrl.searchParams.set('to', params.to);
-  gmailUrl.searchParams.set('su', params.subject);
+  gmailUrl.searchParams.set('su', normalizeEmailText(params.subject));
   // Use Gmail-optimized body with Unicode bold characters
   gmailUrl.searchParams.set('body', params.bodyGmail || params.body);
 
@@ -29,7 +31,7 @@ function openGmail(params: EmailParams): void {
 function openOutlook(params: EmailParams): void {
   const mailtoUrl = `mailto:${encodeURIComponent(
     params.to
-  )}?subject=${encodeURIComponent(params.subject)}&body=${encodeURIComponent(
+  )}?subject=${encodeURIComponent(normalizeEmailText(params.subject))}&body=${encodeURIComponent(
     params.body
   )}`;
   window.location.href = mailtoUrl;

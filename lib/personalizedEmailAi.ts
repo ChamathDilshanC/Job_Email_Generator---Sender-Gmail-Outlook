@@ -27,6 +27,7 @@ export async function generatePersonalizedEmail(
 Never invent skills, employers, dates, degrees, projects, achievements, metrics, or qualifications. A requirement in the job description is not evidence the applicant has that skill. Omit unsupported claims.
 Return only valid JSON with exactly two string fields: subject and body. Do not use markdown or HTML.
 The body should be natural, concise, and ready to send, with a greeting, 2-4 short paragraphs, and a professional closing. Avoid generic filler and avoid starting with "I am writing to express my strong interest".
+Employment-tense rule: inspect each work experience's startDate, endDate, and currentlyWorking value. Only describe a role as present/current if currentlyWorking is true or the end date is empty/Present. For any role with an end date or currentlyWorking false, use completed/past tense. Never write "currently" or "I have been" for a completed role. Use the saved responsibilities without changing "Developed" into ungrammatical "have been Developed".
 Tone: ${input.tone}. Length: ${input.length}.
 
 APPLICANT RESUME:

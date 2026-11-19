@@ -29,6 +29,32 @@ function formatDateRange(
   return `${start} - ${end}`;
 }
 
+function lowerFirstLetter(value: string): string {
+  const trimmed = value.trim();
+  return trimmed ? trimmed.charAt(0).toLowerCase() + trimmed.slice(1) : trimmed;
+}
+
+function formatExperienceLead(
+  experience: { position: string; company: string; currentlyWorking: boolean; description: string },
+  html: boolean
+) {
+  const role = html
+    ? `<strong>${experience.position}</strong>`
+    : experience.position;
+  const company = html
+    ? `<strong>${experience.company}</strong>`
+    : experience.company;
+  const description = experience.description || 'developed relevant skills and contributed to practical projects';
+  if (experience.currentlyWorking) {
+    return html
+      ? `<p>Currently, I am working as ${role} at ${company}, where I ${lowerFirstLetter(description)}.</p>`
+      : `Currently, I am working as a ${experience.position} at ${experience.company}, where I ${lowerFirstLetter(description)}.`;
+  }
+  return html
+    ? `<p>I completed a role as ${role} at ${company}, where I ${lowerFirstLetter(description)}.</p>`
+    : `I completed a role as a ${experience.position} at ${experience.company}, where I ${lowerFirstLetter(description)}.`;
+}
+
 /**
  * Format social links for email display (plain text)
  */
@@ -242,12 +268,7 @@ I am writing to express my strong interest in the ${position} position at ${comp
 
 ${
   latestExperience
-    ? `Currently, I am working as a ${latestExperience.position} at ${
-        latestExperience.company
-      }, where I have been ${
-        latestExperience.description ||
-        'developing my skills and contributing to impactful projects'
-      }.`
+    ? formatExperienceLead(latestExperience, false)
     : 'I bring hands-on experience and a passion for excellence to every project I undertake.'
 }
 
@@ -283,14 +304,7 @@ ${attachmentNoteText()}`;
 
 ${
   latestExperience
-    ? `<p>Currently, I am working as a <strong>${
-        latestExperience.position
-      }</strong> at <strong>${
-        latestExperience.company
-      }</strong>, where I have been ${
-        latestExperience.description ||
-        'developing my skills and contributing to impactful projects'
-      }.</p>`
+    ? formatExperienceLead(latestExperience, true)
     : '<p>I bring hands-on experience and a passion for excellence to every project I undertake.</p>'
 }
 

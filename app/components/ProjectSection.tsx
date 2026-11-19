@@ -241,53 +241,62 @@ export default function ProjectSection({
     <div className="w-full">
       {!showForm && (
         <>
-          <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm md:text-base">
-            Add your projects, starting with the most recent or significant
-            ones.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="mb-5 flex flex-col justify-between gap-3 border-b border-border/60 pb-4 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Curate the work that best represents your experience and impact.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                {projects.length} {projects.length === 1 ? 'project' : 'projects'} in this profile
+              </p>
+            </div>
+            <div className="flex gap-2">
             <button
               onClick={handleAdd}
-              className="w-full sm:w-auto px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200 hover:scale-105 text-sm md:text-base"
+              className="rounded-lg bg-[#3b3be3] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#2929c9]"
             >
-              + Add Project
+              + New project
             </button>
             {onOpenGithubImporter && (
               <button
                 onClick={onOpenGithubImporter}
                 type="button"
-                className="w-full sm:w-auto px-6 py-3 bg-gray-900 dark:bg-gray-800 hover:bg-black dark:hover:bg-gray-700 text-white rounded-lg font-medium transition-all duration-200 hover:scale-105 text-sm md:text-base flex items-center justify-center gap-2 border border-gray-700 shadow-md"
+                className="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
               >
-                🐙 Import from GitHub
+                <span aria-hidden>↗</span> Import from GitHub
               </button>
             )}
+            </div>
           </div>
 
           {projects.length > 0 && (
-            <div className="mt-6 flex flex-col gap-4">
+            <div className="flex flex-col">
               {projects.map(proj => (
                 <div
                   key={proj.id}
-                  className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 transition-all duration-200 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:shadow-lg"
+                  className="group border-b border-border/60 py-5 transition-colors first:pt-1 hover:bg-muted/30 sm:px-3"
                 >
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1">
-                      <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                      <div className="flex items-center gap-2">
+                      <h3 className="text-base font-semibold tracking-tight text-foreground">
                         {proj.name}
                       </h3>
-                      <p className="text-sm md:text-[15px] text-gray-600 dark:text-gray-400 mb-1">
+                      {proj.currentlyWorking && <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Active</span>}
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {proj.role}
                       </p>
-                      <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 italic">
+                      <p className="mt-1 text-xs text-muted-foreground/70">
                         {proj.startDate} -{' '}
                         {proj.currentlyWorking ? 'Present' : proj.endDate}
                       </p>
                       {proj.technologies.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        <div className="mt-3 flex flex-wrap gap-1.5">
                           {proj.technologies.map((tech, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded text-xs font-medium"
+                              className="rounded-md bg-primary/8 px-2 py-1 text-[11px] font-medium text-primary/80"
                             >
                               {tech}
                             </span>
@@ -295,11 +304,11 @@ export default function ProjectSection({
                         </div>
                       )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 opacity-70 transition-opacity group-hover:opacity-100">
                       <button
                         onClick={() => handleEdit(proj)}
                         title="Edit"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-[#3b3be3] dark:hover:border-[#818cf8] hover:text-[#3b3be3] dark:hover:text-[#818cf8] transition-all duration-200"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -315,7 +324,7 @@ export default function ProjectSection({
                       <button
                         onClick={() => handleDelete(proj.id)}
                         title="Delete"
-                        className="w-9 h-9 flex items-center justify-center bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-200"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-500"
                       >
                         <svg
                           className="w-[18px] h-[18px]"
@@ -332,15 +341,15 @@ export default function ProjectSection({
                   </div>
 
                   {proj.description && (
-                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
+                    <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
                       {proj.description}
                     </p>
                   )}
 
                   {proj.keyFeatures.filter(f => f.trim()).length > 0 && (
-                    <div className="mb-3">
-                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        Key Features:
+                    <div className="mt-4">
+                      <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        Highlights
                       </h4>
                       <ul className="list-none pl-0 m-0">
                         {proj.keyFeatures
@@ -348,7 +357,7 @@ export default function ProjectSection({
                           .map((feature, idx) => (
                             <li
                               key={idx}
-                              className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-6 mb-2 relative before:content-['▹'] before:absolute before:left-0 before:text-[#3b3be3] before:font-bold before:text-lg"
+                              className="relative mb-2 pl-5 text-sm leading-6 text-muted-foreground before:absolute before:left-0 before:text-primary before:content-['→']"
                             >
                               {feature}
                             </li>
@@ -358,13 +367,13 @@ export default function ProjectSection({
                   )}
 
                   {(proj.projectUrl || proj.githubUrl) && (
-                    <div className="flex flex-wrap gap-3 mt-3">
+                    <div className="mt-4 flex flex-wrap gap-4">
                       {proj.projectUrl && (
                         <a
                           href={proj.projectUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
+                          className="text-xs font-medium text-primary/80 transition-colors hover:text-primary"
                         >
                           🔗 Project Link
                         </a>
@@ -374,7 +383,7 @@ export default function ProjectSection({
                           href={proj.githubUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
+                          className="text-xs font-medium text-primary/80 transition-colors hover:text-primary"
                         >
                           💻 GitHub
                         </a>
@@ -389,10 +398,13 @@ export default function ProjectSection({
       )}
 
       {showForm && (
-        <div className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-800 rounded-xl p-4 md:p-6 lg:p-8">
-          <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
+        <div className="border-b border-border/60 pb-6">
+          <div className="mb-5 flex items-center justify-between">
+          <h3 className="text-lg font-semibold tracking-tight text-foreground">
             {editingProject ? 'Edit' : 'Add'} Project
           </h3>
+          <button type="button" onClick={handleCancel} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Cancel</button>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             <div className="flex flex-col gap-2">

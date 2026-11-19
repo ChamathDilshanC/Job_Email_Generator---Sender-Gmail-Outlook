@@ -658,6 +658,121 @@ ${renderClosingHtml(fullName, 'Sincerely', accent, bg)}`);
   };
 }
 
+function generateProfessionalJobApplication(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, workExperiences, education, socialLinks } =
+    resumeData;
+  const { companyName, position } = jobDetails;
+  const greeting = jobDetails.recruiterName || 'Hiring Manager';
+  const fullName = personalInfo.fullName || 'Your Name';
+  const qualification = education[0]
+    ? `${education[0].degree}${education[0].fieldOfStudy ? ` in ${education[0].fieldOfStudy}` : ''}`
+    : 'my academic and professional background';
+  const experience = workExperiences[0]?.description || 'relevant hands-on experience';
+  const technicalSkills =
+    skills.selectedSkills.slice(0, 6).join(', ') || 'relevant technical skills';
+  const linksText = formatSocialLinks(socialLinks);
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''}${linksText}
+
+Dear ${greeting},
+
+I am writing to apply for the ${position} position at ${companyName}. With ${qualification}, I am genuinely interested in the opportunity to contribute to your team and continue developing in a professional environment.
+
+My background includes ${experience}. I also bring experience with ${technicalSkills}, which I believe can support the responsibilities of this role. I approach new work with care, communicate clearly with teammates, and focus on delivering reliable results without overstating my experience.
+
+I would welcome the opportunity to discuss how my background could contribute to ${companyName}. My resume/CV is attached for your review, and I would be pleased to provide any additional information.
+
+Thank you for your time and consideration. I look forward to hearing from you.
+
+Kind regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(fullName, personalInfo, socialLinks, '#1d4ed8')}
+<p>Dear ${greeting},</p>
+<p>I am writing to apply for the <strong>${position}</strong> position at <strong style="color:#1d4ed8;">${companyName}</strong>. With ${qualification}, I am genuinely interested in the opportunity to contribute to your team and continue developing in a professional environment.</p>
+<p>My background includes ${experience}. I also bring experience with <strong>${technicalSkills}</strong>, which I believe can support the responsibilities of this role. I approach new work with care, communicate clearly with teammates, and focus on delivering reliable results without overstating my experience.</p>
+<p>I would welcome the opportunity to discuss how my background could contribute to <strong style="color:#1d4ed8;">${companyName}</strong>. My resume/CV is attached for your review, and I would be pleased to provide any additional information.</p>
+<p>Thank you for your time and consideration. I look forward to hearing from you.</p>
+${renderClosingHtml(fullName, 'Kind regards', '#1d4ed8', '#eff6ff')}`);
+
+  return {
+    subject: `Application for ${position} at ${companyName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+function generateTechnicalPortfolioShowcase(
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, projects, socialLinks } = resumeData;
+  const { companyName, position } = jobDetails;
+  const greeting = jobDetails.recruiterName || 'Hiring Manager';
+  const fullName = personalInfo.fullName || 'Your Name';
+  const project = projects[0];
+  const technicalSkills =
+    skills.selectedSkills.slice(0, 8).join(', ') || 'software development';
+  const projectLinks = [
+    project?.projectUrl
+      ? `Portfolio: ${project.projectUrl}`
+      : socialLinks?.portfolio
+        ? `Portfolio: ${socialLinks.portfolio}`
+        : '',
+    project?.githubUrl
+      ? `GitHub: ${project.githubUrl}`
+      : socialLinks?.github
+        ? `GitHub: ${socialLinks.github}`
+        : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+  const linksText = [
+    socialLinks?.portfolio ? `Portfolio: ${socialLinks.portfolio}` : '',
+    socialLinks?.github ? `GitHub: ${socialLinks.github}` : '',
+    socialLinks?.linkedin ? `LinkedIn: ${socialLinks.linkedin}` : '',
+  ]
+    .filter(Boolean)
+    .join(' | ');
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''}${linksText ? `\n${linksText}` : ''}
+
+Dear ${greeting},
+
+I am excited to apply for the ${position} position at ${companyName}. My technical background includes ${technicalSkills}, with practical experience building, testing, and improving software solutions.
+
+One relevant example is ${project?.name || 'a recent practical development project'}${project?.description ? `, ${project.description}` : ''}. This work strengthened my ability to translate requirements into maintainable features, investigate technical problems, and improve the user experience. I value thoughtful collaboration, clear communication, and steady learning when working with a team.
+
+I would be glad to bring this approach to ${companyName}. My portfolio and GitHub profile are included below, and my CV is attached for additional context.
+
+${projectLinks || 'Portfolio and GitHub links are available on request.'}
+
+Thank you for considering my application. I would welcome the opportunity to discuss how my skills and project experience could support your team.
+
+Best regards,
+${fullName}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(fullName, personalInfo, socialLinks, '#0f766e')}
+<p>Dear ${greeting},</p>
+<p>I am excited to apply for the <strong>${position}</strong> position at <strong style="color:#0f766e;">${companyName}</strong>. My technical background includes <strong>${technicalSkills}</strong>, with practical experience building, testing, and improving software solutions.</p>
+<p>One relevant example is <strong>${project?.name || 'a recent practical development project'}</strong>${project?.description ? `, ${project.description}` : ''}. This work strengthened my ability to translate requirements into maintainable features, investigate technical problems, and improve the user experience. I value thoughtful collaboration, clear communication, and steady learning when working with a team.</p>
+<p>I would be glad to bring this approach to <strong style="color:#0f766e;">${companyName}</strong>. My portfolio and GitHub profile are included below, and my CV is attached for additional context.</p>
+${projectLinks ? `<p>${projectLinks.replace(/\n/g, '<br>')}</p>` : '<p>Portfolio and GitHub links are available on request.</p>'}
+<p>Thank you for considering my application. I would welcome the opportunity to discuss how my skills and project experience could support your team.</p>
+${renderClosingHtml(fullName, 'Best regards', '#0f766e', '#f0fdfa')}`);
+
+  return {
+    subject: `${position} Application - Technical Skills and Portfolio`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
 /**
  * Template 5: Career Transition
  * Amber accent, with a "from -> to" banner framing the transition narrative.
@@ -2678,6 +2793,10 @@ export function generateEmailFromTemplate(
       return generateUltraModernRecruiterSpotlight(resumeData, jobDetails);
     case TemplateType.EXECUTIVE_PROJECT_PORTFOLIO:
       return generateExecutiveProjectPortfolio(resumeData, jobDetails);
+    case TemplateType.PROFESSIONAL_JOB_APPLICATION:
+      return generateProfessionalJobApplication(resumeData, jobDetails);
+    case TemplateType.TECHNICAL_PORTFOLIO_SHOWCASE:
+      return generateTechnicalPortfolioShowcase(resumeData, jobDetails);
     default:
       return generateProfessionalIntroduction(resumeData, jobDetails);
   }

@@ -25,6 +25,8 @@ export enum TemplateType {
   ONBOARDING_CONFIRMATION = 22,
   ULTRA_MODERN_RECRUITER_SPOTLIGHT = 23,
   EXECUTIVE_PROJECT_PORTFOLIO = 24,
+  PROFESSIONAL_JOB_APPLICATION = 25,
+  TECHNICAL_PORTFOLIO_SHOWCASE = 26,
 }
 
 export enum TemplateCategory {
@@ -317,6 +319,28 @@ export const TEMPLATE_METADATA: TemplateMetadata[] = [
       'High-impact showcase designed for senior engineering roles focusing on live project URLs & code repos',
     description:
       'Ultra modern project-centric presentation with tech stack breakdown, GitHub links, and live demos',
+    category: TemplateCategory.APPLICATION,
+    recommended: true,
+  },
+  {
+    id: TemplateType.PROFESSIONAL_JOB_APPLICATION,
+    name: 'Professional Job Application',
+    subject: 'Application for {Position} at {Company}',
+    preview:
+      'A polished, versatile application for full-time roles, graduate opportunities, and internships',
+    description:
+      'Balanced professional introduction covering qualifications, contribution, and resume attachment',
+    category: TemplateCategory.APPLICATION,
+    recommended: true,
+  },
+  {
+    id: TemplateType.TECHNICAL_PORTFOLIO_SHOWCASE,
+    name: 'Technical Skills & Portfolio Showcase',
+    subject: '{Position} Application - Technical Skills and Portfolio',
+    preview:
+      'An achievement-focused application for software, web, and IT roles',
+    description:
+      'Highlights technical strengths, one practical project, collaboration, and portfolio links',
     category: TemplateCategory.APPLICATION,
     recommended: true,
   },

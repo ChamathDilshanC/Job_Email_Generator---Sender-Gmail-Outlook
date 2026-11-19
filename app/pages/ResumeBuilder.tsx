@@ -1356,7 +1356,7 @@ export default function ResumeBuilder() {
         <div className="mb-2 shrink-0">
           <div className="mx-auto flex max-w-5xl items-center justify-between">
             {/* Step 1: Personal Info */}
-            <div className="flex flex-col items-center flex-1">
+            <div className="group flex flex-1 flex-col items-center rounded-xl border border-primary/20 bg-primary/[0.04] px-2 py-1.5 shadow-sm">
               <div
                 className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200 ${
                   stepsCompleted.personal
@@ -1387,7 +1387,7 @@ export default function ResumeBuilder() {
             />
 
             {/* Step 2: Experience */}
-            <div className="flex flex-col items-center flex-1">
+            <div className="group flex flex-1 flex-col items-center rounded-xl border border-border/70 bg-card/70 px-2 py-1.5 transition-colors hover:border-primary/30">
               <div
                 className={`relative flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.experience
@@ -1424,7 +1424,7 @@ export default function ResumeBuilder() {
             />
 
             {/* Step 3: Education */}
-            <div className="flex flex-col items-center flex-1">
+            <div className="group flex flex-1 flex-col items-center rounded-xl border border-border/70 bg-card/70 px-2 py-1.5 transition-colors hover:border-primary/30">
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.education
@@ -1461,7 +1461,7 @@ export default function ResumeBuilder() {
             />
 
             {/* Step 4: Projects */}
-            <div className="flex flex-col items-center flex-1">
+            <div className="group flex flex-1 flex-col items-center rounded-xl border border-border/70 bg-card/70 px-2 py-1.5 transition-colors hover:border-primary/30">
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.projects
@@ -1498,7 +1498,7 @@ export default function ResumeBuilder() {
             />
 
             {/* Step 5: Skills */}
-            <div className="flex flex-col items-center flex-1">
+            <div className="group flex flex-1 flex-col items-center rounded-xl border border-border/70 bg-card/70 px-2 py-1.5 transition-colors hover:border-primary/30">
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.skills
@@ -1551,7 +1551,7 @@ export default function ResumeBuilder() {
                 : '-translate-x-full lg:translate-x-0'
             }`}
           >
-            <div             className="flex h-full flex-col gap-1 overflow-hidden p-3 lg:h-auto lg:overflow-visible lg:p-0">
+            <div className="flex h-full flex-col gap-1 overflow-hidden rounded-xl border border-border/70 bg-card/50 p-2 shadow-sm lg:h-auto lg:overflow-visible">
               {/* Mobile Close Button */}
               <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -1870,7 +1870,7 @@ export default function ResumeBuilder() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.25, ease: EASE }}
-              className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-4 lg:p-5"
+              className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border/70 bg-card/60 p-3 shadow-sm md:p-4 lg:p-5"
             >
               <h2 className="mb-3 text-lg font-semibold md:text-xl">
                 {activeSection === 'resume' && 'Resume'}
@@ -1880,6 +1880,11 @@ export default function ResumeBuilder() {
                 {activeSection === 'projects' && 'Projects'}
                 {activeSection === 'skills' && 'Skills & Expertise'}
               </h2>
+              {activeSection === 'personal' && (
+                <p className="mb-3 -mt-2 text-xs text-muted-foreground">
+                  Keep your recruiter-facing identity, contact details, and online presence ready for every application.
+                </p>
+              )}
 
               <div className="min-h-0 flex-1 overflow-y-auto pr-1">
               {activeSection === 'resume' && (
@@ -1894,8 +1899,9 @@ export default function ResumeBuilder() {
               )}
 
               {activeSection === 'personal' && (
+                <div className="rounded-xl border border-border/70 bg-background/70 p-3 shadow-sm">
                 <div className="flex flex-col gap-3">
-                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800/50 dark:bg-blue-500/10">
+                  <div className="rounded-xl border border-primary/15 bg-primary/[0.04] p-3 shadow-sm dark:border-primary/25 dark:bg-primary/10">
                     <div className="flex items-start gap-3">
                       <svg
                         className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400"
@@ -2101,6 +2107,7 @@ export default function ResumeBuilder() {
                       Save & Continue
                     </button>
                   </div>
+                </div>
                 </div>
               )}
 

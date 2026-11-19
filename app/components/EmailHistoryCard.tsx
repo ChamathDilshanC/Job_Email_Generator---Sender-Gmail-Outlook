@@ -22,9 +22,11 @@ import { fadeInUp } from '@/lib/motion';
 import { motion } from 'framer-motion';
 import {
   CalendarClock,
+  CheckCircle2,
   Eye,
   FileText,
   Mail,
+  XCircle,
   Trash2,
   ArrowUpRight,
 } from 'lucide-react';
@@ -187,6 +189,33 @@ export default function EmailHistoryCard({
           <FileText className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" />
           <span className="truncate">Template: {email.templateName}</span>
         </div>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-2" aria-label="Attachment status">
+        {[
+          { label: 'CV', fileName: email.attachments?.cv },
+          { label: 'Cover letter', fileName: email.attachments?.coverLetter },
+        ].map(attachment => {
+          const attached = Boolean(attachment.fileName);
+          return (
+            <span
+              key={attachment.label}
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                attached
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/30 dark:text-emerald-300'
+                  : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-400'
+              }`}
+              title={attached ? attachment.fileName : `${attachment.label} not attached`}
+            >
+              {attached ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <XCircle className="h-3.5 w-3.5" />
+              )}
+              {attachment.label}: {attached ? 'Attached' : 'Not attached'}
+            </span>
+          );
+        })}
       </div>
 
       <div className="mb-4 rounded-lg border-l-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 py-2 pl-3 pr-3">

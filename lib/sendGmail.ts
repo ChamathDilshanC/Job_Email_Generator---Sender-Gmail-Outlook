@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { encodeMimeSubject, normalizeEmailText } from './emailEncoding';
 
 export interface GmailSendAttachment {
   filename: string;
@@ -11,6 +12,11 @@ export interface SendGmailParams {
   subject: string;
   bodyHtml: string;
   attachments?: GmailSendAttachment[];
+}
+
+function encodeBase64Utf8(value: string): string {
+  return Buffer.from(normalizeEmailText(value), "utf8")
+    .toString("base64");
 }
 
 /**
@@ -26,7 +32,7 @@ export function buildMimeMessage(params: SendGmailParams): string {
 
   let message = [
     `To: ${params.to}`,
-    `Subject: ${params.subject}`,
+    `Subject: ${encodeMimeSubject(params.subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
     '',
@@ -35,15 +41,15 @@ export function buildMimeMessage(params: SendGmailParams): string {
     '',
     `--${altBoundary}`,
     'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 7bit',
+    'Content-Transfer-Encoding: base64',
     '',
-    params.bodyHtml.replace(/<[^>]*>/g, ''), // Strip HTML tags for plain text version
+    encodeBase64Utf8(params.bodyHtml.replace(/<[^>]*>/g, "")), // Strip HTML tags for plain text version
     '',
     `--${altBoundary}`,
     'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: 7bit',
+    'Content-Transfer-Encoding: base64',
     '',
-    params.bodyHtml,
+    encodeBase64Utf8(params.bodyHtml),
     '',
     `--${altBoundary}--`,
     '',

@@ -1,3 +1,5 @@
+import { encodeMimeSubject, normalizeEmailText } from './emailEncoding';
+
 export interface GmailAttachment {
   filename: string;
   mimeType: string;
@@ -55,15 +57,15 @@ export function createMimeMessage(params: SendEmailParams): string {
 
   let message = [
     `To: ${params.to}`,
-    `Subject: ${params.subject}`,
+    `Subject: ${encodeMimeSubject(params.subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
     '',
     `--${boundary}`,
     'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: 7bit',
+    'Content-Transfer-Encoding: base64',
     '',
-    params.body,
+    btoa(Array.from(new TextEncoder().encode(normalizeEmailText(params.body)), byte => String.fromCharCode(byte)).join('')),
     '',
   ].join(nl);
 

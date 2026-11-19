@@ -1312,7 +1312,7 @@ export default function ResumeBuilder() {
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto flex min-h-0 w-full max-w-[1360px] flex-1 flex-col p-4 md:p-6 lg:px-8 lg:py-6">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col p-3 md:p-4 lg:px-6 lg:py-3">
         {user && (
           <ResumeProfileSwitcher
             profiles={profiles}
@@ -1327,25 +1327,25 @@ export default function ResumeBuilder() {
         )}
 
         {/* Desktop Header */}
-        <div className="mb-4 flex shrink-0 flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div className="mb-2 flex shrink-0 flex-col justify-between gap-2 md:flex-row md:items-center">
           <div>
-            <h1 className="text-2xl md:text-4xl font-bold mb-1 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-bold mb-0.5 bg-gradient-to-r from-[#3b3be3] to-[#3b3be3] dark:from-[#818cf8] dark:to-[#818cf8] bg-clip-text text-transparent">
               Template Information
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
+            <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm">
               Create a professional template &amp; export recruiter-ready ATS PDF resumes
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
             <button
               onClick={handleShareResume}
-              className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg shadow-sm transition-all duration-200 text-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg shadow-sm transition-all duration-200 text-xs"
             >
               🔗 Share Link
             </button>
             <button
               onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#3b3be3] hover:bg-[#2929c9] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-sm"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-[#3b3be3] hover:bg-[#2929c9] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-xs"
             >
               ✨ Export Resume (PDF / DOCX)
             </button>
@@ -1353,12 +1353,12 @@ export default function ResumeBuilder() {
         </div>
 
         {/* Step Progress Indicator */}
-        <div className="mb-4 shrink-0 md:mb-5">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+        <div className="mb-2 shrink-0">
+          <div className="mx-auto flex max-w-5xl items-center justify-between">
             {/* Step 1: Personal Info */}
             <div className="flex flex-col items-center flex-1">
               <div
-                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200 ${
                   stepsCompleted.personal
                     ? 'bg-green-500 text-white'
                     : activeSection === 'personal'
@@ -1369,7 +1369,7 @@ export default function ResumeBuilder() {
                 {stepsCompleted.personal ? '✓' : '1'}
               </div>
               <span
-                className={`text-xs md:text-sm mt-2 font-medium ${
+                className={`mt-1 text-[11px] font-medium ${
                   activeSection === 'personal'
                     ? 'text-[#3b3be3] dark:text-[#818cf8]'
                     : 'text-gray-600 dark:text-gray-400'
@@ -1381,7 +1381,7 @@ export default function ResumeBuilder() {
 
             {/* Connector Line 1-2 */}
             <div
-              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+              className={`mx-2 h-0.5 flex-1 transition-all duration-300 ${
                 stepsCompleted.personal ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
@@ -1389,7 +1389,7 @@ export default function ResumeBuilder() {
             {/* Step 2: Experience */}
             <div className="flex flex-col items-center flex-1">
               <div
-                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 relative ${
+                className={`relative flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.experience
                     ? 'bg-green-500 text-white'
                     : activeSection === 'experience'
@@ -1406,7 +1406,7 @@ export default function ResumeBuilder() {
                   : '🔒'}
               </div>
               <span
-                className={`text-xs md:text-sm mt-2 font-medium ${
+                className={`mt-1 text-[11px] font-medium ${
                   activeSection === 'experience'
                     ? 'text-[#3b3be3] dark:text-[#818cf8]'
                     : 'text-gray-600 dark:text-gray-400'
@@ -1418,7 +1418,7 @@ export default function ResumeBuilder() {
 
             {/* Connector Line 2-3 */}
             <div
-              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+              className={`mx-2 h-0.5 flex-1 transition-all duration-300 ${
                 stepsCompleted.experience ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
@@ -1426,7 +1426,7 @@ export default function ResumeBuilder() {
             {/* Step 3: Education */}
             <div className="flex flex-col items-center flex-1">
               <div
-                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.education
                     ? 'bg-green-500 text-white'
                     : activeSection === 'education'
@@ -1443,7 +1443,7 @@ export default function ResumeBuilder() {
                   : '🔒'}
               </div>
               <span
-                className={`text-xs md:text-sm mt-2 font-medium ${
+                className={`mt-1 text-[11px] font-medium ${
                   activeSection === 'education'
                     ? 'text-[#3b3be3] dark:text-[#818cf8]'
                     : 'text-gray-600 dark:text-gray-400'
@@ -1455,7 +1455,7 @@ export default function ResumeBuilder() {
 
             {/* Connector Line 3-4 */}
             <div
-              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+              className={`mx-2 h-0.5 flex-1 transition-all duration-300 ${
                 stepsCompleted.education ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
@@ -1463,7 +1463,7 @@ export default function ResumeBuilder() {
             {/* Step 4: Projects */}
             <div className="flex flex-col items-center flex-1">
               <div
-                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.projects
                     ? 'bg-green-500 text-white'
                     : activeSection === 'projects'
@@ -1480,7 +1480,7 @@ export default function ResumeBuilder() {
                   : '🔒'}
               </div>
               <span
-                className={`text-xs md:text-sm mt-2 font-medium ${
+                className={`mt-1 text-[11px] font-medium ${
                   activeSection === 'projects'
                     ? 'text-[#3b3be3] dark:text-[#818cf8]'
                     : 'text-gray-600 dark:text-gray-400'
@@ -1492,7 +1492,7 @@ export default function ResumeBuilder() {
 
             {/* Connector Line 4-5 */}
             <div
-              className={`flex-1 h-1 mx-2 transition-all duration-300 ${
+              className={`mx-2 h-0.5 flex-1 transition-all duration-300 ${
                 stepsCompleted.projects ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
@@ -1500,7 +1500,7 @@ export default function ResumeBuilder() {
             {/* Step 5: Skills */}
             <div className="flex flex-col items-center flex-1">
               <div
-                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-sm md:text-base transition-all duration-200 ${
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 ${
                   stepsCompleted.skills
                     ? 'bg-green-500 text-white'
                     : activeSection === 'skills'
@@ -1517,7 +1517,7 @@ export default function ResumeBuilder() {
                   : '🔒'}
               </div>
               <span
-                className={`text-xs md:text-sm mt-2 font-medium ${
+                className={`mt-1 text-[11px] font-medium ${
                   activeSection === 'skills'
                     ? 'text-[#3b3be3] dark:text-[#818cf8]'
                     : 'text-gray-600 dark:text-gray-400'
@@ -1542,7 +1542,7 @@ export default function ResumeBuilder() {
             stretching to match the taller content column — a grid item's
             sticky containing block is still the full row height regardless
             of align-self, so it stays pinned while that column scrolls. */}
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden lg:grid lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start lg:gap-10">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden lg:grid lg:grid-cols-[160px_minmax(0,1fr)] lg:items-start lg:gap-4">
           {/* Sidebar - Slide-in drawer on mobile, fixed sidebar on desktop */}
           <div
             className={`fixed inset-y-0 left-0 w-64 lg:sticky lg:top-4 lg:w-auto bg-white dark:bg-gray-900 lg:bg-transparent z-50 lg:z-auto transform transition-transform duration-300 ease-in-out lg:transform-none ${
@@ -1551,7 +1551,7 @@ export default function ResumeBuilder() {
                 : '-translate-x-full lg:translate-x-0'
             }`}
           >
-            <div className="flex h-full flex-col gap-2 overflow-hidden p-4 lg:h-auto lg:overflow-visible lg:p-0">
+            <div             className="flex h-full flex-col gap-1 overflow-hidden p-3 lg:h-auto lg:overflow-visible lg:p-0">
               {/* Mobile Close Button */}
               <div className="lg:hidden flex justify-between items-center mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -1870,9 +1870,9 @@ export default function ResumeBuilder() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.25, ease: EASE }}
-              className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-6 lg:p-8"
+              className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-4 lg:p-5"
             >
-              <h2 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6">
+              <h2 className="mb-3 text-lg font-semibold md:text-xl">
                 {activeSection === 'resume' && 'Resume'}
                 {activeSection === 'personal' && 'Personal Information'}
                 {activeSection === 'experience' && 'Work Experience'}
@@ -1894,11 +1894,11 @@ export default function ResumeBuilder() {
               )}
 
               {activeSection === 'personal' && (
-                <div className="flex flex-col gap-5">
-                  <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-4">
+                <div className="flex flex-col gap-3">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800/50 dark:bg-blue-500/10">
                     <div className="flex items-start gap-3">
                       <svg
-                        className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5"
+                        className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -1909,19 +1909,19 @@ export default function ResumeBuilder() {
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-900 dark:text-blue-400">
+                        <p className="text-xs font-medium text-blue-900 dark:text-blue-400">
                           Please enter valid and accurate data
                         </p>
-                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
+                        <p className="mt-0.5 text-[11px] text-blue-700 dark:text-blue-400">
                           Your email templates and CV will be created based on
                           this information.
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         Full Name
                         <RequiredStar />
                       </label>
@@ -1935,11 +1935,11 @@ export default function ResumeBuilder() {
                             fullName: e.target.value,
                           })
                         }
-                        className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900"
+                        className="rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 transition-all duration-200 focus:border-[#3b3be3] focus:bg-white focus:outline-none focus:ring-3 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300 dark:focus:border-[#818cf8] dark:focus:bg-gray-900 dark:focus:ring-blue-500/20"
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         Email
                         <RequiredStar />
                       </label>
@@ -1953,13 +1953,13 @@ export default function ResumeBuilder() {
                             email: e.target.value,
                           })
                         }
-                        className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900"
+                        className="rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 transition-all duration-200 focus:border-[#3b3be3] focus:bg-white focus:outline-none focus:ring-3 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300 dark:focus:border-[#818cf8] dark:focus:bg-gray-900 dark:focus:ring-blue-500/20"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         Phone
                       </label>
                       <PhoneInput
@@ -2040,8 +2040,8 @@ export default function ResumeBuilder() {
                         labels={en}
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
                         Location
                       </label>
                       <input
@@ -2054,16 +2054,16 @@ export default function ResumeBuilder() {
                             location: e.target.value,
                           })
                         }
-                        className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900"
+                        className="rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 transition-all duration-200 focus:border-[#3b3be3] focus:bg-white focus:outline-none focus:ring-3 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300 dark:focus:border-[#818cf8] dark:focus:bg-gray-900 dark:focus:ring-blue-500/20"
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <div className="flex flex-col gap-1">
+                    <label                     className="text-xs font-medium text-gray-700 dark:text-gray-300">
                       Professional Summary
                     </label>
                     <textarea
-                      rows={4}
+                      rows={3}
                       placeholder="Brief overview of your professional background..."
                       value={personalInfo.summary}
                       onChange={e =>
@@ -2072,13 +2072,13 @@ export default function ResumeBuilder() {
                           summary: e.target.value,
                         })
                       }
-                      className="px-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 focus:outline-none focus:border-[#3b3be3] dark:focus:border-[#818cf8] focus:ring-3 focus:ring-blue-100 dark:focus:ring-blue-500/20 focus:bg-white dark:focus:bg-gray-900 resize-none"
+                      className="resize-none rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700 transition-all duration-200 focus:border-[#3b3be3] focus:bg-white focus:outline-none focus:ring-3 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-300 dark:focus:border-[#818cf8] dark:focus:bg-gray-900 dark:focus:ring-blue-500/20"
                     />
                   </div>
 
                   {/* Social Links Section */}
-                  <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
+                  <div className="mt-3 border-t border-gray-200 pt-3 dark:border-gray-800">
+                    <h3 className="mb-2 text-base font-semibold text-gray-800 dark:text-gray-200">
                       Professional Links
                     </h3>
                     <LinksSection
@@ -2087,16 +2087,16 @@ export default function ResumeBuilder() {
                     />
                   </div>
 
-                  <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                  <div className="mt-3 flex flex-col justify-end gap-2 border-t border-gray-200 pt-3 sm:flex-row dark:border-gray-800">
                     <button
                       onClick={handleCancel}
-                      className="px-6 py-3 bg-transparent text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all duration-200"
+                      className="rounded-lg border border-gray-300 bg-transparent px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800/60"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSaveStep}
-                      className="px-6 py-3 bg-[#3b3be3] text-white rounded-lg font-medium hover:bg-[#2929c9] transition-all duration-200"
+                      className="rounded-lg bg-[#3b3be3] px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-[#2929c9]"
                     >
                       Save & Continue
                     </button>

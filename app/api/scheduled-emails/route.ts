@@ -33,11 +33,32 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const id = searchParams.get('id');
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 401 });
     }
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid scheduled email ID' }, { status: 400 });
+    }
 
     const collection = await getCollection();
+    if (id) {
+      if (!ObjectId.isValid(id)) {
+        return NextResponse.json({ error: 'Invalid scheduled email ID' }, { status: 400 });
+      }
+      const scheduled = await collection.findOne({
+        _id: new ObjectId(id),
+        userId,
+      });
+      if (!scheduled) {
+        return NextResponse.json(
+          { error: 'Scheduled email not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ scheduled: toResponse(scheduled) });
+    }
+
     // The list view only ever renders company/position/status/date — skip
     // shipping the full email body and (often multi-MB, base64) attachment
     // payloads over the wire for every row.
@@ -132,8 +153,15 @@ export async function PATCH(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const userId = searchParams.get('userId');
     if (!id) {
       return NextResponse.json({ error: 'id is required' }, { status: 400 });
+    }
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID required' }, { status: 401 });
+    }
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid scheduled email ID' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -162,7 +190,7 @@ export async function PATCH(request: NextRequest) {
     const collection = await getCollection();
     // Only a still-pending send can be cancelled or rescheduled.
     const result = await collection.updateOne(
-      { _id: new ObjectId(id), status: 'pending' },
+      { _id: new ObjectId(id), userId, status: 'pending' },
       { $set: update }
     );
 
@@ -187,12 +215,19 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const userId = searchParams.get('userId');
     if (!id) {
       return NextResponse.json({ error: 'id is required' }, { status: 400 });
     }
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID required' }, { status: 401 });
+    }
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid scheduled email ID' }, { status: 400 });
+    }
 
     const collection = await getCollection();
-    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+    const result = await collection.deleteOne({ _id: new ObjectId(id), userId });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Scheduled email not found' }, { status: 404 });

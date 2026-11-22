@@ -373,6 +373,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   // the email is worth more here than the small deliverability risk from
   // the tracking pixel. Still user-toggleable per send.
   const [trackOpens, setTrackOpens] = useState(true);
+  const [copiedSubject, setCopiedSubject] = useState('');
+  const copiedAttachmentsAppliedRef = useRef(false);
 
   // Template selection and resume data
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>(
@@ -451,6 +453,85 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setCoverLetterTone(draft.coverLetterTone || 'professional');
     setCoverLetterInstructions(draft.coverLetterInstructions || '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const key = `scheduledEmailCopy:${user.uid}`;
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return;
+
+    try {
+      const copy = JSON.parse(raw) as {
+        to?: string;
+        subject?: string;
+        bodyHtml?: string;
+        attachments?: { filename: string; mimeType: string; data: string }[];
+        attachmentNames?: { cv?: string; coverLetter?: string };
+        companyName?: string;
+        position?: string;
+        trackOpens?: boolean;
+      };
+
+      copiedAttachmentsAppliedRef.current = true;
+      setFormData({
+        companyName: copy.companyName || '',
+        position: copy.position || '',
+        recipientEmail: copy.to || '',
+      });
+      setCopiedSubject(copy.subject || '');
+      setTrackOpens(Boolean(copy.trackOpens));
+
+      const cleanBody = (copy.bodyHtml || '').replace(
+        /<img\b[^>]*src=["'][^"']*\/api\/track\/[^"']*["'][^>]*>?/gi,
+        ''
+      );
+      setEditedBodyHtml(cleanBody);
+      setIsEditingBody(Boolean(cleanBody));
+
+      const copiedAttachments = copy.attachments || [];
+      const cvName = copy.attachmentNames?.cv;
+      const coverName = copy.attachmentNames?.coverLetter;
+      const cvAttachment =
+        copiedAttachments.find(item => item.filename === cvName) ||
+        copiedAttachments.find(item =>
+          /(^|[-_\s])(cv|resume)([-_.]|$)/i.test(item.filename)
+        );
+      const coverAttachment =
+        copiedAttachments.find(item => item.filename === coverName) ||
+        copiedAttachments.find(item =>
+          /(cover[\s_-]*letter)/i.test(item.filename)
+        );
+
+      setAttachments({
+        cv: cvAttachment
+          ? base64ToFile(cvAttachment.data, cvAttachment.filename, cvAttachment.mimeType)
+          : null,
+        coverLetter: coverAttachment
+          ? base64ToFile(
+              coverAttachment.data,
+              coverAttachment.filename,
+              coverAttachment.mimeType
+            )
+          : null,
+      });
+      setRequireCoverLetter(Boolean(coverAttachment));
+
+      showToast(
+        'success',
+        'Scheduled Email Copied',
+        'Recipient, subject, body, CV, and cover letter are ready in Send Email.'
+      );
+    } catch (error) {
+      console.error('Error restoring scheduled email copy:', error);
+      showToast(
+        'error',
+        'Copy Failed',
+        'The copied scheduled email data is invalid.'
+      );
+    } finally {
+      sessionStorage.removeItem(key);
+    }
   }, [user?.uid]);
 
   // Keep the draft in memory so sidebar navigation preserves it, while a full
@@ -595,7 +676,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         setSelectedProfileId(cachedProfileId);
         setResumeData(cached.data);
         setIsLoadingResume(false);
-        if (cvSource === 'profile' && cachedProfileId) {
+        if (copiedAttachmentsAppliedRef.current) {
+          // Preserve attachments copied from a scheduled email.
+        } else if (cvSource === 'profile' && cachedProfileId) {
           applyCvForProfile(cachedProfileId);
         } else {
           loadDevResume();
@@ -618,7 +701,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         setSelectedProfileId(defaultProfileId || '');
         setResumeData(data);
         setCachedData(cacheKey, { profiles, data });
-        if (cvSource === 'profile' && defaultProfileId) {
+        if (copiedAttachmentsAppliedRef.current) {
+          // Preserve attachments copied from a scheduled email.
+        } else if (cvSource === 'profile' && defaultProfileId) {
           applyCvForProfile(defaultProfileId);
         } else {
           loadDevResume();
@@ -956,7 +1041,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const handleConfirmSend = async () => {
     if (!generatedEmail) return;
 
-    const subject = generatedEmail.subject;
+    const subject = copiedSubject || generatedEmail.subject;
     const plainTextFallback =
       'bodyText' in generatedEmail
         ? generatedEmail.bodyText
@@ -1176,7 +1261,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       const result = await scheduleEmail({
         userId: user.uid,
         to: formData.recipientEmail,
-        subject: generatedEmail.subject,
+        subject: copiedSubject || generatedEmail.subject,
         bodyHtml: displayedBodyHtml,
         attachments: attachmentsList,
         attachmentNames: {
@@ -1233,7 +1318,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         ? generatedEmail.bodyText
         : generatedEmail.body;
 
-    const fullEmail = `Subject: ${generatedEmail.subject}\n\n${body}`;
+    const fullEmail = `Subject: ${copiedSubject || generatedEmail.subject}\n\n${body}`;
 
     const success = await copyToClipboard(fullEmail);
     if (success) {
@@ -1271,7 +1356,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setSendMode('now');
     setScheduledFor(null);
     setRequireCoverLetter(false);
-    setAttachments(previous => ({ ...previous, coverLetter: null }));
+    setCopiedSubject('');
+    copiedAttachmentsAppliedRef.current = false;
+    setAttachments({ cv: null, coverLetter: null });
     inMemorySendEmailDrafts.delete(sendEmailDraftKey(user?.uid));
     showToast('success', 'Details cleared', 'Your application details are ready for a new email.');
   };
@@ -2472,7 +2559,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                       Subject
                     </span>
                     <span className="text-foreground">
-                      {generatedEmail.subject}
+                      {copiedSubject || generatedEmail.subject}
                     </span>
                   </div>
                 </div>

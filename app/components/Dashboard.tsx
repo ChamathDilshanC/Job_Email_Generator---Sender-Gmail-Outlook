@@ -67,7 +67,7 @@ export function Dashboard() {
       case 'history':
         return <History />;
       case 'scheduled':
-        return <Scheduled />;
+        return <Scheduled onNavigate={navigateToPage} />;
       case 'profile':
         return <Profile />;
       case 'settings':

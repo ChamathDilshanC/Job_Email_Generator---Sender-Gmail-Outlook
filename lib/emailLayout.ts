@@ -2,15 +2,16 @@ export type EmailTextAlignment = 'left' | 'center' | 'justify';
 export type EmailWidth = 'narrow' | 'medium' | 'wide';
 
 export const EMAIL_WIDTH_PIXELS: Record<EmailWidth, number> = {
-  narrow: 480,
-  medium: 640,
-  wide: 760,
+  narrow: 420,
+  medium: 620,
+  wide: 820,
 };
 
 function applyAlignmentToBlocks(bodyHtml: string, alignment: EmailTextAlignment): string {
   const blockPattern = /<(p|div|li|td|th|h1|h2|h3|h4|h5|h6)\b([^>]*)>/gi;
 
   return bodyHtml.replace(blockPattern, (match, tag: string, attributes: string) => {
+    const cleanedAttributes = attributes.replace(/\salign=(["']).*?\1/gi, '');
     const styleMatch = attributes.match(/\sstyle=(["'])([\s\S]*?)\1/i);
     if (styleMatch) {
       const quote = styleMatch[1];
@@ -18,13 +19,14 @@ function applyAlignmentToBlocks(bodyHtml: string, alignment: EmailTextAlignment)
         .replace(/text-align\s*:[^;]*(;|$)/gi, '')
         .trim()
         .replace(/;$/, '');
-      const updatedStyle = `${existing}; text-align:${alignment}${existing ? ';' : ''}`;
-      return `<${tag}${attributes.replace(
+      const updatedStyle = `${existing ? `${existing}; ` : ''}text-align:${alignment};`;
+      const updatedAttributes = cleanedAttributes.replace(
         styleMatch[0],
         ` style=${quote}${updatedStyle}${quote}`
-      )}>`;
+      );
+      return `<${tag} align="${alignment}"${updatedAttributes}>`;
     }
-    return `<${tag} style="text-align:${alignment};"${attributes}>`;
+    return `<${tag} align="${alignment}" style="text-align:${alignment};"${cleanedAttributes}>`;
   });
 }
 
@@ -43,7 +45,7 @@ export function applyEmailLayout(
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-collapse:collapse;">
 <tr>
 <td align="${alignment === 'center' ? 'center' : 'left'}" style="width:100%; padding:0 12px; text-align:${alignment};">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:${pixels}px; max-width:100%; margin:0 auto; border-collapse:collapse;">
+<table role="presentation" width="${pixels}" cellspacing="0" cellpadding="0" border="0" align="center" style="width:${pixels}px; max-width:${pixels}px; margin:0 auto; border-collapse:collapse;">
 <tr>
 <td style="width:${pixels}px; max-width:100%; padding:0 8px; text-align:${alignment};">
 ${blockAlignedBody}

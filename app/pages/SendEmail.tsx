@@ -48,6 +48,7 @@ import { showToast } from '@/lib/toast';
 import { loadFavoriteTemplateIds } from '@/lib/favoriteTemplates';
 import type { CoverLetter } from '@/lib/coverLetter';
 import { stripLeadingGreeting } from '@/lib/coverLetter';
+import { preserveTemplateEmailStyles } from '@/lib/emailHtmlStylePreservation';
 import { jsPDF } from 'jspdf';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -2567,7 +2568,16 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   {isEditingBody ? (
                     <EmailBodyEditor
                       value={displayedBodyHtml}
-                      onChange={html => setEditedBodyHtml(html)}
+                      onChange={html =>
+                        setEditedBodyHtml(
+                          preserveTemplateEmailStyles(
+                            emailGenerationMode === 'ai'
+                              ? aiGeneratedEmail?.bodyHtml || displayedBodyHtml
+                              : templateEmail?.bodyHtml || displayedBodyHtml,
+                            html
+                          )
+                        )
+                      }
                     />
                   ) : (
                     <div

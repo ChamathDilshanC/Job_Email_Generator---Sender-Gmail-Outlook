@@ -7,23 +7,30 @@ import {
   cancelScheduledEmail,
   checkGoogleBackgroundSendStatus,
   deleteScheduledEmail,
+  getScheduledEmail,
   listScheduledEmails,
   ScheduledEmail,
 } from '@/lib/scheduledEmailService';
 import { getCachedData, setCachedData } from '@/lib/pageDataCache';
 import { showToast } from '@/lib/toast';
+import type { PageType } from '@/components/sidebar-01/types';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
   Building2,
   CalendarClock,
   CheckCircle2,
+  Copy,
   Trash2,
   XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-export default function Scheduled() {
+interface ScheduledProps {
+  onNavigate?: (page: PageType) => void;
+}
+
+export default function Scheduled({ onNavigate }: ScheduledProps = {}) {
   const { user, isAuthenticated, handleSignIn } = useAuth();
   const [scheduled, setScheduled] = useState<ScheduledEmail[]>([]);
   const [statusFilter, setStatusFilter] = useState<
@@ -82,13 +89,46 @@ export default function Scheduled() {
     }
   };
 
+  const handleCopyToSend = async (id: string) => {
+    if (!user?.uid) return;
+    const scheduledEmail = await getScheduledEmail(id, user.uid);
+    if (!scheduledEmail) {
+      showToast(
+        'error',
+        'Copy Failed',
+        'Could not load this scheduled email. Please try again.'
+      );
+      return;
+    }
+
+    sessionStorage.setItem(
+      `scheduledEmailCopy:${user.uid}`,
+      JSON.stringify({
+        to: scheduledEmail.to,
+        subject: scheduledEmail.subject,
+        bodyHtml: scheduledEmail.bodyHtml,
+        attachments: scheduledEmail.attachments || [],
+        attachmentNames: scheduledEmail.attachmentNames,
+        companyName: scheduledEmail.companyName,
+        position: scheduledEmail.position,
+        trackOpens: Boolean(scheduledEmail.trackingId),
+      })
+    );
+    showToast(
+      'success',
+      'Ready to Copy',
+      'Scheduled email details, body, CV, and cover letter are open in Send Email.'
+    );
+    onNavigate?.('send-email');
+  };
+
   const handleCancel = (id: string) => {
     setConfirmDialog({
       open: true,
       title: 'Cancel Scheduled Email?',
       description: 'This email will no longer be sent at its scheduled time.',
       onConfirm: async () => {
-        const ok = await cancelScheduledEmail(id);
+        const ok = await cancelScheduledEmail(id, user?.uid);
         if (ok) {
           setScheduled(prev =>
             prev.map(s => (s.id === id ? { ...s, status: 'cancelled' } : s))
@@ -106,7 +146,7 @@ export default function Scheduled() {
       title: 'Delete Scheduled Email?',
       description: 'This removes it from your list permanently.',
       onConfirm: async () => {
-        const ok = await deleteScheduledEmail(id);
+        const ok = await deleteScheduledEmail(id, user?.uid);
         if (ok) {
           setScheduled(prev => prev.filter(s => s.id !== id));
         } else {
@@ -324,6 +364,15 @@ export default function Scheduled() {
                     )}
                   </div>
                   <div className="flex shrink-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyToSend(item.id)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
+                      title="Copy details to Send Email"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </button>
                     {item.status === 'pending' && (
                       <button
                         onClick={() => handleCancel(item.id)}

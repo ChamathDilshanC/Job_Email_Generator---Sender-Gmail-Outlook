@@ -77,9 +77,32 @@ export async function listScheduledEmails(
   }
 }
 
-export async function cancelScheduledEmail(id: string): Promise<boolean> {
+export async function getScheduledEmail(
+  id: string,
+  userId: string | undefined | null
+): Promise<ScheduledEmail | null> {
+  if (!id || !userId) return null;
   try {
-    const response = await fetch(`/api/scheduled-emails?id=${id}`, {
+    const response = await fetch(
+      `/api/scheduled-emails?id=${encodeURIComponent(id)}&userId=${encodeURIComponent(userId)}`
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.scheduled || null;
+  } catch (error) {
+    console.error('Error loading scheduled email details:', error);
+    return null;
+  }
+}
+
+export async function cancelScheduledEmail(
+  id: string,
+  userId?: string | null
+): Promise<boolean> {
+  try {
+    const params = new URLSearchParams({ id });
+    if (userId) params.set('userId', userId);
+    const response = await fetch(`/api/scheduled-emails?${params.toString()}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'cancelled' }),
@@ -93,10 +116,13 @@ export async function cancelScheduledEmail(id: string): Promise<boolean> {
 
 export async function rescheduleEmail(
   id: string,
-  scheduledFor: string
+  scheduledFor: string,
+  userId?: string | null
 ): Promise<boolean> {
   try {
-    const response = await fetch(`/api/scheduled-emails?id=${id}`, {
+    const params = new URLSearchParams({ id });
+    if (userId) params.set('userId', userId);
+    const response = await fetch(`/api/scheduled-emails?${params.toString()}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ scheduledFor }),
@@ -108,9 +134,14 @@ export async function rescheduleEmail(
   }
 }
 
-export async function deleteScheduledEmail(id: string): Promise<boolean> {
+export async function deleteScheduledEmail(
+  id: string,
+  userId?: string | null
+): Promise<boolean> {
   try {
-    const response = await fetch(`/api/scheduled-emails?id=${id}`, {
+    const params = new URLSearchParams({ id });
+    if (userId) params.set('userId', userId);
+    const response = await fetch(`/api/scheduled-emails?${params.toString()}`, {
       method: 'DELETE',
     });
     return response.ok;

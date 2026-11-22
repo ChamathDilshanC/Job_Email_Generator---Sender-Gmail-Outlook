@@ -68,8 +68,16 @@ export function prepareGmailHtml(bodyHtml: string): string {
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@media only screen and (max-width: 620px) {
+  body, table, td, p, div { width:100% !important; max-width:100% !important; box-sizing:border-box !important; }
+  body { padding:8px !important; }
+  td { padding-left:4px !important; padding-right:4px !important; }
+  p, div, td, th, li { word-break:normal !important; overflow-wrap:anywhere !important; }
+}
+</style>
 </head>
-<body style="margin:0;padding:24px;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#1f2937;">
+<body style="margin:0;padding:12px;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#1f2937;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;border-collapse:collapse;">
 <tr>
 <td style="width:100%;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#1f2937;">

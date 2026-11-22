@@ -45,9 +45,9 @@ export function applyEmailLayout(
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; border-collapse:collapse;">
 <tr>
 <td align="${alignment === 'center' ? 'center' : 'left'}" style="width:100%; padding:0 12px; text-align:${alignment};">
-<table role="presentation" width="${pixels}" cellspacing="0" cellpadding="0" border="0" align="center" style="width:${pixels}px; max-width:${pixels}px; margin:0 auto; border-collapse:collapse;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" align="center" style="width:100%; max-width:${pixels}px; margin:0 auto; border-collapse:collapse;">
 <tr>
-<td style="width:${pixels}px; max-width:100%; padding:0 8px; text-align:${alignment};">
+<td style="width:100%; max-width:100%; padding:0 8px; text-align:${alignment};">
 ${blockAlignedBody}
 </td>
 </tr>

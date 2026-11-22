@@ -112,6 +112,8 @@ export default function Scheduled({ onNavigate }: ScheduledProps = {}) {
         companyName: scheduledEmail.companyName,
         position: scheduledEmail.position,
         trackOpens: Boolean(scheduledEmail.trackingId),
+        emailAlignment: scheduledEmail.emailAlignment,
+        emailWidth: scheduledEmail.emailWidth,
       })
     );
     showToast(

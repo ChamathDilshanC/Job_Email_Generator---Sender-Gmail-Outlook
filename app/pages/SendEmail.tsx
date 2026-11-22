@@ -49,6 +49,11 @@ import { loadFavoriteTemplateIds } from '@/lib/favoriteTemplates';
 import type { CoverLetter } from '@/lib/coverLetter';
 import { stripLeadingGreeting } from '@/lib/coverLetter';
 import { preserveTemplateEmailStyles } from '@/lib/emailHtmlStylePreservation';
+import {
+  applyEmailLayout,
+  type EmailTextAlignment,
+  type EmailWidth,
+} from '@/lib/emailLayout';
 import { jsPDF } from 'jspdf';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -135,6 +140,8 @@ interface SendEmailDraft {
   coverLetterLength: CoverLetter['length'];
   coverLetterTone: CoverLetter['tone'];
   coverLetterInstructions: string;
+  emailAlignment: EmailTextAlignment;
+  emailWidth: EmailWidth;
 }
 
 function sendEmailDraftKey(uid?: string | null): string {
@@ -381,6 +388,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType>(
     TemplateType.PROFESSIONAL_INTRO
   );
+  const [emailAlignment, setEmailAlignment] =
+    useState<EmailTextAlignment>('left');
+  const [emailWidth, setEmailWidth] = useState<EmailWidth>('medium');
   const [emailGenerationMode, setEmailGenerationMode] = useState<'template' | 'ai'>('template');
   const [jobDescription, setJobDescription] = useState('');
   const [aiTone, setAiTone] = useState('professional');
@@ -453,6 +463,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setCoverLetterLength(draft.coverLetterLength || 'standard');
     setCoverLetterTone(draft.coverLetterTone || 'professional');
     setCoverLetterInstructions(draft.coverLetterInstructions || '');
+    setEmailAlignment(draft.emailAlignment || 'left');
+    setEmailWidth(draft.emailWidth || 'medium');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
@@ -472,6 +484,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         companyName?: string;
         position?: string;
         trackOpens?: boolean;
+        emailAlignment?: EmailTextAlignment;
+        emailWidth?: EmailWidth;
       };
 
       copiedAttachmentsAppliedRef.current = true;
@@ -482,6 +496,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       });
       setCopiedSubject(copy.subject || '');
       setTrackOpens(Boolean(copy.trackOpens));
+      setEmailAlignment(copy.emailAlignment || 'left');
+      setEmailWidth(copy.emailWidth || 'medium');
 
       const cleanBody = (copy.bodyHtml || '').replace(
         /<img\b[^>]*src=["'][^"']*\/api\/track\/[^"']*["'][^>]*>?/gi,
@@ -559,6 +575,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       coverLetterLength,
       coverLetterTone,
       coverLetterInstructions,
+      emailAlignment,
+      emailWidth,
     });
   }, [
     formData,
@@ -580,6 +598,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     coverLetterLength,
     coverLetterTone,
     coverLetterInstructions,
+    emailAlignment,
+    emailWidth,
     user?.uid,
   ]);
 
@@ -720,6 +740,14 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     const savedTemplateId = localStorage.getItem('selectedTemplateId');
     if (savedTemplateId) {
       setSelectedTemplate(parseInt(savedTemplateId) as TemplateType);
+    }
+    const savedAlignment = localStorage.getItem('selectedEmailAlignment');
+    if (savedAlignment === 'left' || savedAlignment === 'center' || savedAlignment === 'justify') {
+      setEmailAlignment(savedAlignment);
+    }
+    const savedWidth = localStorage.getItem('selectedEmailWidth');
+    if (savedWidth === 'narrow' || savedWidth === 'medium' || savedWidth === 'wide') {
+      setEmailWidth(savedWidth);
     }
 
     fetchResumeData();
@@ -1263,7 +1291,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         userId: user.uid,
         to: formData.recipientEmail,
         subject: copiedSubject || generatedEmail.subject,
-        bodyHtml: displayedBodyHtml,
+        bodyHtml: rawDisplayedBodyHtml,
         attachments: attachmentsList,
         attachmentNames: {
           cv: attachments.cv?.name,
@@ -1275,6 +1303,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         trackOpens,
         templateId: selectedTemplate,
         templateName,
+        emailAlignment,
+        emailWidth,
       });
 
       if (result.success) {
@@ -1358,6 +1388,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setScheduledFor(null);
     setRequireCoverLetter(false);
     setCopiedSubject('');
+    setEmailAlignment('left');
+    setEmailWidth('medium');
+    localStorage.removeItem('selectedEmailAlignment');
+    localStorage.removeItem('selectedEmailWidth');
     copiedAttachmentsAppliedRef.current = false;
     setAttachments({ cv: null, coverLetter: null });
     inMemorySendEmailDrafts.delete(sendEmailDraftKey(user?.uid));
@@ -1408,7 +1442,12 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   // The actual body that gets edited/sent: the user's manual Quill edits
   // once they've made any, otherwise whatever the template generator
   // currently produces (so it stays live as company/position/etc. change).
-  const displayedBodyHtml = editedBodyHtml ?? generatedEmail?.bodyHtml ?? '';
+  const rawDisplayedBodyHtml = editedBodyHtml ?? generatedEmail?.bodyHtml ?? '';
+  const displayedBodyHtml = applyEmailLayout(
+    rawDisplayedBodyHtml,
+    emailAlignment,
+    emailWidth
+  );
 
   const requiredBadge = (
     <span className="badge text-[10px] uppercase tracking-wide">
@@ -1826,7 +1865,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 <button type="button" onClick={() => setEmailGenerationMode('template')} className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${emailGenerationMode === 'template' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><FileText className="h-4 w-4" />Template</button>
                 <button type="button" onClick={() => setEmailGenerationMode('ai')} className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${emailGenerationMode === 'ai' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}><Sparkles className="h-4 w-4" />Generate with AI</button>
               </div>
-              {emailGenerationMode === 'template' ? <Select
+              {emailGenerationMode === 'template' ? <>
+              <Select
                 value={selectedTemplate.toString()}
                 onValueChange={value => {
                   const next = parseInt(value, 10) as TemplateType;
@@ -1865,7 +1905,58 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 ))}
                 </SelectGroup>
                 </SelectContent>
-              </Select> : <div className="space-y-5 border-t border-border/70 pt-5">
+              </Select>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    Text alignment
+                  </label>
+                  <div className="grid grid-cols-3 rounded-xl border border-border bg-muted/30 p-1">
+                    {([
+                      ['left', 'Left'],
+                      ['center', 'Center'],
+                      ['justify', 'Justify'],
+                    ] as const).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          setEmailAlignment(value);
+                          localStorage.setItem('selectedEmailAlignment', value);
+                        }}
+                        className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${emailAlignment === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    Email width
+                  </label>
+                  <div className="grid grid-cols-3 rounded-xl border border-border bg-muted/30 p-1">
+                    {([
+                      ['narrow', 'Compact'],
+                      ['medium', 'Medium'],
+                      ['wide', 'Wide'],
+                    ] as const).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          setEmailWidth(value);
+                          localStorage.setItem('selectedEmailWidth', value);
+                        }}
+                        className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${emailWidth === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              </> : <div className="space-y-5 border-t border-border/70 pt-5">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-primary/10 p-2 text-primary"><Sparkles className="h-4 w-4" /></div>
                   <div>
@@ -2567,11 +2658,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 <div className="bg-white dark:bg-gray-900 p-5">
                   {isEditingBody ? (
                     <EmailBodyEditor
-                      value={displayedBodyHtml}
+                      value={rawDisplayedBodyHtml}
                       onChange={html =>
                         setEditedBodyHtml(
                           preserveTemplateEmailStyles(
-                            displayedBodyHtml,
+                            rawDisplayedBodyHtml,
                             html
                           )
                         )

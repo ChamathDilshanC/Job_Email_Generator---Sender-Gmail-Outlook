@@ -488,7 +488,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         ''
       );
       setEditedBodyHtml(cleanBody);
-      setIsEditingBody(Boolean(cleanBody));
+      setIsEditingBody(false);
 
       const copiedAttachments = copy.attachments || [];
       const cvName = copy.attachmentNames?.cv;
@@ -2571,9 +2571,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                       onChange={html =>
                         setEditedBodyHtml(
                           preserveTemplateEmailStyles(
-                            emailGenerationMode === 'ai'
-                              ? aiGeneratedEmail?.bodyHtml || displayedBodyHtml
-                              : templateEmail?.bodyHtml || displayedBodyHtml,
+                            displayedBodyHtml,
                             html
                           )
                         )

@@ -59,11 +59,11 @@ async function processDueEmails() {
         email.emailAlignment === 'center' ||
         email.emailAlignment === 'justify'
           ? email.emailAlignment
-          : 'left',
+          : 'justify',
         email.emailWidth === 'narrow' ||
         email.emailWidth === 'wide'
           ? email.emailWidth
-          : 'medium'
+          : 'wide'
       );
       const bodyHtml =
         email.trackingId && baseUrl

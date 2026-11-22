@@ -389,8 +389,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     TemplateType.PROFESSIONAL_INTRO
   );
   const [emailAlignment, setEmailAlignment] =
-    useState<EmailTextAlignment>('left');
-  const [emailWidth, setEmailWidth] = useState<EmailWidth>('medium');
+    useState<EmailTextAlignment>('justify');
+  const [emailWidth, setEmailWidth] = useState<EmailWidth>('wide');
   const [emailGenerationMode, setEmailGenerationMode] = useState<'template' | 'ai'>('template');
   const [jobDescription, setJobDescription] = useState('');
   const [aiTone, setAiTone] = useState('professional');
@@ -463,8 +463,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setCoverLetterLength(draft.coverLetterLength || 'standard');
     setCoverLetterTone(draft.coverLetterTone || 'professional');
     setCoverLetterInstructions(draft.coverLetterInstructions || '');
-    setEmailAlignment(draft.emailAlignment || 'left');
-    setEmailWidth(draft.emailWidth || 'medium');
+    setEmailAlignment(draft.emailAlignment || 'justify');
+    setEmailWidth(draft.emailWidth || 'wide');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
@@ -496,8 +496,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       });
       setCopiedSubject(copy.subject || '');
       setTrackOpens(Boolean(copy.trackOpens));
-      setEmailAlignment(copy.emailAlignment || 'left');
-      setEmailWidth(copy.emailWidth || 'medium');
+      setEmailAlignment(copy.emailAlignment || 'justify');
+      setEmailWidth(copy.emailWidth || 'wide');
 
       const cleanBody = (copy.bodyHtml || '').replace(
         /<img\b[^>]*src=["'][^"']*\/api\/track\/[^"']*["'][^>]*>?/gi,
@@ -741,13 +741,22 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     if (savedTemplateId) {
       setSelectedTemplate(parseInt(savedTemplateId) as TemplateType);
     }
-    const savedAlignment = localStorage.getItem('selectedEmailAlignment');
-    if (savedAlignment === 'left' || savedAlignment === 'center' || savedAlignment === 'justify') {
-      setEmailAlignment(savedAlignment);
-    }
-    const savedWidth = localStorage.getItem('selectedEmailWidth');
-    if (savedWidth === 'narrow' || savedWidth === 'medium' || savedWidth === 'wide') {
-      setEmailWidth(savedWidth);
+    const layoutPreferenceVersion = localStorage.getItem('emailLayoutPreferenceVersion');
+    if (layoutPreferenceVersion !== '2') {
+      setEmailAlignment('justify');
+      setEmailWidth('wide');
+      localStorage.setItem('selectedEmailAlignment', 'justify');
+      localStorage.setItem('selectedEmailWidth', 'wide');
+      localStorage.setItem('emailLayoutPreferenceVersion', '2');
+    } else {
+      const savedAlignment = localStorage.getItem('selectedEmailAlignment');
+      if (savedAlignment === 'left' || savedAlignment === 'center' || savedAlignment === 'justify') {
+        setEmailAlignment(savedAlignment);
+      }
+      const savedWidth = localStorage.getItem('selectedEmailWidth');
+      if (savedWidth === 'narrow' || savedWidth === 'medium' || savedWidth === 'wide') {
+        setEmailWidth(savedWidth);
+      }
     }
 
     fetchResumeData();
@@ -1388,10 +1397,11 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setScheduledFor(null);
     setRequireCoverLetter(false);
     setCopiedSubject('');
-    setEmailAlignment('left');
-    setEmailWidth('medium');
+    setEmailAlignment('justify');
+    setEmailWidth('wide');
     localStorage.removeItem('selectedEmailAlignment');
     localStorage.removeItem('selectedEmailWidth');
+    localStorage.removeItem('emailLayoutPreferenceVersion');
     copiedAttachmentsAppliedRef.current = false;
     setAttachments({ cv: null, coverLetter: null });
     inMemorySendEmailDrafts.delete(sendEmailDraftKey(user?.uid));
@@ -1923,8 +1933,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                         onClick={() => {
                           setEmailAlignment(value);
                           localStorage.setItem('selectedEmailAlignment', value);
+                          localStorage.setItem('emailLayoutPreferenceVersion', '2');
                         }}
-                        className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${emailAlignment === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${emailAlignment === value ? 'bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30' : 'text-muted-foreground hover:bg-background hover:text-foreground'}`}
                       >
                         {label}
                       </button>
@@ -1947,8 +1958,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                         onClick={() => {
                           setEmailWidth(value);
                           localStorage.setItem('selectedEmailWidth', value);
+                          localStorage.setItem('emailLayoutPreferenceVersion', '2');
                         }}
-                        className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${emailWidth === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors ${emailWidth === value ? 'bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/30' : 'text-muted-foreground hover:bg-background hover:text-foreground'}`}
                       >
                         {label}
                       </button>

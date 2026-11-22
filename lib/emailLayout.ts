@@ -4,7 +4,7 @@ export type EmailWidth = 'narrow' | 'medium' | 'wide';
 export const EMAIL_WIDTH_PIXELS: Record<EmailWidth, number> = {
   narrow: 420,
   medium: 620,
-  wide: 820,
+  wide: 980,
 };
 
 function applyAlignmentToBlocks(bodyHtml: string, alignment: EmailTextAlignment): string {

@@ -128,8 +128,8 @@ export async function POST(request: NextRequest) {
       position,
       templateId,
       templateName,
-      emailAlignment: emailAlignment || 'left',
-      emailWidth: emailWidth || 'medium',
+      emailAlignment: emailAlignment || 'justify',
+      emailWidth: emailWidth || 'wide',
       trackingId,
       createdAt: new Date(),
     });

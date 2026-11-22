@@ -88,6 +88,8 @@ export async function POST(request: NextRequest) {
       position,
       templateId,
       templateName,
+      emailAlignment,
+      emailWidth,
       trackOpens,
     } = body;
 
@@ -126,6 +128,8 @@ export async function POST(request: NextRequest) {
       position,
       templateId,
       templateName,
+      emailAlignment: emailAlignment || 'left',
+      emailWidth: emailWidth || 'medium',
       trackingId,
       createdAt: new Date(),
     });

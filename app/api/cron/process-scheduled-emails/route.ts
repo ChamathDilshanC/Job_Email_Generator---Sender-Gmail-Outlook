@@ -1,4 +1,5 @@
 import { buildEmailPreview } from '@/lib/emailPreview';
+import { applyEmailLayout } from '@/lib/emailLayout';
 import { getValidAccessTokenForUser } from '@/lib/googleAuth';
 import clientPromise from '@/lib/mongodb';
 import { sendGmailMessage, withTrackingPixel } from '@/lib/sendGmail';
@@ -53,10 +54,21 @@ async function processDueEmails() {
         continue;
       }
 
+      const layoutAppliedBody = applyEmailLayout(
+        email.bodyHtml,
+        email.emailAlignment === 'center' ||
+        email.emailAlignment === 'justify'
+          ? email.emailAlignment
+          : 'left',
+        email.emailWidth === 'narrow' ||
+        email.emailWidth === 'wide'
+          ? email.emailWidth
+          : 'medium'
+      );
       const bodyHtml =
         email.trackingId && baseUrl
-          ? withTrackingPixel(email.bodyHtml, email.trackingId, baseUrl)
-          : email.bodyHtml;
+          ? withTrackingPixel(layoutAppliedBody, email.trackingId, baseUrl)
+          : layoutAppliedBody;
 
       await sendGmailMessage(
         {

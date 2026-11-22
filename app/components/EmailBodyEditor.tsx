@@ -22,7 +22,9 @@ export default function EmailBodyEditor({ value, onChange }: EmailBodyEditorProp
     <ReactQuill
       theme="snow"
       value={value}
-      onChange={onChange}
+      onChange={(html, _delta, source) => {
+        if (source === 'user') onChange(html);
+      }}
       modules={TOOLBAR_MODULES}
       className="[&_.ql-toolbar]:rounded-t-lg [&_.ql-toolbar]:border-border [&_.ql-container]:rounded-b-lg [&_.ql-container]:border-border [&_.ql-editor]:min-h-[200px] [&_.ql-editor]:text-sm"
     />

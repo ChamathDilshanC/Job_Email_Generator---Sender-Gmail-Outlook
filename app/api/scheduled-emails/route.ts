@@ -37,10 +37,6 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'User ID required' }, { status: 401 });
     }
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ error: 'Invalid scheduled email ID' }, { status: 400 });
-    }
-
     const collection = await getCollection();
     if (id) {
       if (!ObjectId.isValid(id)) {

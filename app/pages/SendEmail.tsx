@@ -2406,11 +2406,22 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   ? attachments.cv.name
                   : undefined
               }
+              lockedCoverLetterName={
+                attachments.coverLetter
+                  ? attachments.coverLetter.name
+                  : undefined
+              }
               onFilesChange={files => {
                 // A manual change to the CV slot overrides whatever was
                 // auto-loaded from the resume profile.
                 if (files.cv !== attachments.cv) setIsCvAutoLoaded(false);
-                setAttachments(files);
+                setAttachments(previous => ({
+                  cv: files.cv,
+                  coverLetter:
+                    files.cv !== previous.cv && !files.coverLetter
+                      ? previous.coverLetter
+                      : files.coverLetter,
+                }));
               }}
               onAlert={(title, description, type) => {
                 showToast(type, title, description);

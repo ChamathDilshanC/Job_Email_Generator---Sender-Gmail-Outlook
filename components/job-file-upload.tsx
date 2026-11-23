@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 interface FileUploadProps {
   onFilesChange: (files: { cv: File | null; coverLetter: File | null }) => void;
   lockedFileName?: string;
+  lockedCoverLetterName?: string;
   onAlert?: (
     title: string,
     description: string,
@@ -19,6 +20,7 @@ interface FileUploadProps {
 export default function JobFileUpload({
   onFilesChange,
   lockedFileName,
+  lockedCoverLetterName,
   onAlert,
 }: FileUploadProps) {
   const [cvState, setCvState] = useState<{
@@ -249,45 +251,61 @@ export default function JobFileUpload({
           Cover Letter
         </h3>
 
-        <div
-          className="flex min-h-36 cursor-pointer justify-center rounded-2xl border border-dashed border-primary/20 bg-gradient-to-br from-primary/[0.035] via-background to-muted/40 px-5 py-8 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
-          onDragOver={e => e.preventDefault()}
-          onDrop={handleClDrop}
-          onClick={() => clInputRef.current?.click()}
-        >
-          <div>
-            <File
-              className="mx-auto h-12 w-12 text-muted-foreground"
-              aria-hidden={true}
-            />
-            <div className="flex text-sm leading-6 text-muted-foreground">
-              <p>Drag and drop or</p>
-              <label
-                htmlFor="cl-upload"
-                className="relative cursor-pointer rounded-sm pl-1 font-medium text-primary hover:underline hover:underline-offset-4"
-              >
-                <span>choose file</span>
-                <input
-                  id="cl-upload"
-                  name="cl-upload"
-                  type="file"
-                  className="sr-only"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleClChange}
-                  ref={clInputRef}
-                />
-              </label>
-              <p className="pl-1">to upload</p>
+        {lockedCoverLetterName ? (
+          <div className="flex min-h-36 items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-5 py-5 dark:border-emerald-900/50 dark:bg-emerald-950/20">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
+              <File className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+                {lockedCoverLetterName}
+              </p>
+              <p className="mt-0.5 text-xs text-emerald-700/80 dark:text-emerald-300/80">
+                Cover letter attached · upload locked
+              </p>
             </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className="flex min-h-36 cursor-pointer justify-center rounded-2xl border border-dashed border-primary/20 bg-gradient-to-br from-primary/[0.035] via-background to-muted/40 px-5 py-8 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
+            onDragOver={e => e.preventDefault()}
+            onDrop={handleClDrop}
+            onClick={() => clInputRef.current?.click()}
+          >
+            <div>
+              <File
+                className="mx-auto h-12 w-12 text-muted-foreground"
+                aria-hidden={true}
+              />
+              <div className="flex text-sm leading-6 text-muted-foreground">
+                <p>Drag and drop or</p>
+                <label
+                  htmlFor="cl-upload"
+                  className="relative cursor-pointer rounded-sm pl-1 font-medium text-primary hover:underline hover:underline-offset-4"
+                >
+                  <span>choose file</span>
+                  <input
+                    id="cl-upload"
+                    name="cl-upload"
+                    type="file"
+                    className="sr-only"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleClChange}
+                    ref={clInputRef}
+                  />
+                </label>
+                <p className="pl-1">to upload</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <p className="mt-2 text-xs leading-5 text-muted-foreground sm:flex sm:items-center sm:justify-between">
           <span>Accepted file types: PDF, DOC or DOCX files.</span>
           <span className="pl-1 sm:pl-0">Max. size: 5MB</span>
         </p>
 
-        {clFile && (
+        {!lockedCoverLetterName && clFile && (
           <Card className="relative mt-3 border-0 bg-muted/60 p-4 shadow-none">
             <Button
               type="button"

@@ -544,8 +544,8 @@ export default function EmailTemplates() {
                       Skills Used in This Template
                     </h3>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Add or remove skills freely. The email highlights the first
-                      six, and newly added skills are prioritized automatically.
+                      Add or remove skills freely. Every skill selected for this
+                      template will be included in its email.
                     </p>
                   </div>
                   <span className="shrink-0 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">

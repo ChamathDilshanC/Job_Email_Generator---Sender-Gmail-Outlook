@@ -253,12 +253,10 @@ function generateProfessionalIntroduction(
   const bg = '#eff6ff';
 
   const fullName = personalInfo.fullName || 'Your Name';
-  // Keep the introduction focused while still surfacing the candidate's
-  // strongest skill areas (for example, Frontend, Backend, or DevOps).
+  // Use the complete skill set selected for this template.
   const coreSkills = skills.selectedSkills
     .map(skill => skill.trim())
-    .filter(Boolean)
-    .slice(0, 6);
+    .filter(Boolean);
   const topSkills = coreSkills.join(', ') || 'your skills';
   const coreSkillsText = coreSkills.length
     ? coreSkills.map(skill => `• ${skill}`).join('\n')
@@ -356,8 +354,8 @@ ${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 
 /**
  * Role-targeted application templates. These use the same dependable
- * professional structure while changing the role framing and showing the
- * six skills that were matched to the target position in Your Information.
+ * professional structure while changing the role framing and showing every
+ * skill selected for the target template.
  */
 function generateRoleTargetedApplication(
   templateId: TemplateType,
@@ -376,8 +374,7 @@ function generateRoleTargetedApplication(
   const fullName = personalInfo.fullName || 'Your Name';
   const matchedSkills = skills.selectedSkills
     .map(skill => skill.trim())
-    .filter(Boolean)
-    .slice(0, 6);
+    .filter(Boolean);
   const skillsText = matchedSkills.length
     ? matchedSkills.map(skill => `• ${skill}`).join('\n')
     : '• Add role-matched skills in Your Information';
@@ -830,7 +827,7 @@ function generateProfessionalJobApplication(
     : 'my academic and professional background';
   const experience = workExperiences[0]?.description || 'relevant hands-on experience';
   const technicalSkills =
-    skills.selectedSkills.slice(0, 6).join(', ') || 'relevant technical skills';
+    skills.selectedSkills.join(', ') || 'relevant technical skills';
   const linksText = formatSocialLinks(socialLinks);
 
   const bodyText = `${fullName}
@@ -874,7 +871,7 @@ function generateTechnicalPortfolioShowcase(
   const fullName = personalInfo.fullName || 'Your Name';
   const project = projects[0];
   const technicalSkills =
-    skills.selectedSkills.slice(0, 8).join(', ') || 'software development';
+    skills.selectedSkills.join(', ') || 'software development';
   const projectLinks = [
     project?.projectUrl
       ? `Portfolio: ${project.projectUrl}`
@@ -947,7 +944,7 @@ function generateCareerTransition(
 
   const fullName = personalInfo.fullName || 'Your Name';
   const previousField = workExperiences[0]?.position || 'my previous field';
-  const transferableSkills = skills.selectedSkills.slice(0, 6);
+  const transferableSkills = skills.selectedSkills;
   const recentEducation = education.filter(edu => edu.degree).slice(0, 2);
 
   const bodyText = `${fullName}
@@ -1357,7 +1354,7 @@ function generateColdOutreach(
 
   const fullName = personalInfo.fullName || 'Your Name';
   const greetingName = recruiterName || 'Hiring Team';
-  const topSkills = skills.selectedSkills.slice(0, 6);
+  const topSkills = skills.selectedSkills;
   const latestExperience = workExperiences[0];
 
   const bodyText = `${fullName}
@@ -1459,7 +1456,7 @@ function generateReferralApplication(
   const bg = '#ecfdf5';
 
   const fullName = personalInfo.fullName || 'Your Name';
-  const topSkills = skills.selectedSkills.slice(0, 5).join(', ') || 'my skills';
+  const topSkills = skills.selectedSkills.join(', ') || 'my skills';
   const latestExperience = workExperiences[0];
   const referralIntro = referralName
     ? `${referralName}${
@@ -1554,8 +1551,7 @@ function generateInterviewThankYou(
 
   const fullName = personalInfo.fullName || 'Your Name';
   const greetingName = interviewerName || 'Hiring Team';
-  const topSkills =
-    skills.selectedSkills.slice(0, 5).join(', ') || 'my background';
+  const topSkills = skills.selectedSkills.join(', ') || 'my background';
   const latestExperience = workExperiences[0];
 
   const bodyText = `${fullName}
@@ -1635,7 +1631,7 @@ function generateFollowUpCheckIn(
 
   const fullName = personalInfo.fullName || 'Your Name';
   const topSkills =
-    skills.selectedSkills.slice(0, 5).join(', ') || 'my key skills';
+    skills.selectedSkills.join(', ') || 'my key skills';
   const latestExperience = workExperiences[0];
 
   const bodyText = `${fullName}
@@ -1714,7 +1710,7 @@ function generateNetworkingInformational(
   const fullName = personalInfo.fullName || 'Your Name';
   const greetingName = recruiterName ? ` ${recruiterName}` : '';
   const topSkills =
-    skills.selectedSkills.slice(0, 5).join(', ') || 'a varied technical background';
+    skills.selectedSkills.join(', ') || 'a varied technical background';
 
   const bodyText = `${fullName}
 ${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
@@ -1753,7 +1749,6 @@ ${fullName}`;
 
 <p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">A Little About Me</p>
 <div>${skills.selectedSkills
-    .slice(0, 6)
     .map(s => renderPill(s, accent, bg))
     .join('') || renderPill(topSkills, accent, bg)}</div>
 
@@ -1871,7 +1866,7 @@ function generateEntryLevelApplication(
   const bg = '#f0fdfa';
 
   const fullName = personalInfo.fullName || 'Your Name';
-  const topSkills = skills.selectedSkills.slice(0, 6);
+  const topSkills = skills.selectedSkills;
   const latestEducation = education[0];
   const topProjects = projects.slice(0, 2);
 
@@ -1994,7 +1989,7 @@ function generateRemotePositionApplication(
   const bg = '#eef2ff';
 
   const fullName = personalInfo.fullName || 'Your Name';
-  const topSkills = skills.selectedSkills.slice(0, 6);
+  const topSkills = skills.selectedSkills;
   const latestExperience = workExperiences[0];
 
   const bodyText = `${fullName}
@@ -2110,7 +2105,7 @@ ${topProjects
   )
   .join('\n')}
 
-Tools and skills: ${skills.selectedSkills.slice(0, 8).join(', ')}.
+Tools and skills: ${skills.selectedSkills.join(', ')}.
 
 I'd love to walk you through any of these in more detail. Thank you for taking a look.
 
@@ -2155,7 +2150,6 @@ ${topProjects
 </ul>
 
 <div style="margin-top:14px;">${skills.selectedSkills
-    .slice(0, 8)
     .map(s => renderPill(s, accent, bg))
     .join('')}</div>
 
@@ -2307,7 +2301,7 @@ function generatePostInterviewAdditionalInfo(
 
   const fullName = personalInfo.fullName || 'Your Name';
   const greetingName = interviewerName || 'Hiring Team';
-  const topSkills = skills.selectedSkills.slice(0, 5).join(', ');
+  const topSkills = skills.selectedSkills.join(', ');
 
   const bodyText = `${fullName}
 ${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
@@ -2388,7 +2382,7 @@ Thanks for connecting on LinkedIn! I've been following ${companyName}'s work and
 
 A bit about me: I'm a ${
     skills.position || 'professional'
-  } with a background in ${skills.selectedSkills.slice(0, 4).join(', ') || 'a range of relevant skills'}.
+  } with a background in ${skills.selectedSkills.join(', ') || 'a range of relevant skills'}.
 
 No pressure at all - I'd just love to stay on your radar, or hear any advice you might have. Thanks again for connecting!
 
@@ -2409,7 +2403,7 @@ ${fullName}`;
 <p>A bit about me: I'm a <strong>${
     skills.position || 'professional'
   }</strong> with a background in ${
-    skills.selectedSkills.slice(0, 4).join(', ') || 'a range of relevant skills'
+    skills.selectedSkills.join(', ') || 'a range of relevant skills'
   }.</p>
 
 <p>No pressure at all - I'd just love to stay on your radar, or hear any advice you might have. Thanks again for connecting!</p>
@@ -2438,7 +2432,7 @@ function generateReferralRequest(
 
   const fullName = personalInfo.fullName || 'Your Name';
   const greetingName = recruiterName || 'there';
-  const topSkills = skills.selectedSkills.slice(0, 5).join(', ') || 'my background';
+  const topSkills = skills.selectedSkills.join(', ') || 'my background';
 
   const bodyText = `${fullName}
 ${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
@@ -2623,7 +2617,7 @@ function generateUltraModernRecruiterSpotlight(
   const bg = '#f0fdf4';
 
   const fullName = personalInfo.fullName || 'Your Name';
-  const topSkills = skills.selectedSkills.slice(0, 6);
+  const topSkills = skills.selectedSkills;
   const featuredProjects = projects.slice(0, 3);
   const linksText = formatSocialLinks(socialLinks);
 

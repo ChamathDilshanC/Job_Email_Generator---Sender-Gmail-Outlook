@@ -145,6 +145,8 @@ interface SendEmailDraft {
   coverLetterInstructions: string;
   emailAlignment: EmailTextAlignment;
   emailWidth: EmailWidth;
+  customSubject: string;
+  customSubjectEnabled: boolean;
 }
 
 function sendEmailDraftKey(uid?: string | null): string {
@@ -384,7 +386,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   // the email is worth more here than the small deliverability risk from
   // the tracking pixel. Still user-toggleable per send.
   const [trackOpens, setTrackOpens] = useState(true);
-  const [copiedSubject, setCopiedSubject] = useState('');
+  const [customSubject, setCustomSubject] = useState('');
+  const [customSubjectEnabled, setCustomSubjectEnabled] = useState(false);
   const copiedAttachmentsAppliedRef = useRef(false);
 
   // Template selection and resume data
@@ -469,6 +472,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setCoverLetterInstructions(draft.coverLetterInstructions || '');
     setEmailAlignment(draft.emailAlignment || 'justify');
     setEmailWidth(draft.emailWidth || 'wide');
+    setCustomSubject(draft.customSubject || '');
+    setCustomSubjectEnabled(
+      draft.customSubjectEnabled ?? Boolean(draft.customSubject)
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
@@ -498,7 +505,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         position: copy.position || '',
         recipientEmail: copy.to || '',
       });
-      setCopiedSubject(copy.subject || '');
+      const restoredSubject = copy.subject?.trim() || '';
+      setCustomSubject(restoredSubject);
+      setCustomSubjectEnabled(Boolean(restoredSubject));
       setTrackOpens(Boolean(copy.trackOpens));
       setEmailAlignment(copy.emailAlignment || 'justify');
       setEmailWidth(copy.emailWidth || 'wide');
@@ -581,6 +590,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       coverLetterInstructions,
       emailAlignment,
       emailWidth,
+      customSubject,
+      customSubjectEnabled,
     });
   }, [
     formData,
@@ -604,6 +615,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     coverLetterInstructions,
     emailAlignment,
     emailWidth,
+    customSubject,
+    customSubjectEnabled,
     user?.uid,
   ]);
 
@@ -1138,7 +1151,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const handleConfirmSend = async () => {
     if (!generatedEmail) return;
 
-    const subject = copiedSubject || generatedEmail.subject;
+    const subject = effectiveSubject;
     const plainTextFallback =
       'bodyText' in generatedEmail
         ? generatedEmail.bodyText
@@ -1358,7 +1371,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       const result = await scheduleEmail({
         userId: user.uid,
         to: formData.recipientEmail,
-        subject: copiedSubject || generatedEmail.subject,
+        subject: effectiveSubject,
         bodyHtml: rawDisplayedBodyHtml,
         attachments: attachmentsList,
         attachmentNames: {
@@ -1417,7 +1430,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         ? generatedEmail.bodyText
         : generatedEmail.body;
 
-    const fullEmail = `Subject: ${copiedSubject || generatedEmail.subject}\n\n${body}`;
+    const fullEmail = `Subject: ${effectiveSubject}\n\n${body}`;
 
     const success = await copyToClipboard(fullEmail);
     if (success) {
@@ -1455,7 +1468,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     setSendMode('now');
     setScheduledFor(null);
     setRequireCoverLetter(false);
-    setCopiedSubject('');
+    setCustomSubject('');
+    setCustomSubjectEnabled(false);
     setEmailAlignment('justify');
     setEmailWidth('wide');
     localStorage.removeItem('selectedEmailAlignment');
@@ -1507,6 +1521,10 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const generatedEmail = emailGenerationMode === 'ai' && aiGeneratedEmail
     ? aiGeneratedEmail
     : templateEmail;
+  const effectiveSubject =
+    customSubjectEnabled && customSubject.trim()
+      ? customSubject.trim()
+      : generatedEmail?.subject || '';
 
   // The actual body that gets edited/sent: the user's manual Quill edits
   // once they've made any, otherwise whatever the template generator
@@ -1811,6 +1829,42 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 placeholder="e.g., hr@company.com"
                 value={formData.recipientEmail}
                 onChange={handleInputChange}
+              />
+            </Field>
+
+            <Field
+              label="Subject"
+              icon={<Mail className="h-3.5 w-3.5 text-primary" />}
+              className="sm:col-span-2"
+              action={
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    Use custom subject
+                  </span>
+                  <Switch
+                    id="custom-subject"
+                    checked={customSubjectEnabled}
+                    onCheckedChange={setCustomSubjectEnabled}
+                    disabled={!generatedEmail}
+                    aria-label="Use custom subject"
+                  />
+                </div>
+              }
+              hint={
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  {customSubjectEnabled
+                    ? 'Your custom subject will be used when sending. Leave it blank to keep the default.'
+                    : `Default subject: ${generatedEmail?.subject || 'Complete the application details to generate a subject.'}`}
+                </p>
+              }
+            >
+              <input
+                type="text"
+                value={customSubject}
+                onChange={event => setCustomSubject(event.target.value)}
+                placeholder={generatedEmail?.subject || 'Enter a custom subject'}
+                disabled={!customSubjectEnabled || !generatedEmail}
+                className="form-input disabled:cursor-not-allowed disabled:opacity-60"
               />
             </Field>
 
@@ -2748,7 +2802,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                       Subject
                     </span>
                     <span className="text-foreground">
-                      {copiedSubject || generatedEmail.subject}
+                      {effectiveSubject}
                     </span>
                   </div>
                 </div>
@@ -2792,7 +2846,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         open={showPreviewModal}
         onOpenChange={setShowPreviewModal}
         to={formData.recipientEmail}
-        subject={generatedEmail?.subject || ''}
+        subject={effectiveSubject}
         bodyHtml={displayedBodyHtml}
         attachmentNames={[attachments.cv?.name, attachments.coverLetter?.name].filter(
           (name): name is string => !!name

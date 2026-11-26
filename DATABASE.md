@@ -60,7 +60,7 @@ Stores saved generated or edited cover letters by user/profile, company, positio
 
 ## Ownership and deletion
 
-Application queries should include `userId` in filters. Resume, CV, scheduled-email, cover-letter, and most history list queries already use ownership filters. The current email-history PATCH and DELETE handlers accept an email ID without a user filter; treat that as a security-hardening item before exposing those operations outside the trusted application flow. Resume profile deletion removes its tagged CV file. Account deletion removes all resume profiles, CV files, and email history for that user.
+Application queries should include `userId` in filters. Resume, CV, scheduled-email, cover-letter, and email-history list/delete queries use ownership filters. The email-history PATCH handler still accepts an email ID without a user filter and should be hardened before exposing that operation beyond the trusted application flow. Resume profile deletion removes its tagged CV file. Account deletion removes all resume profiles, CV files, and email history for that user.
 
 ## Backups and migrations
 

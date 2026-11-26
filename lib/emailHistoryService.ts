@@ -158,12 +158,18 @@ export async function updateApplicationStatus(
  * Delete email from history
  */
 export async function deleteEmailFromHistory(
+  userId: string | undefined | null,
   emailId: string
 ): Promise<boolean> {
+  if (!userId || !emailId) return false;
+
   try {
-    const response = await fetch(`/api/email-history?emailId=${emailId}`, {
+    const response = await fetch(
+      `/api/email-history?userId=${encodeURIComponent(userId)}&emailId=${encodeURIComponent(emailId)}`,
+      {
       method: 'DELETE',
-    });
+      }
+    );
 
     if (!response.ok) {
       throw new Error('Failed to delete email from history');
@@ -174,5 +180,35 @@ export async function deleteEmailFromHistory(
   } catch (error) {
     console.error('Error deleting email from history:', error);
     return false;
+  }
+}
+
+/**
+ * Delete several history entries in one ownership-checked request.
+ */
+export async function deleteEmailsFromHistory(
+  userId: string | undefined | null,
+  emailIds: string[]
+): Promise<number> {
+  if (!userId || emailIds.length === 0) return 0;
+
+  try {
+    const response = await fetch('/api/email-history', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, emailIds }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete emails from history');
+    }
+
+    const data = await response.json();
+    return data.deletedCount || 0;
+  } catch (error) {
+    console.error('Error deleting emails from history:', error);
+    return 0;
   }
 }

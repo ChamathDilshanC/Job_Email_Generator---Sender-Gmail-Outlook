@@ -42,7 +42,7 @@ export default function SendPreviewModal({
   const isScheduling = sendMode === 'schedule' && emailClient === 'gmail';
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[94vh] overflow-y-auto sm:max-w-6xl">
         <DialogHeader>
           <DialogTitle>Preview Email</DialogTitle>
         </DialogHeader>
@@ -85,7 +85,7 @@ export default function SendPreviewModal({
         </div>
 
         <div
-          className="max-h-[40vh] overflow-y-auto rounded-lg border border-border p-4 text-sm leading-relaxed"
+          className="max-h-[68vh] overflow-y-auto rounded-lg border border-border p-4 text-sm leading-relaxed"
           dangerouslySetInnerHTML={{ __html: bodyHtml }}
         />
 

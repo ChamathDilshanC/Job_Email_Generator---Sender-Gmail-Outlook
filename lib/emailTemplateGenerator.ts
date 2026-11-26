@@ -187,13 +187,7 @@ function renderClosingHtml(
   <tr><td style="border-top:1px solid #e5e7eb; font-size:1px; line-height:1px;">&nbsp;</td></tr>
 </table>
 
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:18px; background-color:${bg}; border-radius:8px;">
-  <tr>
-    <td style="padding:14px 16px; font-family:${FONT}; font-size:14px; color:#374151;">
-      <span style="font-size:16px;">&#128206;</span>&nbsp;&nbsp;<strong style="color:${accent};">Attachment:</strong> Please find my résumé/CV attached for your consideration.
-    </td>
-  </tr>
-</table>`;
+<p><strong style="color:#000000;">Attachment:<br>Please find my résumé/CV attached for your consideration.</strong></p>`;
 }
 
 /**
@@ -228,7 +222,7 @@ function renderBannerHtml(text: string, accent: string, bg: string): string {
 }
 
 function attachmentNoteText(): string {
-  return `\n${'─'.repeat(40)}\nAttachment: Please find my résumé/CV attached for your consideration.`;
+  return `\nAttachment:\nPlease find my résumé/CV attached for your consideration.`;
 }
 
 function wrapHtml(inner: string): string {

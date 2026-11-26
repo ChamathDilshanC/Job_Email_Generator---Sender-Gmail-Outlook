@@ -24,7 +24,12 @@ function ThemedToaster() {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       <GoogleAuthProvider>
         <AuthProvider>
           {children}

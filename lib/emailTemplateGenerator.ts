@@ -1,5 +1,10 @@
 import { ResumeData } from './resumeDataService';
-import { GeneratedEmail, JobDetails, TemplateType } from './templateTypes';
+import {
+  GeneratedEmail,
+  JobDetails,
+  ROLE_TARGETED_ROLES,
+  TemplateType,
+} from './templateTypes';
 
 const FONT =
   "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
@@ -248,8 +253,16 @@ function generateProfessionalIntroduction(
   const bg = '#eff6ff';
 
   const fullName = personalInfo.fullName || 'Your Name';
-  const topSkills =
-    skills.selectedSkills.slice(0, 5).join(', ') || 'your skills';
+  // Keep the introduction focused while still surfacing the candidate's
+  // strongest skill areas (for example, Frontend, Backend, or DevOps).
+  const coreSkills = skills.selectedSkills
+    .map(skill => skill.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+  const topSkills = coreSkills.join(', ') || 'your skills';
+  const coreSkillsText = coreSkills.length
+    ? coreSkills.map(skill => `• ${skill}`).join('\n')
+    : '• Add your key technical skills in Your Information';
   const latestExperience = workExperiences[0];
   const latestEducation = education[0];
   const linksText = formatSocialLinks(socialLinks);
@@ -273,6 +286,9 @@ ${
 }
 
 My technical expertise includes ${topSkills}, which I believe align perfectly with the requirements of this role.
+
+Core Technical Skills:
+${coreSkillsText}
 
 ${
   latestEducation
@@ -310,6 +326,15 @@ ${
 
 <p>My technical expertise includes <strong>${topSkills}</strong>, which I believe align perfectly with the requirements of this role.</p>
 
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Core Technical Skills</p>
+<div style="margin-bottom:18px;">
+  ${
+    coreSkills.length > 0
+      ? coreSkills.map(skill => renderPill(skill, accent, bg)).join('')
+      : renderPill('Add your key technical skills in Your Information', accent, bg)
+  }
+</div>
+
 ${
   latestEducation
     ? `<p>I hold a <strong>${latestEducation.degree}</strong> in <strong>${latestEducation.fieldOfStudy}</strong> from <strong>${latestEducation.institution}</strong>, which has provided me with a strong foundation in the field.</p>`
@@ -324,6 +349,125 @@ ${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
 
   return {
     subject: `Application for ${position} - ${fullName}`,
+    bodyText,
+    bodyHtml,
+  };
+}
+
+/**
+ * Role-targeted application templates. These use the same dependable
+ * professional structure while changing the role framing and showing the
+ * six skills that were matched to the target position in Your Information.
+ */
+function generateRoleTargetedApplication(
+  templateId: TemplateType,
+  resumeData: ResumeData,
+  jobDetails: JobDetails
+): GeneratedEmail {
+  const { personalInfo, skills, workExperiences, education, socialLinks } =
+    resumeData;
+  const role =
+    ROLE_TARGETED_ROLES[templateId] ||
+    ROLE_TARGETED_ROLES[TemplateType.SOFTWARE_DEVELOPER]!;
+  const { companyName } = jobDetails;
+  const targetPosition = jobDetails.position?.trim() || role.roleTitle;
+  const accent = '#4338ca';
+  const bg = '#eef2ff';
+  const fullName = personalInfo.fullName || 'Your Name';
+  const matchedSkills = skills.selectedSkills
+    .map(skill => skill.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+  const skillsText = matchedSkills.length
+    ? matchedSkills.map(skill => `• ${skill}`).join('\n')
+    : '• Add role-matched skills in Your Information';
+  const topSkills = matchedSkills.join(', ') || 'my technical skills';
+  const latestExperience = workExperiences[0];
+  const latestEducation = education[0];
+  const linksText = formatSocialLinks(socialLinks);
+
+  const bodyText = `${fullName}
+${personalInfo.email || ''} | ${personalInfo.phone || ''} | ${
+    personalInfo.location || ''
+  }${linksText}
+
+Dear Hiring Manager,
+
+I am writing to apply for the ${targetPosition} position at ${companyName}. ${
+    personalInfo.summary ||
+    `My background and career interests align with ${role.focus}, and I am eager to contribute with a practical, dependable, and learning-focused approach.`
+  }
+
+${
+  latestExperience
+    ? formatExperienceLead(latestExperience, false)
+    : 'Through my academic work and practical projects, I have built a strong foundation for contributing to a professional engineering team.'
+}
+
+Core Skills Matched to ${role.roleTitle}:
+${skillsText}
+
+My experience with ${topSkills} gives me a strong foundation to support ${companyName}'s goals in this role. I am particularly interested in this opportunity because it aligns with ${role.focus}.
+
+${
+  latestEducation
+    ? `I hold a ${latestEducation.degree} in ${latestEducation.fieldOfStudy} from ${latestEducation.institution}, which has strengthened my technical foundation and commitment to continuous learning.`
+    : ''
+}
+
+I would welcome the opportunity to discuss how my background, role-matched skills, and enthusiasm can contribute to your team.
+
+Thank you for considering my application. I look forward to hearing from you.
+
+Best regards,
+${fullName}
+${attachmentNoteText()}`;
+
+  const bodyHtml = wrapHtml(`${renderHeaderHtml(
+    fullName,
+    personalInfo,
+    socialLinks,
+    accent
+  )}
+
+<p>Dear Hiring Manager,</p>
+
+<p>I am writing to apply for the <strong>${targetPosition}</strong> position at <strong style="color:${accent};">${companyName}</strong>. ${
+    personalInfo.summary ||
+    `My background and career interests align with ${role.focus}, and I am eager to contribute with a practical, dependable, and learning-focused approach.`
+  }</p>
+
+${
+  latestExperience
+    ? formatExperienceLead(latestExperience, true)
+    : '<p>Through my academic work and practical projects, I have built a strong foundation for contributing to a professional engineering team.</p>'
+}
+
+<p style="font-weight:700; margin-top:22px; margin-bottom:8px; color:#111827;">Core Skills Matched to ${role.roleTitle}</p>
+<div style="margin-bottom:18px;">
+  ${
+    matchedSkills.length > 0
+      ? matchedSkills.map(skill => renderPill(skill, accent, bg)).join('')
+      : renderPill('Add role-matched skills in Your Information', accent, bg)
+  }
+</div>
+
+<p>My experience with <strong>${topSkills}</strong> gives me a strong foundation to support <strong style="color:${accent};">${companyName}</strong>'s goals in this role. I am particularly interested in this opportunity because it aligns with ${role.focus}.</p>
+
+${
+  latestEducation
+    ? `<p>I hold a <strong>${latestEducation.degree}</strong> in <strong>${latestEducation.fieldOfStudy}</strong> from <strong>${latestEducation.institution}</strong>, which has strengthened my technical foundation and commitment to continuous learning.</p>`
+    : ''
+}
+
+<p>I would welcome the opportunity to discuss how my background, role-matched skills, and enthusiasm can contribute to your team.</p>
+
+<p>Thank you for considering my application. I look forward to hearing from you.</p>
+
+${renderClosingHtml(fullName, 'Best regards', accent, bg)}`);
+
+  return {
+    subject: `Application for ${targetPosition} - ${fullName}`,
     bodyText,
     bodyHtml,
   };
@@ -2811,6 +2955,13 @@ export function generateEmailFromTemplate(
       return generateProfessionalJobApplication(resumeData, jobDetails);
     case TemplateType.TECHNICAL_PORTFOLIO_SHOWCASE:
       return generateTechnicalPortfolioShowcase(resumeData, jobDetails);
+    case TemplateType.INTERN_SOFTWARE_ENGINEER:
+    case TemplateType.ASSOCIATE_SOFTWARE_ENGINEER:
+    case TemplateType.INTERN_DEVOPS_ENGINEER:
+    case TemplateType.ASSOCIATE_DEVOPS_ENGINEER:
+    case TemplateType.IT_SUPPORT_SPECIALIST:
+    case TemplateType.SOFTWARE_DEVELOPER:
+      return generateRoleTargetedApplication(templateId, resumeData, jobDetails);
     default:
       return generateProfessionalIntroduction(resumeData, jobDetails);
   }

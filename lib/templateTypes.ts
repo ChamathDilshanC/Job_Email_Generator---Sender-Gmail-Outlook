@@ -27,6 +27,12 @@ export enum TemplateType {
   EXECUTIVE_PROJECT_PORTFOLIO = 24,
   PROFESSIONAL_JOB_APPLICATION = 25,
   TECHNICAL_PORTFOLIO_SHOWCASE = 26,
+  INTERN_SOFTWARE_ENGINEER = 27,
+  ASSOCIATE_SOFTWARE_ENGINEER = 28,
+  INTERN_DEVOPS_ENGINEER = 29,
+  ASSOCIATE_DEVOPS_ENGINEER = 30,
+  IT_SUPPORT_SPECIALIST = 31,
+  SOFTWARE_DEVELOPER = 32,
 }
 
 export enum TemplateCategory {
@@ -34,6 +40,7 @@ export enum TemplateCategory {
   INTERVIEW_FOLLOW_UP = 'interview-follow-up',
   NETWORKING_REFERRAL = 'networking-referral',
   OFFER_ONBOARDING = 'offer-onboarding',
+  ROLE_TARGETED = 'role-targeted',
 }
 
 export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
@@ -41,6 +48,7 @@ export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
   [TemplateCategory.INTERVIEW_FOLLOW_UP]: 'Interview & Follow-Up',
   [TemplateCategory.NETWORKING_REFERRAL]: 'Networking & Referral',
   [TemplateCategory.OFFER_ONBOARDING]: 'Offer & Onboarding',
+  [TemplateCategory.ROLE_TARGETED]: 'Role-Targeted Applications',
 };
 
 export interface JobDetails {
@@ -72,6 +80,8 @@ export interface TemplateMetadata {
   preview: string;
   description: string;
   category: TemplateCategory;
+  /** Fixed role focus used by the role-targeted application templates. */
+  roleTarget?: string;
   /** Shown as a "Recommended for Jobs" badge - reserved for the small set of
    *  templates best suited to a direct job application, not situational
    *  follow-ups/networking/offer notes. */
@@ -84,9 +94,9 @@ export const TEMPLATE_METADATA: TemplateMetadata[] = [
     name: 'Professional Introduction',
     subject: 'Application for {Position} - {Your Name}',
     preview:
-      'A formal introduction highlighting your interest and qualifications',
+      'A formal introduction highlighting your interest, qualifications, and six core skills',
     description:
-      'Classic professional approach with emphasis on qualifications and enthusiasm',
+      'Classic professional approach with emphasis on qualifications, enthusiasm, and skills from Your Information',
     category: TemplateCategory.APPLICATION,
     recommended: true,
   },
@@ -344,4 +354,100 @@ export const TEMPLATE_METADATA: TemplateMetadata[] = [
     category: TemplateCategory.APPLICATION,
     recommended: true,
   },
+  {
+    id: TemplateType.INTERN_SOFTWARE_ENGINEER,
+    name: 'Intern Software Engineer',
+    subject: 'Application for Intern Software Engineer - {Your Name}',
+    preview: 'A professional early-career application focused on software engineering fundamentals',
+    description: 'Targets internship responsibilities with API-matched skills from Your Information',
+    category: TemplateCategory.ROLE_TARGETED,
+    roleTarget: 'Intern Software Engineer',
+    recommended: true,
+  },
+  {
+    id: TemplateType.ASSOCIATE_SOFTWARE_ENGINEER,
+    name: 'Associate Software Engineer',
+    subject: 'Application for Associate Software Engineer - {Your Name}',
+    preview: 'A polished associate-level application focused on maintainable production software',
+    description: 'Connects your experience and API-matched technical skills to associate engineering work',
+    category: TemplateCategory.ROLE_TARGETED,
+    roleTarget: 'Associate Software Engineer',
+    recommended: true,
+  },
+  {
+    id: TemplateType.INTERN_DEVOPS_ENGINEER,
+    name: 'Intern DevOps Engineer',
+    subject: 'Application for Intern DevOps Engineer - {Your Name}',
+    preview: 'A focused DevOps internship email covering automation, cloud, and delivery fundamentals',
+    description: 'Targets internship-ready DevOps skills selected through the skills API',
+    category: TemplateCategory.ROLE_TARGETED,
+    roleTarget: 'Intern DevOps Engineer',
+    recommended: true,
+  },
+  {
+    id: TemplateType.ASSOCIATE_DEVOPS_ENGINEER,
+    name: 'Associate DevOps Engineer',
+    subject: 'Application for Associate DevOps Engineer - {Your Name}',
+    preview: 'A professional DevOps application centered on cloud infrastructure and reliable delivery',
+    description: 'Matches associate DevOps responsibilities with your six strongest role skills',
+    category: TemplateCategory.ROLE_TARGETED,
+    roleTarget: 'Associate DevOps Engineer',
+    recommended: true,
+  },
+  {
+    id: TemplateType.IT_SUPPORT_SPECIALIST,
+    name: 'IT Support Specialist',
+    subject: 'Application for IT Support Specialist - {Your Name}',
+    preview: 'A service-focused application highlighting troubleshooting and user support capability',
+    description: 'Targets IT support responsibilities with API-matched systems and service skills',
+    category: TemplateCategory.ROLE_TARGETED,
+    roleTarget: 'IT Support Specialist',
+    recommended: true,
+  },
+  {
+    id: TemplateType.SOFTWARE_DEVELOPER,
+    name: 'Software Developer',
+    subject: 'Application for Software Developer - {Your Name}',
+    preview: 'A versatile software development application with a clear technical skills section',
+    description: 'Professional structure for software developer roles using your best-matched profile skills',
+    category: TemplateCategory.ROLE_TARGETED,
+    roleTarget: 'Software Developer',
+    recommended: true,
+  },
 ];
+
+export interface RoleTargetDefinition {
+  roleTitle: string;
+  focus: string;
+}
+
+/**
+ * Role-specific templates share one professional structure but use a clear
+ * role focus so the selected API skills are presented in the right context.
+ */
+export const ROLE_TARGETED_ROLES: Partial<Record<TemplateType, RoleTargetDefinition>> = {
+  [TemplateType.INTERN_SOFTWARE_ENGINEER]: {
+    roleTitle: 'Intern Software Engineer',
+    focus: 'software engineering fundamentals, full-stack development, and problem solving',
+  },
+  [TemplateType.ASSOCIATE_SOFTWARE_ENGINEER]: {
+    roleTitle: 'Associate Software Engineer',
+    focus: 'production-oriented software development, clean code, and collaborative delivery',
+  },
+  [TemplateType.INTERN_DEVOPS_ENGINEER]: {
+    roleTitle: 'Intern DevOps Engineer',
+    focus: 'Linux, automation, CI/CD, cloud fundamentals, and reliable delivery practices',
+  },
+  [TemplateType.ASSOCIATE_DEVOPS_ENGINEER]: {
+    roleTitle: 'Associate DevOps Engineer',
+    focus: 'cloud infrastructure, deployment automation, observability, and platform reliability',
+  },
+  [TemplateType.IT_SUPPORT_SPECIALIST]: {
+    roleTitle: 'IT Support Specialist',
+    focus: 'technical troubleshooting, user support, systems administration, and service quality',
+  },
+  [TemplateType.SOFTWARE_DEVELOPER]: {
+    roleTitle: 'Software Developer',
+    focus: 'building maintainable applications, APIs, and user-focused software solutions',
+  },
+};

@@ -10,6 +10,7 @@ import { fetchBestMatchingSkillsForPosition } from '@/lib/skillsApiClient';
 import {
   getTemplateSkills,
   loadTemplateSkills,
+  resetTemplateSkills,
   saveTemplateSkills,
   TemplateSkillsMap,
   withTemplateSkills,
@@ -201,6 +202,25 @@ export default function EmailTemplates() {
             skills: previous.skills.filter(skill => skill !== skillToRemove),
           }
         : previous
+    );
+  };
+
+  const resetCustomization = () => {
+    if (!customizingTemplate || !resumeData || !user?.uid) return;
+
+    const nextTemplateSkills = resetTemplateSkills(
+      user.uid,
+      resumeData.profileId,
+      customizingTemplate.id
+    );
+    setTemplateSkills(nextTemplateSkills);
+    setCustomizingTemplate(null);
+    setCustomizationDraft(null);
+    setNewCustomizationSkill('');
+    showToast(
+      'success',
+      'Template Skills Reset',
+      'This template now uses the skills from Your Information.'
     );
   };
 
@@ -608,6 +628,19 @@ export default function EmailTemplates() {
             </div>
 
             <div className="mt-6 flex flex-col-reverse gap-3 border-t border-gray-200 pt-5 sm:flex-row sm:justify-end dark:border-gray-800">
+              {Object.prototype.hasOwnProperty.call(
+                templateSkills,
+                customizingTemplate.id.toString()
+              ) && (
+                <button
+                  type="button"
+                  onClick={resetCustomization}
+                  disabled={isSavingCustomization}
+                  className="rounded-lg border border-amber-300 px-5 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50 dark:border-amber-500/40 dark:text-amber-300 dark:hover:bg-amber-500/10"
+                >
+                  Reset to Profile Skills
+                </button>
+              )}
               <button
                 type="button"
                 onClick={closeCustomization}

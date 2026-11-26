@@ -24,12 +24,13 @@ A modern, feature-rich Next.js application for creating and sending professional
 - [Usage Guide](#-usage-guide)
 - [Security Features](#-security-features)
 - [Deployment](#-deployment)
+- [Documentation](#-documentation)
 - [Recent Updates](#-recent-updates)
 - [Author](#-author)
 
 ## 🔭 Overview
 
-JobMail lets a job seeker fill in their profile once — either by hand or by uploading an existing resume and letting AI fill it in — then generate and send tailored job-application emails through their own Gmail account, with attachments, in a couple of clicks. Emails can go out immediately or be scheduled for later and still send in the background, even if the browser is closed. Everything runs on a small stack: **Next.js** for the app, **Google OAuth** (server-side auth-code flow) for sign-in, Gmail access, and background sending, **Google Gemini** for AI resume parsing, and **MongoDB** (Azure Cosmos DB for MongoDB) for storage.
+JobMail lets a job seeker fill in their profile once — either by hand or by uploading an existing resume and letting AI fill it in — then generate and send tailored job-application emails through their own Gmail account, with attachments, in a couple of clicks. Emails can go out immediately or be scheduled for later and still send in the background, even if the browser is closed. Everything runs on a small stack: **Next.js** for the app, **Google OAuth** (server-side auth-code flow) for sign-in, Gmail access, and background sending, **Google Gemini** for AI resume parsing, and **MongoDB** (Azure Cosmos DB for MongoDB) for storage. Current template workflows also support role-targeted skills, per-template customization, reset-to-profile behavior, and a larger before-send preview.
 
 Signed-out visitors land on a marketing landing page; signing in switches to the app shell (sidebar + pages), all rendered client-side at `/`.
 
@@ -47,7 +48,7 @@ Signed-out visitors land on a marketing landing page; signing in switches to the
 
 ![Resume Builder](docs/screenshots/resume-builder.png)
 
-**Email Templates** — all 22 built-in templates organized into 4 category tabs, with a live preview against your own resume data
+**Email Templates** — all 32 built-in templates organized into 5 category tabs, with a live preview against your own resume data
 
 ![Email Templates](docs/screenshots/email-templates.png)
 
@@ -290,14 +291,18 @@ erDiagram
 
 ### 📧 Email Management
 
-- **22 built-in templates across 4 categories**, browsable as switchable tabs in the Email Templates page:
+- **32 built-in templates across 5 categories**, browsable as switchable tabs in the Email Templates page:
   - **Application** (9) — Professional Intro, Skills Highlight, Experience Focused, Project Showcase, Career Transition, Comprehensive Profile, Entry-Level/Internship, Remote Position, Portfolio & Work Samples
   - **Interview & Follow-Up** (5) — Interview Thank You, Interview Availability & Confirmation, Interview Reschedule Request, Post-Interview Additional Info, Application Follow-Up
   - **Networking & Referral** (5) — Cold Outreach, Referral Application, Ask for a Referral, Networking Request, LinkedIn Connection Follow-Up
   - **Offer & Onboarding** (3) — Offer Response, Offer Negotiation, Onboarding & Start-Date Confirmation
+  - **Role-Targeted Applications** (6) — Intern Software Engineer, Associate Software Engineer, Intern DevOps Engineer, Associate DevOps Engineer, IT Support Specialist, Software Developer
   - Templates best suited to a first application carry a data-driven **"⭐ Recommended for Jobs"** badge
+- **Per-template skill customization** — add or remove skills in a responsive three-column list, reset a template to the main profile skills, and keep overrides isolated between templates
+- **All selected skills rendered** — a template email includes every skill selected for that template, not only the first six
 - **Job URL auto-fill** — paste a posting link (Greenhouse/Lever/Workday-style boards work best) and company/position are extracted via JSON-LD → OpenGraph → title-parsing, in that order
 - **Rich text body editor** — live-rendered preview by default, with an opt-in Quill editor (edit → regenerate-from-template → preview-before-send loop)
+- **Larger send preview** — review the complete email body, recipient, subject, and attachments in a high-visibility preview before sending
 - **Gmail API direct send** with attachments, or an Outlook `mailto:` fallback for everyone else
 - **Schedule for later (Gmail)** — pick a future date/time; a GitHub Actions cron job hits a protected endpoint every 5 minutes and sends due emails even if you're not signed in at that moment
 - **Open tracking (opt-in, on by default)** — a "Track Email Opens" toggle embeds an invisible pixel that records open count and first/last-opened time, for both immediate and scheduled sends. Still user-toggleable per send, since a hidden tracking pixel is a known spam-filter signal some senders prefer to avoid.
@@ -315,7 +320,7 @@ erDiagram
 
 - **Landing page** for signed-out visitors — hero, feature highlights, testimonials, and pricing sections in an "Aura" visual style (pricing/testimonials are illustrative marketing copy; there is no billing/payment integration in this app)
 - **goey-toast notifications** app-wide for one-way notices (success/error/info/warning); confirmation dialogs are reserved for real yes/no decisions (delete, sign out, discard changes)
-- **Dark/light theme toggle**, responsive layout, and a sticky section sidebar in Resume Builder
+- **Dark/light theme toggle** with instant color switching, responsive layout, and a sticky section sidebar in Resume Builder
 - **Lock icons and tooltip guidance** on features that require signing in
 
 ## 🛠️ Technology Stack
@@ -385,7 +390,8 @@ Job_Email_Generator/
     ├── scheduledEmailService.ts            # Scheduled-email API client
     ├── googleAuth.ts                       # OAuth2 client, token encryption, refresh
     ├── sendGmail.ts                        # Gmail send helper (used by the cron route)
-    ├── emailTemplateGenerator.ts           # Template engine (22 templates)
+    ├── emailTemplateGenerator.ts           # Template engine (32 templates)
+    ├── templateSkillsService.ts            # Per-template skill overrides in local storage
     ├── toast.ts                            # Shared showToast() wrapper (goey-toast)
     └── mongodb.ts                          # MongoDB client singleton
 ```
@@ -446,6 +452,9 @@ Defined in `.env.local.example`; copy to `.env.local` and fill in real values. B
 | `NEXT_PUBLIC_SKILLS_API_KEY` | Skills autosuggest in Resume Builder | Job Portal Skills API |
 | `NEXT_PUBLIC_SKILLS_API_BASE_URL` | Skills API base URL | Job Portal Skills API |
 | `GEMINI_API_KEY` | AI resume parsing (Resume Builder's "Resume" upload tab) | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| `DEVRESUME_RESUME_ENDPOINT` | Server-side latest-resume PDF bridge | DevResume deployment |
+| `JOBMAIL_INTEGRATION_SECRET` | Shared secret for the DevResume integration | Configure the same value in both services |
+| `DEVRESUME_APP_URL` | DevResume account-connection base URL | DevResume deployment |
 
 ## 📖 Usage Guide
 
@@ -460,8 +469,9 @@ Defined in `.env.local.example`; copy to `.env.local` and fill in real values. B
 1. **Fill Application Details** — Company Name, Position, Recipient Email; optionally paste a job posting URL to auto-fill company/position
 2. **Pick a resume profile** (if you have more than one) — its tagged CV attaches automatically
 3. **Choose a template**, optionally fill in "Additional Details" for scenario templates (referral, interview, offer response, etc.)
-4. **Review the email body** — edit it with the rich text editor if you want, or regenerate from the template
-5. **Choose Gmail or Outlook**, and **Send Now** or **Schedule for Later** (Gmail only)
+4. **Customize role-targeted skills** when needed. Template changes are separate from `Your Information`; reset them with **Reset to Profile Skills**.
+5. **Review the email body** — edit it with the rich text editor if you want, or regenerate from the template
+6. **Choose Gmail or Outlook**, and **Send Now** or **Schedule for Later** (Gmail only)
 
 ### Managing Scheduled Emails
 
@@ -473,6 +483,13 @@ Defined in `.env.local.example`; copy to `.env.local` and fill in real values. B
 
 - View email statistics (sent/total), export your data (JSON), clear cache
 - Sign out with confirmation, or delete your account (removes all resume profiles, tagged CV files, and email history)
+
+### Template skill behavior
+
+- Main resume skills live in **Your Information**.
+- A customized template stores its own skill list in browser local storage, keyed by user, profile, and template.
+- Adding or removing a skill for one template does not change another template or the main resume profile.
+- Resetting a template removes its override and makes that template use the current profile skills again.
 
 ## 🔒 Security Features
 
@@ -501,9 +518,28 @@ Three workflows under `.github/workflows/`:
 
 - **Netlify**, **Azure App Service**, or any Node.js host work in principle — you'll need to replace `scheduled-email-cron.yml` with an equivalent scheduler on that platform if you move off GitHub Actions.
 
+## 📚 Documentation
+
+| Document | Purpose |
+| --- | --- |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Components, data flow, email generation, and scheduling architecture |
+| [API.md](./API.md) | Next.js route methods, inputs, outputs, and error conventions |
+| [DATABASE.md](./DATABASE.md) | MongoDB collections, indexes, ownership, and migration guidance |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Vercel, GitHub Actions, environment setup, and rollback guidance |
+| [DEVELOPMENT.md](./DEVELOPMENT.md) | Local setup and development conventions |
+| [TESTING.md](./TESTING.md) | Automated checks and manual smoke tests |
+| [SECURITY.md](./SECURITY.md) | Vulnerability reporting and security controls |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Branch, commit, pull request, and review workflow |
+| [CHANGELOG.md](./CHANGELOG.md) | Unreleased and released product changes |
+| [ROADMAP.md](./ROADMAP.md) | Proposed product, quality, and operations work |
+| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common local, integration, and deployment issues |
+| [PERFORMANCE.md](./PERFORMANCE.md) | Current performance choices and optimization guidance |
+| [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | Collaboration standards |
+| [LICENSE](./LICENSE) | GNU Lesser General Public License v2.1 terms |
+
 ## 📝 Recent Updates
 
-- ✅ Grew to 22 email templates across 4 category tabs (Application, Interview & Follow-Up, Networking & Referral, Offer & Onboarding), with a data-driven "Recommended for Jobs" badge
+- ✅ Grew to 32 email templates across 5 category tabs, including six role-targeted applications with matched skills
 - ✅ Live-updating Email History — the "Opened" status on each card refreshes automatically (15s polling) with no manual reload
 - ✅ Open tracking made opt-in (now on by default) — an always-on invisible pixel was a spam-filter red flag; it's a toggle on Send Email, defaulting to on since knowing whether a recruiter opened the email is usually worth more than the small deliverability risk
 - ✅ AI-powered resume parsing (Google Gemini) — upload a PDF/DOC/DOCX and auto-fill the entire Resume Builder wizard
@@ -515,17 +551,17 @@ Three workflows under `.github/workflows/`:
 - ✅ Job posting URL auto-fill (SSRF-guarded scraper)
 - ✅ Multiple named resume profiles with a default profile
 - ✅ Redesigned landing page and dark mode
+- ✅ Added independent per-template skill customization, three-column skill management, and reset-to-profile behavior
+- ✅ Removed the template email skill display cap so all selected skills are included
+- ✅ Enlarged the email send preview and made light/dark switching instant
+- ✅ Simplified the résumé attachment note to a bold, black, two-line paragraph
 - ✅ Migrated authentication off Firebase to Google OAuth; storage on Azure Cosmos DB for MongoDB
 
 See [GitHub Releases](https://github.com/ChamathDilshanC/Job_Email_Generator---Sender-Gmail-Outlook/releases) for the full version history.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to:
-
-- Fork the repository
-- Create a feature branch
-- Submit a pull request
+Contributions are welcome. Read [CONTRIBUTING.md](./CONTRIBUTING.md) for the required branch, commit, validation, and pull request workflow.
 
 ## 📄 License
 

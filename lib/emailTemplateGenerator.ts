@@ -190,7 +190,7 @@ function renderClosingHtml(
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%; border-collapse:collapse; margin-top:18px; background-color:${bg}; border-radius:8px;">
   <tr>
     <td style="padding:14px 16px; font-family:${FONT}; font-size:14px; color:#374151;">
-      <span style="font-size:16px;">&#128206;</span>&nbsp;&nbsp;<strong style="color:${accent};">Attached:</strong> My resume/CV is included with this email for your review.
+      <span style="font-size:16px;">&#128206;</span>&nbsp;&nbsp;<strong style="color:${accent};">Attachment:</strong> Please find my résumé/CV attached for your consideration.
     </td>
   </tr>
 </table>`;
@@ -228,7 +228,7 @@ function renderBannerHtml(text: string, accent: string, bg: string): string {
 }
 
 function attachmentNoteText(): string {
-  return `\n${'─'.repeat(40)}\nAttached: My resume/CV is included with this email for your review.`;
+  return `\n${'─'.repeat(40)}\nAttachment: Please find my résumé/CV attached for your consideration.`;
 }
 
 function wrapHtml(inner: string): string {

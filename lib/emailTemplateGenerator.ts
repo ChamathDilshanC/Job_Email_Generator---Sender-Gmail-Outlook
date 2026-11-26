@@ -187,7 +187,7 @@ function renderClosingHtml(
   <tr><td style="border-top:1px solid #e5e7eb; font-size:1px; line-height:1px;">&nbsp;</td></tr>
 </table>
 
-<p><strong style="color:#000000;">Attachment:<br>Please find my résumé/CV attached for your consideration.</strong></p>`;
+<p><strong style="color:#000000;">Attachment:<br>Please find my résumé attached for your review and consideration, which provides further details about my qualifications, technical skills, professional experience, and relevant projects.</strong></p>`;
 }
 
 /**
@@ -222,7 +222,7 @@ function renderBannerHtml(text: string, accent: string, bg: string): string {
 }
 
 function attachmentNoteText(): string {
-  return `\nAttachment:\nPlease find my résumé/CV attached for your consideration.`;
+  return `\nAttachment:\nPlease find my résumé attached for your review and consideration, which provides further details about my qualifications, technical skills, professional experience, and relevant projects.`;
 }
 
 function wrapHtml(inner: string): string {

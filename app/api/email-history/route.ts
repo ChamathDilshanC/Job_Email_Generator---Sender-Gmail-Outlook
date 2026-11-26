@@ -218,16 +218,47 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const emailId = searchParams.get('emailId');
+    let body: { userId?: unknown; emailIds?: unknown } = {};
 
-    if (!emailId) {
-      return NextResponse.json({ error: 'Email ID required' }, { status: 400 });
+    try {
+      body = await request.json();
+    } catch {
+      // Single-delete requests may send the identifiers in the query string.
+    }
+
+    const userId =
+      typeof body.userId === 'string' ? body.userId : searchParams.get('userId');
+    const requestedIds = Array.isArray(body.emailIds)
+      ? body.emailIds
+      : emailId
+        ? [emailId]
+        : [];
+    const validEmailIds = requestedIds.filter(
+      (id): id is string => typeof id === 'string' && ObjectId.isValid(id)
+    );
+
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID required' }, { status: 401 });
+    }
+
+    if (
+      validEmailIds.length === 0 ||
+      validEmailIds.length !== requestedIds.length
+    ) {
+      return NextResponse.json(
+        { error: 'One or more valid email IDs are required' },
+        { status: 400 }
+      );
     }
 
     const client = await clientPromise;
     const db = client.db('job_email_generator');
     const collection = db.collection('email_history');
 
-    const result = await collection.deleteOne({ _id: new ObjectId(emailId) });
+    const result = await collection.deleteMany({
+      _id: { $in: validEmailIds.map(id => new ObjectId(id)) },
+      userId,
+    });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Email not found' }, { status: 404 });
@@ -235,7 +266,8 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Email deleted from history',
+      message: 'Email(s) deleted from history',
+      deletedCount: result.deletedCount,
     });
   } catch (error) {
     console.error('Error deleting email from history:', error);

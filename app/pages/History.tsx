@@ -6,6 +6,7 @@ import { ApplicationStatus, EmailHistory } from '@/app/models/EmailHistory';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import {
+  deleteEmailsFromHistory,
   deleteEmailFromHistory,
   loadEmailHistory,
   updateApplicationStatus,
@@ -42,6 +43,7 @@ export default function History() {
     'opened' | 'not_opened' | 'sent' | 'pending' | 'failed' | 'all'
   >('opened');
   const [selectedEmail, setSelectedEmail] = useState<EmailHistory | null>(null);
+  const [selectedEmailIds, setSelectedEmailIds] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -140,6 +142,31 @@ export default function History() {
     return matchesSearch && matchesStatus;
   });
 
+  const allVisibleSelected =
+    filteredEmails.length > 0 &&
+    filteredEmails.every(email => selectedEmailIds.has(email.id));
+
+  const toggleEmailSelection = (emailId: string) => {
+    setSelectedEmailIds(previous => {
+      const next = new Set(previous);
+      if (next.has(emailId)) next.delete(emailId);
+      else next.add(emailId);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedEmailIds(previous => {
+      const next = new Set(previous);
+      if (allVisibleSelected) {
+        filteredEmails.forEach(email => next.delete(email.id));
+      } else {
+        filteredEmails.forEach(email => next.add(email.id));
+      }
+      return next;
+    });
+  };
+
   // Calculate stats
   const totalSent = emailHistory.filter(e => e.status === 'sent').length;
   const totalPending = emailHistory.filter(e => e.status === 'pending').length;
@@ -179,9 +206,16 @@ export default function History() {
       type: 'danger',
       onConfirm: async () => {
         try {
-          const success = await deleteEmailFromHistory(emailId);
+          const success = await deleteEmailFromHistory(user?.uid, emailId);
           if (success) {
-            setEmailHistory(prev => prev.filter(email => email.id !== emailId));
+            const nextHistory = emailHistory.filter(email => email.id !== emailId);
+            setEmailHistory(nextHistory);
+            if (user?.uid) setCachedData(`history:${user.uid}`, nextHistory);
+            setSelectedEmailIds(previous => {
+              const next = new Set(previous);
+              next.delete(emailId);
+              return next;
+            });
             showToast(
               'success',
               'Email Deleted',
@@ -193,6 +227,41 @@ export default function History() {
         } catch (error) {
           console.error('Error deleting email:', error);
           showToast('error', 'Error', 'An error occurred while deleting the email.');
+        }
+      },
+    });
+  };
+
+  const requestBulkDelete = () => {
+    if (selectedEmailIds.size === 0) return;
+
+    setConfirmDialog({
+      open: true,
+      title: `Delete ${selectedEmailIds.size} Emails`,
+      description:
+        'Are you sure you want to delete the selected emails from your history? This action cannot be undone.',
+      type: 'danger',
+      onConfirm: async () => {
+        const idsToDelete = Array.from(selectedEmailIds);
+        const deletedCount = await deleteEmailsFromHistory(user?.uid, idsToDelete);
+
+        if (deletedCount > 0) {
+          const deletedIds = new Set(idsToDelete);
+          const nextHistory = emailHistory.filter(email => !deletedIds.has(email.id));
+          setEmailHistory(nextHistory);
+          if (user?.uid) setCachedData(`history:${user.uid}`, nextHistory);
+          setSelectedEmailIds(previous => {
+            const next = new Set(previous);
+            idsToDelete.forEach(id => next.delete(id));
+            return next;
+          });
+          showToast(
+            'success',
+            'Emails Deleted',
+            `${deletedCount} email${deletedCount === 1 ? '' : 's'} deleted from your history.`
+          );
+        } else {
+          showToast('error', 'Error', 'Failed to delete the selected emails. Please try again.');
         }
       },
     });
@@ -419,6 +488,37 @@ export default function History() {
           ))}
         </motion.div>
 
+        {filteredEmails.length > 0 && (
+          <motion.div
+            variants={fadeInUp}
+            className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900"
+          >
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                onChange={toggleSelectAllVisible}
+                aria-label="Select all visible emails"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600"
+              />
+              Select all visible
+            </label>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {selectedEmailIds.size} selected
+              </span>
+              <button
+                type="button"
+                onClick={requestBulkDelete}
+                disabled={selectedEmailIds.size === 0}
+                className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-800/60 dark:text-red-400 dark:hover:bg-red-950/30"
+              >
+                Delete selected
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {/* Content */}
         <motion.div variants={fadeInUp}>
           {isLoading ? (
@@ -478,6 +578,8 @@ export default function History() {
                     onDelete={handleDelete}
                     onViewDetails={handleViewDetails}
                     onStatusChange={handleStatusChange}
+                    selected={selectedEmailIds.has(email.id)}
+                    onSelect={toggleEmailSelection}
                   />
                 ))}
               </motion.div>

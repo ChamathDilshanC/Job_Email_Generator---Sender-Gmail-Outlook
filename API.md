@@ -48,7 +48,7 @@ All paths are relative to the deployed application URL. Most application routes 
 | `/api/email-history` | GET | List history, return stats with `stats=true`, or load full HTML with `bodyFor=<emailId>`. Supports `limit` and `offset`. |
 | `/api/email-history` | POST | Save a sent/pending/failed email history entry. Body contains `userId` and the email metadata. |
 | `/api/email-history` | PATCH | Update `applicationStatus` for an `emailId`; the current handler accepts `emailId` and the status payload. |
-| `/api/email-history` | DELETE | Delete a history entry by `emailId`. Ownership checks should be added before exposing this operation beyond the trusted application flow. |
+| `/api/email-history` | DELETE | Delete one history entry with `userId` + `emailId`, or multiple entries with a JSON body containing `userId` and `emailIds`. The response includes `deletedCount`. |
 | `/api/cover-letter` | GET | List saved cover letters for `userId`, optionally filtered by `profileId` or `query`. |
 | `/api/cover-letter` | POST | Save a cover letter. Requires `userId`, `profileId`, `companyName`, `position`, and `content`. |
 | `/api/cover-letter` | DELETE | Delete a saved cover letter by `userId` + `id`. |

@@ -52,7 +52,7 @@ Signed-out visitors land on a marketing landing page; signing in switches to the
 
 ![Email Templates](docs/screenshots/email-templates.png)
 
-**Email History** — stats, application pipeline, and every sent email in one place
+**Email History** — stats, application pipeline, sent-email details, and ownership-checked bulk deletion in one place
 
 ![Email History](docs/screenshots/email-history.png)
 

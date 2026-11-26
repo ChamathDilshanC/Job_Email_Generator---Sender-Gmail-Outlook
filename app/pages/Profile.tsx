@@ -635,7 +635,7 @@ export default function Profile({
                             const history = await loadEmailHistory(user?.uid);
                             await Promise.all(
                               history.map(email =>
-                                deleteEmailFromHistory(email.id)
+                                deleteEmailFromHistory(user?.uid, email.id)
                               )
                             );
 

@@ -55,6 +55,26 @@ export function saveTemplateSkills(
   return next;
 }
 
+export function resetTemplateSkills(
+  userId: string,
+  profileId: string | undefined,
+  templateId: TemplateType
+): TemplateSkillsMap {
+  const current = loadTemplateSkills(userId, profileId);
+  const templateKey = templateId.toString();
+  const next = Object.fromEntries(
+    Object.entries(current).filter(([key]) => key !== templateKey)
+  );
+
+  if (Object.keys(next).length > 0) {
+    window.localStorage.setItem(storageKey(userId, profileId), JSON.stringify(next));
+  } else {
+    window.localStorage.removeItem(storageKey(userId, profileId));
+  }
+
+  return next;
+}
+
 export function getTemplateSkills(
   templateSkills: TemplateSkillsMap,
   templateId: TemplateType,

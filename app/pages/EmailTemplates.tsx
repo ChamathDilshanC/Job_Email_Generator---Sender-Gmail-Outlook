@@ -17,7 +17,7 @@ import {
 } from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
 import { loadFavoriteTemplateIds, toggleFavoriteTemplate } from '@/lib/favoriteTemplates';
-import { Heart } from 'lucide-react';
+import { Heart, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 const CATEGORY_TABS = Object.values(TemplateCategory);
@@ -594,23 +594,26 @@ export default function EmailTemplates() {
                   </button>
                 </div>
 
-                <div className="flex min-h-16 flex-wrap gap-2 rounded-xl border border-dashed border-gray-300 bg-gray-50/70 p-3 dark:border-gray-700 dark:bg-gray-800/40">
+                <div className="grid min-h-16 grid-cols-1 gap-2 rounded-xl border border-dashed border-gray-300 bg-gray-50/70 p-3 dark:border-gray-700 dark:bg-gray-800/40 sm:grid-cols-2 lg:grid-cols-3">
                   {customizationDraft.skills.length > 0 ? (
                     customizationDraft.skills.map(skill => (
-                      <span
+                      <div
                         key={skill}
-                        className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
+                        className="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
                       >
-                        {skill}
+                        <span className="min-w-0 truncate" title={skill}>
+                          {skill}
+                        </span>
                         <button
                           type="button"
                           onClick={() => removeCustomizationSkill(skill)}
-                          className="text-indigo-500 transition hover:text-red-600 dark:text-indigo-300 dark:hover:text-red-400"
+                          className="shrink-0 rounded-md p-1 text-indigo-500 transition hover:bg-red-100 hover:text-red-600 dark:text-indigo-300 dark:hover:bg-red-500/20 dark:hover:text-red-400"
                           aria-label={`Remove ${skill}`}
+                          title={`Remove ${skill}`}
                         >
-                          ×
+                          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                         </button>
-                      </span>
+                      </div>
                     ))
                   ) : (
                     <p className="self-center text-sm text-gray-500 dark:text-gray-400">

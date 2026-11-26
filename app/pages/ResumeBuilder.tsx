@@ -474,6 +474,10 @@ export default function ResumeBuilder() {
 
   // Debounce timeout ref for faster autocomplete
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  // Tracks skills that were automatically applied for the previous role so
+  // changing roles can replace stale API matches without removing custom skills.
+  const lastAutoMatchedPositionRef = useRef('');
+  const autoMatchedSkillsRef = useRef<Set<string>>(new Set());
 
   // Handle position input change with debounced autocomplete
   const handlePositionChange = useCallback((value: string) => {
@@ -562,6 +566,45 @@ export default function ResumeBuilder() {
       if (apiSkills.length > 0) {
         setAllAvailableSkills(apiSkills);
         setSuggestedSkills(apiSkills.slice(0, 14)); // Show first 15
+
+        const normalizedPosition = targetPosition.trim().toLowerCase();
+        if (normalizedPosition !== lastAutoMatchedPositionRef.current) {
+          const bestMatchSkills = Array.from(
+            new Map(
+              apiSkills
+                .map(skill => skill.trim())
+                .filter(Boolean)
+                .map(skill => [skill.toLowerCase(), skill] as const)
+            ).values()
+          ).slice(0, 6);
+
+          setSelectedSkills(previousSkills => {
+            const previousAutoMatches = autoMatchedSkillsRef.current;
+            const retainedSkills = previousSkills.filter(
+              skill => !previousAutoMatches.has(skill.trim().toLowerCase())
+            );
+            const combinedSkills = [...bestMatchSkills, ...retainedSkills];
+            const uniqueSkills = Array.from(
+              new Map(
+                combinedSkills
+                  .map(skill => skill.trim())
+                  .filter(Boolean)
+                  .map(skill => [skill.toLowerCase(), skill] as const)
+              ).values()
+            ).slice(0, 50);
+
+            autoMatchedSkillsRef.current = new Set(
+              bestMatchSkills.map(skill => skill.trim().toLowerCase())
+            );
+            return uniqueSkills;
+          });
+          lastAutoMatchedPositionRef.current = normalizedPosition;
+          showToast(
+            'success',
+            'Best-Match Skills Added',
+            `Added the top ${bestMatchSkills.length} skills for ${targetPosition} from the skills API.`
+          );
+        }
       } else {
         // No skills found for this position
         setAllAvailableSkills([]);
@@ -2360,7 +2403,8 @@ export default function ResumeBuilder() {
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Enter your target position to get relevant skill
-                    suggestions, or add custom skills.
+                    suggestions. The six best-matching skills are automatically
+                    added to your profile, and you can still add custom skills.
                   </p>
 
                   <div

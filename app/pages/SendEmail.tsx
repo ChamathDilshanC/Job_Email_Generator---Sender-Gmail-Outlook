@@ -37,11 +37,14 @@ import {
   loadResumeData,
   ResumeData,
   ResumeProfileSummary,
+  saveResumeData,
 } from '@/lib/resumeDataService';
+import { fetchBestMatchingSkillsForPosition } from '@/lib/skillsApiClient';
 import { scheduleEmail } from '@/lib/scheduledEmailService';
 import {
   JobDetails,
   TEMPLATE_METADATA,
+  TemplateCategory,
   TemplateType,
 } from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
@@ -400,6 +403,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [isGeneratingAiEmail, setIsGeneratingAiEmail] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [isLoadingResume, setIsLoadingResume] = useState(false);
+  const [isMatchingRole, setIsMatchingRole] = useState(false);
   const [resumeProfiles, setResumeProfiles] = useState<ResumeProfileSummary[]>(
     []
   );
@@ -777,6 +781,61 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       console.error('Error loading resume profile:', error);
     } finally {
       setIsLoadingResume(false);
+    }
+  };
+
+  const applyRoleTemplateSkills = async (templateId: TemplateType) => {
+    const roleTarget = TEMPLATE_METADATA.find(item => item.id === templateId)?.roleTarget;
+    if (!roleTarget || !resumeData || !user?.uid) return;
+
+    setIsMatchingRole(true);
+    try {
+      const matchedSkills = await fetchBestMatchingSkillsForPosition(roleTarget, 6);
+      const existingSkills = resumeData.skills?.selectedSkills || [];
+      const mergedSkills = Array.from(
+        new Map(
+          [...matchedSkills, ...existingSkills]
+            .map(skill => skill.trim())
+            .filter(Boolean)
+            .map(skill => [skill.toLowerCase(), skill] as const)
+        ).values()
+      ).slice(0, 50);
+      const updatedResumeData: ResumeData = {
+        ...resumeData,
+        skills: {
+          ...resumeData.skills,
+          position: roleTarget,
+          selectedSkills: mergedSkills,
+        },
+      };
+
+      await saveResumeData(
+        user.uid,
+        {
+          personalInfo: updatedResumeData.personalInfo,
+          socialLinks: updatedResumeData.socialLinks,
+          workExperiences: updatedResumeData.workExperiences,
+          education: updatedResumeData.education,
+          projects: updatedResumeData.projects,
+          skills: updatedResumeData.skills,
+        },
+        { profileId: selectedProfileId || updatedResumeData.profileId }
+      );
+      setResumeData(updatedResumeData);
+      showToast(
+        'success',
+        'Role Skills Matched',
+        `${roleTarget} selected and the best ${matchedSkills.length} skills were saved to Your Information.`
+      );
+    } catch (error) {
+      console.error('Error applying role template skills:', error);
+      showToast(
+        'warning',
+        'Template Selected',
+        'The role template was selected, but matched skills could not be saved.'
+      );
+    } finally {
+      setIsMatchingRole(false);
     }
   };
 
@@ -1884,8 +1943,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   // Shared with the Email Templates page's own selector, so
                   // whichever page you pick a template from wins on remount.
                   localStorage.setItem('selectedTemplateId', next.toString());
+                  void applyRoleTemplateSkills(next);
                 }}
-                disabled={!resumeData}
+                disabled={!resumeData || isMatchingRole}
               >
                 <SelectTrigger className="h-11 w-full rounded-xl bg-background shadow-sm">
                   <SelectValue placeholder="Choose an email template" />
@@ -1905,9 +1965,23 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   </SelectGroup>
                 )}
                 <SelectGroup>
-                <SelectLabel>All templates</SelectLabel>
+                <SelectLabel>Standard templates</SelectLabel>
                 {TEMPLATE_METADATA.filter(
-                  template => !favoriteTemplateIds.includes(template.id)
+                  template =>
+                    template.category !== TemplateCategory.ROLE_TARGETED &&
+                    !favoriteTemplateIds.includes(template.id)
+                ).map(template => (
+                  <SelectItem key={template.id} value={template.id.toString()}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+                </SelectGroup>
+                <SelectGroup>
+                <SelectLabel>Role-targeted applications</SelectLabel>
+                {TEMPLATE_METADATA.filter(
+                  template =>
+                    template.category === TemplateCategory.ROLE_TARGETED &&
+                    !favoriteTemplateIds.includes(template.id)
                 ).map(template => (
                   <SelectItem key={template.id} value={template.id.toString()}>
                     {template.name}

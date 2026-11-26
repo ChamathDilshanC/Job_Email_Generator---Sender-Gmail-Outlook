@@ -12,6 +12,91 @@ interface PositionSuggestion {
   category: string;
 }
 
+const ROLE_SKILL_FALLBACKS: Record<string, string[]> = {
+  'intern software engineer': [
+    'JavaScript',
+    'TypeScript',
+    'React',
+    'Node.js',
+    'REST APIs',
+    'Git',
+  ],
+  'associate software engineer': [
+    'Java',
+    'Spring Boot',
+    'Python',
+    'SQL',
+    'REST APIs',
+    'Git',
+  ],
+  'intern devops engineer': [
+    'Linux',
+    'Git',
+    'Docker',
+    'CI/CD',
+    'AWS',
+    'Bash',
+  ],
+  'associate devops engineer': [
+    'Docker',
+    'Kubernetes',
+    'Terraform',
+    'AWS',
+    'CI/CD',
+    'Linux',
+  ],
+  'it support specialist': [
+    'Windows',
+    'Linux',
+    'Networking',
+    'Troubleshooting',
+    'Active Directory',
+    'ITIL',
+  ],
+  'software developer': [
+    'JavaScript',
+    'TypeScript',
+    'React',
+    'Node.js',
+    'SQL',
+    'Git',
+  ],
+};
+
+const GENERIC_ROLE_SKILLS: Array<{ keywords: string[]; skills: string[] }> = [
+  {
+    keywords: ['devops', 'sre', 'platform', 'site reliability', 'cloud'],
+    skills: ['Linux', 'Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Terraform'],
+  },
+  {
+    keywords: ['support', 'helpdesk', 'help desk', 'technical support'],
+    skills: ['Troubleshooting', 'Windows', 'Linux', 'Networking', 'Active Directory', 'ITIL'],
+  },
+  {
+    keywords: ['frontend', 'front end', 'ui developer'],
+    skills: ['HTML', 'CSS', 'JavaScript', 'TypeScript', 'React', 'Git'],
+  },
+  {
+    keywords: ['backend', 'back end', 'api developer'],
+    skills: ['Java', 'Python', 'Node.js', 'SQL', 'REST APIs', 'Git'],
+  },
+];
+
+function normalizePosition(position: string): string {
+  return position.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function getFallbackSkillsForPosition(position: string): string[] {
+  const normalized = normalizePosition(position);
+  const exactMatch = ROLE_SKILL_FALLBACKS[normalized];
+  if (exactMatch) return exactMatch;
+
+  const keywordMatch = GENERIC_ROLE_SKILLS.find(group =>
+    group.keywords.some(keyword => normalized.includes(keyword))
+  );
+  return keywordMatch?.skills || ROLE_SKILL_FALLBACKS['software developer'];
+}
+
 // API Configuration
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_SKILLS_API_BASE_URL ||
@@ -149,8 +234,8 @@ export async function fetchSkillsForPosition(
     const apiKey = getApiKey();
 
     if (!apiKey) {
-      console.error('Skills API key not found in environment variables');
-      return [];
+      console.warn('Skills API key not found; using role skill fallback');
+      return getFallbackSkillsForPosition(position);
     }
 
     const response = await fetch(
@@ -165,15 +250,15 @@ export async function fetchSkillsForPosition(
     );
 
     if (!response.ok) {
-      console.error('Skills API request failed:', response.statusText);
-      return [];
+      console.warn('Skills API request failed; using role skill fallback:', response.statusText);
+      return getFallbackSkillsForPosition(position);
     }
 
     // Check if response is JSON before parsing
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      console.error('Non-JSON response from skills API');
-      return [];
+      console.warn('Non-JSON response from skills API; using role skill fallback');
+      return getFallbackSkillsForPosition(position);
     }
 
     const data = await response.json();
@@ -187,9 +272,29 @@ export async function fetchSkillsForPosition(
       return data.skills;
     }
 
-    return [];
+    return getFallbackSkillsForPosition(position);
   } catch (error) {
-    console.error('Error fetching skills:', error);
-    return [];
+    console.warn('Error fetching skills; using role skill fallback:', error);
+    return getFallbackSkillsForPosition(position);
   }
+}
+
+/**
+ * Return the six highest-priority skills for a target role. The upstream API
+ * order is treated as its relevance ranking; duplicate/blank values are
+ * removed before the profile is updated.
+ */
+export async function fetchBestMatchingSkillsForPosition(
+  position: string,
+  limit = 6
+): Promise<string[]> {
+  const skills = await fetchSkillsForPosition(position);
+  return Array.from(
+    new Map(
+      skills
+        .map(skill => skill.trim())
+        .filter(Boolean)
+        .map(skill => [skill.toLowerCase(), skill] as const)
+    ).values()
+  ).slice(0, limit);
 }

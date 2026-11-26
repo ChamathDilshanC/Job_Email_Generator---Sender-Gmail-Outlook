@@ -2,7 +2,12 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
-import { loadResumeData, ResumeData } from '@/lib/resumeDataService';
+import {
+  loadResumeData,
+  ResumeData,
+  saveResumeData,
+} from '@/lib/resumeDataService';
+import { fetchBestMatchingSkillsForPosition } from '@/lib/skillsApiClient';
 import {
   TEMPLATE_CATEGORY_LABELS,
   TEMPLATE_METADATA,
@@ -36,6 +41,7 @@ export default function EmailTemplates() {
     bodyHtml: string;
   } | null>(null);
   const [favoriteTemplateIds, setFavoriteTemplateIds] = useState<TemplateType[]>([]);
+  const [isMatchingRole, setIsMatchingRole] = useState(false);
   // Load resume data and selected template on component mount
   useEffect(() => {
     setFavoriteTemplateIds(loadFavoriteTemplateIds(user?.uid));
@@ -70,10 +76,63 @@ export default function EmailTemplates() {
     [activeCategory]
   );
 
-  const handleSelectTemplate = (templateId: TemplateType) => {
+  const handleSelectTemplate = async (templateId: TemplateType) => {
     setSelectedTemplateId(templateId);
     // Store in localStorage for use in SendEmail page
     localStorage.setItem('selectedTemplateId', templateId.toString());
+
+    const roleTarget = TEMPLATE_METADATA.find(item => item.id === templateId)?.roleTarget;
+    if (!roleTarget || !resumeData || !user?.uid) return;
+
+    setIsMatchingRole(true);
+    try {
+      const matchedSkills = await fetchBestMatchingSkillsForPosition(roleTarget, 6);
+      const existingSkills = resumeData.skills?.selectedSkills || [];
+      const mergedSkills = Array.from(
+        new Map(
+          [...matchedSkills, ...existingSkills]
+            .map(skill => skill.trim())
+            .filter(Boolean)
+            .map(skill => [skill.toLowerCase(), skill] as const)
+        ).values()
+      ).slice(0, 50);
+      const updatedResumeData: ResumeData = {
+        ...resumeData,
+        skills: {
+          ...resumeData.skills,
+          position: roleTarget,
+          selectedSkills: mergedSkills,
+        },
+      };
+
+      await saveResumeData(
+        user.uid,
+        {
+          personalInfo: updatedResumeData.personalInfo,
+          socialLinks: updatedResumeData.socialLinks,
+          workExperiences: updatedResumeData.workExperiences,
+          education: updatedResumeData.education,
+          projects: updatedResumeData.projects,
+          skills: updatedResumeData.skills,
+        },
+        { profileId: updatedResumeData.profileId }
+      );
+      setResumeData(updatedResumeData);
+      showToast(
+        'success',
+        'Role Skills Matched',
+        `${roleTarget} selected. The best ${matchedSkills.length} skills were added to Your Information.`
+      );
+    } catch (error) {
+      console.error('Error matching role skills:', error);
+      showToast(
+        'warning',
+        'Template Selected',
+        'The role template was selected, but matched skills could not be saved. You can retry from Your Information.'
+      );
+    } finally {
+      setIsMatchingRole(false);
+    }
   };
 
   const handlePreviewWithResume = (templateId: TemplateType) => {
@@ -86,10 +145,14 @@ export default function EmailTemplates() {
       return;
     }
 
+    // Role-targeted templates preview against their own target role so the
+    // user can verify the correct structure before selecting one.
+    const roleTarget = TEMPLATE_METADATA.find(item => item.id === templateId)?.roleTarget;
+
     // Generate preview email with sample job details
     const sampleJobDetails = {
       companyName: 'Example Company',
-      position: 'Software Developer',
+      position: roleTarget || 'Software Developer',
       recipientEmail: 'hr@example.com',
       recruiterName: 'Jordan Lee',
       referralName: 'Sam Perera',
@@ -274,7 +337,9 @@ export default function EmailTemplates() {
                         Currently Selected
                       </span>
                     ) : (
-                      'Select Template'
+                      isMatchingRole && template.roleTarget
+                        ? 'Matching Skills...'
+                        : 'Select Template'
                     )}
                   </button>
 

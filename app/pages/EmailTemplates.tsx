@@ -46,16 +46,10 @@ export default function EmailTemplates() {
   const [customizingTemplate, setCustomizingTemplate] =
     useState<TemplateMetadata | null>(null);
   const [customizationDraft, setCustomizationDraft] = useState<{
-    fullName: string;
-    email: string;
-    phone: string;
-    location: string;
-    summary: string;
     skills: string[];
   } | null>(null);
   const [newCustomizationSkill, setNewCustomizationSkill] = useState('');
   const [isSavingCustomization, setIsSavingCustomization] = useState(false);
-  const [editProfileDetails, setEditProfileDetails] = useState(false);
   // Load resume data and selected template on component mount
   useEffect(() => {
     setFavoriteTemplateIds(loadFavoriteTemplateIds(user?.uid));
@@ -163,13 +157,7 @@ export default function EmailTemplates() {
     if (!template) return;
 
     setCustomizingTemplate(template);
-    setEditProfileDetails(false);
     setCustomizationDraft({
-      fullName: resumeData.personalInfo?.fullName || '',
-      email: resumeData.personalInfo?.email || '',
-      phone: resumeData.personalInfo?.phone || '',
-      location: resumeData.personalInfo?.location || '',
-      summary: resumeData.personalInfo?.summary || '',
       skills: [...(resumeData.skills?.selectedSkills || [])],
     });
     setNewCustomizationSkill('');
@@ -179,7 +167,6 @@ export default function EmailTemplates() {
     if (isSavingCustomization) return;
     setCustomizingTemplate(null);
     setCustomizationDraft(null);
-    setEditProfileDetails(false);
   };
 
   const addCustomizationSkill = () => {
@@ -235,14 +222,6 @@ export default function EmailTemplates() {
       ).slice(0, 50);
       const updatedResumeData: ResumeData = {
         ...resumeData,
-        personalInfo: {
-          ...resumeData.personalInfo,
-          fullName: customizationDraft.fullName.trim(),
-          email: customizationDraft.email.trim(),
-          phone: customizationDraft.phone.trim(),
-          location: customizationDraft.location.trim(),
-          summary: customizationDraft.summary.trim(),
-        },
         skills: {
           ...resumeData.skills,
           position: customizingTemplate.roleTarget || resumeData.skills.position,
@@ -268,18 +247,17 @@ export default function EmailTemplates() {
       localStorage.setItem('selectedTemplateId', customizingTemplate.id.toString());
       setCustomizingTemplate(null);
       setCustomizationDraft(null);
-      setEditProfileDetails(false);
       showToast(
         'success',
         'Template Customized',
-        'Your details and selected skills were saved to Your Information.'
+        'Your selected skills were saved to Your Information.'
       );
     } catch (error) {
       console.error('Error saving template customization:', error);
       showToast(
         'error',
         'Could Not Save Customization',
-        'Please try again or update your details from Your Information.'
+        'Please try again or update your skills from Your Information.'
       );
     } finally {
       setIsSavingCustomization(false);
@@ -544,7 +522,7 @@ export default function EmailTemplates() {
         </div>
       </div>
 
-      {/* Customize template and profile details */}
+      {/* Customize template skills */}
       {customizingTemplate && customizationDraft && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -560,8 +538,8 @@ export default function EmailTemplates() {
                   Customize {customizingTemplate.name}
                 </h2>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Update the details and skills used by this template. Saved
-                  changes will also update Your Information.
+                  Add or remove the skills used by this template. Your profile
+                  details always come from Your Information.
                 </p>
               </div>
               <button
@@ -576,82 +554,6 @@ export default function EmailTemplates() {
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center justify-between gap-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4 dark:border-blue-500/30 dark:bg-blue-500/10">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                    Edit profile details
-                  </p>
-                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                    Full Name, Email, Phone, Location, and Professional Summary are loaded from Your Information and locked by default.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={editProfileDetails}
-                  aria-label="Edit profile details"
-                  onClick={() => setEditProfileDetails(previous => !previous)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#3b3be3]/40 ${
-                    editProfileDetails ? 'bg-[#3b3be3]' : 'bg-gray-300 dark:bg-gray-700'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-                      editProfileDetails ? 'translate-x-5' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              <section>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
-                  Personal Details
-                </h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {([
-                    ['fullName', 'Full Name', 'Your full name'],
-                    ['email', 'Email', 'you@example.com'],
-                    ['phone', 'Phone', '+94 77 000 0000'],
-                    ['location', 'Location', 'City, Country'],
-                  ] as const).map(([field, label, placeholder]) => (
-                    <label key={field} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {label}
-                      <input
-                        type={field === 'email' ? 'email' : 'text'}
-                        value={customizationDraft[field]}
-                        placeholder={placeholder}
-                        onChange={event =>
-                          setCustomizationDraft(previous =>
-                            previous
-                              ? { ...previous, [field]: event.target.value }
-                              : previous
-                          )
-                        }
-                        disabled={!editProfileDetails}
-                        className="mt-1.5 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none transition focus:border-[#3b3be3] focus:ring-2 focus:ring-[#3b3be3]/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200"
-                      />
-                    </label>
-                  ))}
-                </div>
-                <label className="mt-4 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Professional Summary
-                  <textarea
-                    value={customizationDraft.summary}
-                    placeholder="A short summary about your background and strengths"
-                    onChange={event =>
-                      setCustomizationDraft(previous =>
-                        previous
-                          ? { ...previous, summary: event.target.value }
-                          : previous
-                      )
-                    }
-                    disabled={!editProfileDetails}
-                    rows={3}
-                    className="mt-1.5 w-full resize-y rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none transition focus:border-[#3b3be3] focus:ring-2 focus:ring-[#3b3be3]/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200"
-                  />
-                </label>
-              </section>
-
               <section>
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>

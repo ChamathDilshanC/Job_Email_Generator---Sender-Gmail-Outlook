@@ -12,6 +12,7 @@ import {
   TEMPLATE_CATEGORY_LABELS,
   TEMPLATE_METADATA,
   TemplateCategory,
+  TemplateMetadata,
   TemplateType,
 } from '@/lib/templateTypes';
 import { showToast } from '@/lib/toast';
@@ -42,6 +43,19 @@ export default function EmailTemplates() {
   } | null>(null);
   const [favoriteTemplateIds, setFavoriteTemplateIds] = useState<TemplateType[]>([]);
   const [isMatchingRole, setIsMatchingRole] = useState(false);
+  const [customizingTemplate, setCustomizingTemplate] =
+    useState<TemplateMetadata | null>(null);
+  const [customizationDraft, setCustomizationDraft] = useState<{
+    fullName: string;
+    email: string;
+    phone: string;
+    location: string;
+    summary: string;
+    skills: string[];
+  } | null>(null);
+  const [newCustomizationSkill, setNewCustomizationSkill] = useState('');
+  const [isSavingCustomization, setIsSavingCustomization] = useState(false);
+  const [editProfileDetails, setEditProfileDetails] = useState(false);
   // Load resume data and selected template on component mount
   useEffect(() => {
     setFavoriteTemplateIds(loadFavoriteTemplateIds(user?.uid));
@@ -132,6 +146,143 @@ export default function EmailTemplates() {
       );
     } finally {
       setIsMatchingRole(false);
+    }
+  };
+
+  const openCustomization = (templateId: TemplateType) => {
+    if (!resumeData) {
+      showToast(
+        'warning',
+        'Resume Required',
+        'Complete Your Information before customizing an email template.'
+      );
+      return;
+    }
+
+    const template = TEMPLATE_METADATA.find(item => item.id === templateId);
+    if (!template) return;
+
+    setCustomizingTemplate(template);
+    setEditProfileDetails(false);
+    setCustomizationDraft({
+      fullName: resumeData.personalInfo?.fullName || '',
+      email: resumeData.personalInfo?.email || '',
+      phone: resumeData.personalInfo?.phone || '',
+      location: resumeData.personalInfo?.location || '',
+      summary: resumeData.personalInfo?.summary || '',
+      skills: [...(resumeData.skills?.selectedSkills || [])],
+    });
+    setNewCustomizationSkill('');
+  };
+
+  const closeCustomization = () => {
+    if (isSavingCustomization) return;
+    setCustomizingTemplate(null);
+    setCustomizationDraft(null);
+    setEditProfileDetails(false);
+  };
+
+  const addCustomizationSkill = () => {
+    const skill = newCustomizationSkill.trim();
+    if (!skill || !customizationDraft) return;
+
+    const alreadyAdded = customizationDraft.skills.some(
+      item => item.trim().toLowerCase() === skill.toLowerCase()
+    );
+    if (alreadyAdded) {
+      setNewCustomizationSkill('');
+      return;
+    }
+
+    if (customizationDraft.skills.length >= 50) {
+      showToast('warning', 'Skill Limit Reached', 'You can keep up to 50 skills in a profile.');
+      return;
+    }
+
+    setCustomizationDraft(previous =>
+      previous
+        ? { ...previous, skills: [...previous.skills, skill] }
+        : previous
+    );
+    setNewCustomizationSkill('');
+  };
+
+  const removeCustomizationSkill = (skillToRemove: string) => {
+    setCustomizationDraft(previous =>
+      previous
+        ? {
+            ...previous,
+            skills: previous.skills.filter(skill => skill !== skillToRemove),
+          }
+        : previous
+    );
+  };
+
+  const saveCustomization = async () => {
+    if (!customizingTemplate || !customizationDraft || !resumeData || !user?.uid) {
+      return;
+    }
+
+    setIsSavingCustomization(true);
+    try {
+      const normalizedSkills = Array.from(
+        new Map(
+          customizationDraft.skills
+            .map(skill => skill.trim())
+            .filter(Boolean)
+            .map(skill => [skill.toLowerCase(), skill] as const)
+        ).values()
+      ).slice(0, 50);
+      const updatedResumeData: ResumeData = {
+        ...resumeData,
+        personalInfo: {
+          ...resumeData.personalInfo,
+          fullName: customizationDraft.fullName.trim(),
+          email: customizationDraft.email.trim(),
+          phone: customizationDraft.phone.trim(),
+          location: customizationDraft.location.trim(),
+          summary: customizationDraft.summary.trim(),
+        },
+        skills: {
+          ...resumeData.skills,
+          position: customizingTemplate.roleTarget || resumeData.skills.position,
+          selectedSkills: normalizedSkills,
+        },
+      };
+
+      await saveResumeData(
+        user.uid,
+        {
+          personalInfo: updatedResumeData.personalInfo,
+          socialLinks: updatedResumeData.socialLinks,
+          workExperiences: updatedResumeData.workExperiences,
+          education: updatedResumeData.education,
+          projects: updatedResumeData.projects,
+          skills: updatedResumeData.skills,
+        },
+        { profileId: updatedResumeData.profileId }
+      );
+
+      setResumeData(updatedResumeData);
+      setSelectedTemplateId(customizingTemplate.id);
+      localStorage.setItem('selectedTemplateId', customizingTemplate.id.toString());
+      setCustomizingTemplate(null);
+      setCustomizationDraft(null);
+      setEditProfileDetails(false);
+      showToast(
+        'success',
+        'Template Customized',
+        'Your details and selected skills were saved to Your Information.'
+      );
+    } catch (error) {
+      console.error('Error saving template customization:', error);
+      showToast(
+        'error',
+        'Could Not Save Customization',
+        'Please try again or update your details from Your Information.'
+      );
+    } finally {
+      setIsSavingCustomization(false);
     }
   };
 
@@ -344,6 +495,19 @@ export default function EmailTemplates() {
                   </button>
 
                   <button
+                    type="button"
+                    onClick={() => openCustomization(template.id)}
+                    disabled={!resumeData || isSavingCustomization}
+                    className={`w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
+                      resumeData
+                        ? 'border-emerald-500 text-emerald-700 dark:border-emerald-400 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10'
+                        : 'border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                    }`}
+                  >
+                    Customize
+                  </button>
+
+                  <button
                     onClick={() => handlePreviewWithResume(template.id)}
                     disabled={!resumeData}
                     className={`w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border ${
@@ -379,6 +543,203 @@ export default function EmailTemplates() {
           })}
         </div>
       </div>
+
+      {/* Customize template and profile details */}
+      {customizingTemplate && customizationDraft && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={closeCustomization}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900"
+            onClick={event => event.stopPropagation()}
+          >
+            <div className="mb-6 flex items-start justify-between gap-4 border-b border-gray-200 pb-4 dark:border-gray-800">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Customize {customizingTemplate.name}
+                </h2>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Update the details and skills used by this template. Saved
+                  changes will also update Your Information.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeCustomization}
+                disabled={isSavingCustomization}
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                aria-label="Close customization"
+              >
+                <span className="text-xl leading-none">×</span>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4 dark:border-blue-500/30 dark:bg-blue-500/10">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                    Edit profile details
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                    Full Name, Email, Phone, Location, and Professional Summary are loaded from Your Information and locked by default.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={editProfileDetails}
+                  aria-label="Edit profile details"
+                  onClick={() => setEditProfileDetails(previous => !previous)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#3b3be3]/40 ${
+                    editProfileDetails ? 'bg-[#3b3be3]' : 'bg-gray-300 dark:bg-gray-700'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                      editProfileDetails ? 'translate-x-5' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <section>
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                  Personal Details
+                </h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {([
+                    ['fullName', 'Full Name', 'Your full name'],
+                    ['email', 'Email', 'you@example.com'],
+                    ['phone', 'Phone', '+94 77 000 0000'],
+                    ['location', 'Location', 'City, Country'],
+                  ] as const).map(([field, label, placeholder]) => (
+                    <label key={field} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {label}
+                      <input
+                        type={field === 'email' ? 'email' : 'text'}
+                        value={customizationDraft[field]}
+                        placeholder={placeholder}
+                        onChange={event =>
+                          setCustomizationDraft(previous =>
+                            previous
+                              ? { ...previous, [field]: event.target.value }
+                              : previous
+                          )
+                        }
+                        disabled={!editProfileDetails}
+                        className="mt-1.5 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none transition focus:border-[#3b3be3] focus:ring-2 focus:ring-[#3b3be3]/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200"
+                      />
+                    </label>
+                  ))}
+                </div>
+                <label className="mt-4 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Professional Summary
+                  <textarea
+                    value={customizationDraft.summary}
+                    placeholder="A short summary about your background and strengths"
+                    onChange={event =>
+                      setCustomizationDraft(previous =>
+                        previous
+                          ? { ...previous, summary: event.target.value }
+                          : previous
+                      )
+                    }
+                    disabled={!editProfileDetails}
+                    rows={3}
+                    className="mt-1.5 w-full resize-y rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none transition focus:border-[#3b3be3] focus:ring-2 focus:ring-[#3b3be3]/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200"
+                  />
+                </label>
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                      Skills Used in This Template
+                    </h3>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Add or remove skills freely. The first six are highlighted
+                      in role-targeted email layouts.
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                    {customizationDraft.skills.length}/50
+                  </span>
+                </div>
+
+                <div className="mb-4 flex gap-2">
+                  <input
+                    type="text"
+                    value={newCustomizationSkill}
+                    placeholder="Add a skill, e.g. Docker"
+                    onChange={event => setNewCustomizationSkill(event.target.value)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        addCustomizationSkill();
+                      }
+                    }}
+                    className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none transition focus:border-[#3b3be3] focus:ring-2 focus:ring-[#3b3be3]/20 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomizationSkill}
+                    disabled={!newCustomizationSkill.trim()}
+                    className="rounded-lg bg-[#3b3be3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2f2fb8] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Add Skill
+                  </button>
+                </div>
+
+                <div className="flex min-h-16 flex-wrap gap-2 rounded-xl border border-dashed border-gray-300 bg-gray-50/70 p-3 dark:border-gray-700 dark:bg-gray-800/40">
+                  {customizationDraft.skills.length > 0 ? (
+                    customizationDraft.skills.map(skill => (
+                      <span
+                        key={skill}
+                        className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => removeCustomizationSkill(skill)}
+                          className="text-indigo-500 transition hover:text-red-600 dark:text-indigo-300 dark:hover:text-red-400"
+                          aria-label={`Remove ${skill}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <p className="self-center text-sm text-gray-500 dark:text-gray-400">
+                      No skills selected. Add the skills you want this email to highlight.
+                    </p>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 border-t border-gray-200 pt-5 sm:flex-row sm:justify-end dark:border-gray-800">
+              <button
+                type="button"
+                onClick={closeCustomization}
+                disabled={isSavingCustomization}
+                className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveCustomization}
+                disabled={isSavingCustomization}
+                className="rounded-lg bg-[#3b3be3] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2f2fb8] disabled:cursor-wait disabled:opacity-60"
+              >
+                {isSavingCustomization ? 'Saving...' : 'Save & Use Template'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Preview Modal */}
       {showPreview && previewEmail && previewTemplate && (

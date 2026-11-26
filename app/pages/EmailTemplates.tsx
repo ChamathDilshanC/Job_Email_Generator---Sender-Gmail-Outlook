@@ -5,9 +5,15 @@ import { generateEmailFromTemplate } from '@/lib/emailTemplateGenerator';
 import {
   loadResumeData,
   ResumeData,
-  saveResumeData,
 } from '@/lib/resumeDataService';
 import { fetchBestMatchingSkillsForPosition } from '@/lib/skillsApiClient';
+import {
+  getTemplateSkills,
+  loadTemplateSkills,
+  saveTemplateSkills,
+  TemplateSkillsMap,
+  withTemplateSkills,
+} from '@/lib/templateSkillsService';
 import {
   TEMPLATE_CATEGORY_LABELS,
   TEMPLATE_METADATA,
@@ -31,6 +37,7 @@ export default function EmailTemplates() {
     TemplateCategory.APPLICATION
   );
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+  const [templateSkills, setTemplateSkills] = useState<TemplateSkillsMap>({});
   const [isLoadingResume, setIsLoadingResume] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<TemplateType | null>(
@@ -65,6 +72,7 @@ export default function EmailTemplates() {
       try {
         const data = await loadResumeData(user?.uid);
         setResumeData(data);
+        setTemplateSkills(loadTemplateSkills(user?.uid, data?.profileId));
       } catch (error) {
         console.error('Error loading resume data:', error);
       } finally {
@@ -104,39 +112,24 @@ export default function EmailTemplates() {
             .map(skill => [skill.toLowerCase(), skill] as const)
         ).values()
       ).slice(0, 50);
-      const updatedResumeData: ResumeData = {
-        ...resumeData,
-        skills: {
-          ...resumeData.skills,
-          position: roleTarget,
-          selectedSkills: mergedSkills,
-        },
-      };
-
-      await saveResumeData(
+      const nextTemplateSkills = saveTemplateSkills(
         user.uid,
-        {
-          personalInfo: updatedResumeData.personalInfo,
-          socialLinks: updatedResumeData.socialLinks,
-          workExperiences: updatedResumeData.workExperiences,
-          education: updatedResumeData.education,
-          projects: updatedResumeData.projects,
-          skills: updatedResumeData.skills,
-        },
-        { profileId: updatedResumeData.profileId }
+        resumeData.profileId,
+        templateId,
+        mergedSkills
       );
-      setResumeData(updatedResumeData);
+      setTemplateSkills(nextTemplateSkills);
       showToast(
         'success',
         'Role Skills Matched',
-        `${roleTarget} selected. The best ${matchedSkills.length} skills were added to Your Information.`
+        `${roleTarget} selected. The best ${matchedSkills.length} skills were saved to this template only.`
       );
     } catch (error) {
       console.error('Error matching role skills:', error);
       showToast(
         'warning',
         'Template Selected',
-        'The role template was selected, but matched skills could not be saved. You can retry from Your Information.'
+        'The role template was selected, but matched skills could not be saved to this template.'
       );
     } finally {
       setIsMatchingRole(false);
@@ -158,7 +151,13 @@ export default function EmailTemplates() {
 
     setCustomizingTemplate(template);
     setCustomizationDraft({
-      skills: [...(resumeData.skills?.selectedSkills || [])],
+      skills: [
+        ...getTemplateSkills(
+          templateSkills,
+          templateId,
+          resumeData.skills?.selectedSkills || []
+        ),
+      ],
     });
     setNewCustomizationSkill('');
   };
@@ -220,29 +219,13 @@ export default function EmailTemplates() {
             .map(skill => [skill.toLowerCase(), skill] as const)
         ).values()
       ).slice(0, 50);
-      const updatedResumeData: ResumeData = {
-        ...resumeData,
-        skills: {
-          ...resumeData.skills,
-          position: customizingTemplate.roleTarget || resumeData.skills.position,
-          selectedSkills: normalizedSkills,
-        },
-      };
-
-      await saveResumeData(
+      const nextTemplateSkills = saveTemplateSkills(
         user.uid,
-        {
-          personalInfo: updatedResumeData.personalInfo,
-          socialLinks: updatedResumeData.socialLinks,
-          workExperiences: updatedResumeData.workExperiences,
-          education: updatedResumeData.education,
-          projects: updatedResumeData.projects,
-          skills: updatedResumeData.skills,
-        },
-        { profileId: updatedResumeData.profileId }
+        resumeData.profileId,
+        customizingTemplate.id,
+        normalizedSkills
       );
-
-      setResumeData(updatedResumeData);
+      setTemplateSkills(nextTemplateSkills);
       setSelectedTemplateId(customizingTemplate.id);
       localStorage.setItem('selectedTemplateId', customizingTemplate.id.toString());
       setCustomizingTemplate(null);
@@ -250,14 +233,14 @@ export default function EmailTemplates() {
       showToast(
         'success',
         'Template Customized',
-        'Your selected skills were saved to Your Information.'
+        'Your selected skills were saved to this template only.'
       );
     } catch (error) {
       console.error('Error saving template customization:', error);
       showToast(
         'error',
         'Could Not Save Customization',
-        'Please try again or update your skills from Your Information.'
+        'Please try again or update this template again.'
       );
     } finally {
       setIsSavingCustomization(false);
@@ -295,7 +278,7 @@ export default function EmailTemplates() {
 
     const generatedEmail = generateEmailFromTemplate(
       templateId,
-      resumeData,
+      withTemplateSkills(resumeData, templateSkills, templateId),
       sampleJobDetails
     );
 

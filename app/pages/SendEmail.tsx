@@ -37,9 +37,14 @@ import {
   loadResumeData,
   ResumeData,
   ResumeProfileSummary,
-  saveResumeData,
 } from '@/lib/resumeDataService';
 import { fetchBestMatchingSkillsForPosition } from '@/lib/skillsApiClient';
+import {
+  loadTemplateSkills,
+  saveTemplateSkills,
+  TemplateSkillsMap,
+  withTemplateSkills,
+} from '@/lib/templateSkillsService';
 import { scheduleEmail } from '@/lib/scheduledEmailService';
 import {
   JobDetails,
@@ -405,6 +410,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [aiGeneratedEmail, setAiGeneratedEmail] = useState<{ subject: string; bodyHtml: string; body: string } | null>(null);
   const [isGeneratingAiEmail, setIsGeneratingAiEmail] = useState(false);
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+  const [templateSkills, setTemplateSkills] = useState<TemplateSkillsMap>({});
   const [isLoadingResume, setIsLoadingResume] = useState(false);
   const [isMatchingRole, setIsMatchingRole] = useState(false);
   const [resumeProfiles, setResumeProfiles] = useState<ResumeProfileSummary[]>(
@@ -694,6 +700,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       // Only load resume data if user is authenticated
       if (!isAuthenticated) {
         setResumeData(null); // Clear resume data when not authenticated
+        setTemplateSkills({});
         setResumeProfiles([]);
         setSelectedProfileId('');
         setIsLoadingResume(false);
@@ -713,6 +720,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
         setResumeProfiles(cached.profiles);
         setSelectedProfileId(cachedProfileId);
         setResumeData(cached.data);
+        setTemplateSkills(
+          loadTemplateSkills(user?.uid, cached.data?.profileId || cachedProfileId)
+        );
         setIsLoadingResume(false);
         if (copiedAttachmentsAppliedRef.current) {
           // Preserve attachments copied from a scheduled email.
@@ -738,6 +748,9 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
           profiles.find(p => p.isDefault)?.profileId || profiles[0]?.profileId;
         setSelectedProfileId(defaultProfileId || '');
         setResumeData(data);
+        setTemplateSkills(
+          loadTemplateSkills(user?.uid, data?.profileId || defaultProfileId)
+        );
         setCachedData(cacheKey, { profiles, data });
         if (copiedAttachmentsAppliedRef.current) {
           // Preserve attachments copied from a scheduled email.
@@ -785,6 +798,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
     try {
       const data = await loadResumeData(user?.uid, profileId);
       setResumeData(data);
+      setTemplateSkills(loadTemplateSkills(user?.uid, data?.profileId || profileId));
       if (cvSource === 'profile') {
         await applyCvForProfile(profileId);
       } else {
@@ -813,32 +827,17 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
             .map(skill => [skill.toLowerCase(), skill] as const)
         ).values()
       ).slice(0, 50);
-      const updatedResumeData: ResumeData = {
-        ...resumeData,
-        skills: {
-          ...resumeData.skills,
-          position: roleTarget,
-          selectedSkills: mergedSkills,
-        },
-      };
-
-      await saveResumeData(
+      const nextTemplateSkills = saveTemplateSkills(
         user.uid,
-        {
-          personalInfo: updatedResumeData.personalInfo,
-          socialLinks: updatedResumeData.socialLinks,
-          workExperiences: updatedResumeData.workExperiences,
-          education: updatedResumeData.education,
-          projects: updatedResumeData.projects,
-          skills: updatedResumeData.skills,
-        },
-        { profileId: selectedProfileId || updatedResumeData.profileId }
+        selectedProfileId || resumeData.profileId,
+        templateId,
+        mergedSkills
       );
-      setResumeData(updatedResumeData);
+      setTemplateSkills(nextTemplateSkills);
       showToast(
         'success',
         'Role Skills Matched',
-        `${roleTarget} selected and the best ${matchedSkills.length} skills were saved to Your Information.`
+        `${roleTarget} selected and the best ${matchedSkills.length} skills were saved to this template only.`
       );
     } catch (error) {
       console.error('Error applying role template skills:', error);
@@ -1510,12 +1509,16 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   // Generate email preview
   const templateEmail = isFormValid
     ? resumeData
-      ? generateEmailFromTemplate(selectedTemplate, resumeData, {
-          companyName: formData.companyName,
-          position: formData.position,
-          recipientEmail: formData.recipientEmail,
-          ...additionalDetails,
-        })
+      ? generateEmailFromTemplate(
+          selectedTemplate,
+          withTemplateSkills(resumeData, templateSkills, selectedTemplate),
+          {
+            companyName: formData.companyName,
+            position: formData.position,
+            recipientEmail: formData.recipientEmail,
+            ...additionalDetails,
+          }
+        )
       : generateEmail(formData)
     : null;
   const generatedEmail = emailGenerationMode === 'ai' && aiGeneratedEmail

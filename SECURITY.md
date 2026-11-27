@@ -20,6 +20,8 @@ Do not include real OAuth tokens, database credentials, resume files, or other p
 - Job-posting URL fetching rejects loopback, private, link-local, and other unsafe destinations before making the request.
 - Tracking pixels return the same 1×1 response even when a tracking ID is unknown, avoiding ID enumeration.
 - Account deletion removes resume profiles, tagged CV files, and email history owned by the account.
+- Resume and tagged-CV APIs verify the Google bearer token and reject cross-account `userId` values.
+- The DevResume bridge uses timing-safe shared-secret checks, one-to-one linked-account ownership, UUID-only polling IDs, bounded inputs, PDF-only responses, and a 5MB artifact limit. Tailored PDFs are isolated GitHub Actions artifacts and do not replace the canonical resume.
 
 ## Deployment hygiene
 

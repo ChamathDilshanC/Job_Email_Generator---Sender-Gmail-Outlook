@@ -55,6 +55,16 @@ export type ResumeContent = Omit<
   'userId' | 'lastUpdated' | 'createdAt' | 'profileId' | 'profileName' | 'isDefault'
 >;
 
+function authHeaders(contentType?: string): HeadersInit {
+  const headers: Record<string, string> = {};
+  if (contentType) headers['Content-Type'] = contentType;
+  if (typeof window !== 'undefined') {
+    const token = window.localStorage.getItem('google_oauth_token');
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 export interface ResumeProfileOptions {
   profileId?: string;
   profileName?: string;
@@ -77,9 +87,7 @@ export async function saveResumeData(
 
   const response = await fetch('/api/resume', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: authHeaders('application/json'),
     body: JSON.stringify({
       userId,
       ...profileOptions,
@@ -110,7 +118,7 @@ export async function renameResumeProfile(
 ): Promise<void> {
   const response = await fetch('/api/resume', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders('application/json'),
     body: JSON.stringify({ userId, profileId, profileName }),
   });
   if (!response.ok) {
@@ -128,7 +136,7 @@ export async function setDefaultResumeProfile(
 ): Promise<void> {
   const response = await fetch('/api/resume', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders('application/json'),
     body: JSON.stringify({ userId, profileId, isDefault: true }),
   });
   if (!response.ok) {
@@ -151,9 +159,9 @@ export async function loadResumeData(
 
   try {
     const query = profileId
-      ? `userId=${userId}&profileId=${encodeURIComponent(profileId)}`
-      : `userId=${userId}`;
-    const response = await fetch(`/api/resume?${query}`);
+      ? `userId=${encodeURIComponent(userId)}&profileId=${encodeURIComponent(profileId)}`
+      : `userId=${encodeURIComponent(userId)}`;
+    const response = await fetch(`/api/resume?${query}`, { headers: authHeaders() });
 
     if (!response.ok) {
       throw new Error('Failed to load resume');
@@ -190,7 +198,7 @@ export async function listResumeProfiles(
   if (!userId) return [];
 
   try {
-    const response = await fetch(`/api/resume?userId=${userId}&list=true`);
+    const response = await fetch(`/api/resume?userId=${encodeURIComponent(userId)}&list=true`, { headers: authHeaders() });
     if (!response.ok) {
       throw new Error('Failed to list resume profiles');
     }
@@ -212,7 +220,7 @@ export async function deleteResumeProfile(
   try {
     const response = await fetch(
       `/api/resume?userId=${userId}&profileId=${encodeURIComponent(profileId)}`,
-      { method: 'DELETE' }
+      { method: 'DELETE', headers: authHeaders() }
     );
     return response.ok;
   } catch (error) {
@@ -256,7 +264,7 @@ export async function saveResumeCvFile(
 ): Promise<CvFileMeta> {
   const response = await fetch('/api/resume/cv', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders('application/json'),
     body: JSON.stringify({ userId, profileId, ...file }),
   });
 
@@ -285,7 +293,7 @@ export async function loadResumeCvFile(
     const query = new URLSearchParams({ userId, profileId });
     if (options.metaOnly) query.set('meta', 'true');
 
-    const response = await fetch(`/api/resume/cv?${query.toString()}`);
+    const response = await fetch(`/api/resume/cv?${query.toString()}`, { headers: authHeaders() });
     if (!response.ok) {
       throw new Error('Failed to load resume file');
     }
@@ -307,7 +315,7 @@ export async function deleteResumeCvFile(
   try {
     const response = await fetch(
       `/api/resume/cv?userId=${userId}&profileId=${encodeURIComponent(profileId)}`,
-      { method: 'DELETE' }
+      { method: 'DELETE', headers: authHeaders() }
     );
     return response.ok;
   } catch (error) {

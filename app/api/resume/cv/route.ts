@@ -1,6 +1,7 @@
 import clientPromise from '@/lib/mongodb';
 import { Collection } from 'mongodb';
 import { NextRequest, NextResponse } from 'next/server';
+import { getGoogleUser } from '@/lib/jobmailAuth';
 
 // Tagged CV files are kept in their own collection, separate from the
 // `resumes` collection that backs the wizard fields. Keeping the (large,
@@ -23,9 +24,15 @@ async function ensureIndexes(collection: Collection) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, profileId, fileName, mimeType, data } = await request.json();
+    const user = await getGoogleUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const { userId: requestedUserId, profileId, fileName, mimeType, data } = await request.json();
 
-    if (!userId || !profileId || !fileName || !mimeType || !data) {
+    if (requestedUserId && requestedUserId !== user.id) {
+      return NextResponse.json({ error: 'You can only modify your own resume files.' }, { status: 403 });
+    }
+    const userId = user.id;
+    if (!profileId || !fileName || !mimeType || !data) {
       return NextResponse.json(
         { error: 'userId, profileId, fileName, mimeType and data are required' },
         { status: 400 }
@@ -76,12 +83,18 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await getGoogleUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const requestedUserId = searchParams.get('userId');
     const profileId = searchParams.get('profileId');
     const metaOnly = searchParams.get('meta') === 'true';
 
-    if (!userId || !profileId) {
+    if (requestedUserId && requestedUserId !== user.id) {
+      return NextResponse.json({ error: 'You can only access your own resume files.' }, { status: 403 });
+    }
+    const userId = user.id;
+    if (!profileId) {
       return NextResponse.json(
         { error: 'userId and profileId are required' },
         { status: 400 }
@@ -121,11 +134,17 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await getGoogleUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const requestedUserId = searchParams.get('userId');
     const profileId = searchParams.get('profileId');
 
-    if (!userId || !profileId) {
+    if (requestedUserId && requestedUserId !== user.id) {
+      return NextResponse.json({ error: 'You can only delete your own resume files.' }, { status: 403 });
+    }
+    const userId = user.id;
+    if (!profileId) {
       return NextResponse.json(
         { error: 'userId and profileId are required' },
         { status: 400 }

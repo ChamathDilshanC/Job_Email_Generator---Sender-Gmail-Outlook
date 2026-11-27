@@ -2,6 +2,7 @@ import clientPromise from '@/lib/mongodb';
 import { randomUUID } from 'crypto';
 import { Collection } from 'mongodb';
 import { NextRequest, NextResponse } from 'next/server';
+import { getGoogleUser } from '@/lib/jobmailAuth';
 
 const DEFAULT_PROFILE_ID = 'default';
 
@@ -62,18 +63,21 @@ function toResumeResponse(doc: any) {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getGoogleUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await request.json();
     const {
-      userId,
+      userId: requestedUserId,
       profileId: requestedProfileId,
       profileName,
       isDefault,
       resumeData,
     } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 401 });
+    if (requestedUserId && requestedUserId !== user.id) {
+      return NextResponse.json({ error: 'You can only modify your own resumes.' }, { status: 403 });
     }
+    const userId = user.id;
 
     const client = await clientPromise;
     const db = client.db('job_email_generator');
@@ -148,14 +152,17 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await getGoogleUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const requestedUserId = searchParams.get('userId');
     const profileId = searchParams.get('profileId');
     const list = searchParams.get('list') === 'true';
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 401 });
+    if (requestedUserId && requestedUserId !== user.id) {
+      return NextResponse.json({ error: 'You can only access your own resumes.' }, { status: 403 });
     }
+    const userId = user.id;
 
     const client = await clientPromise;
     const db = client.db('job_email_generator');
@@ -205,13 +212,16 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await getGoogleUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const requestedUserId = searchParams.get('userId');
     const profileId = searchParams.get('profileId');
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 401 });
+    if (requestedUserId && requestedUserId !== user.id) {
+      return NextResponse.json({ error: 'You can only delete your own resumes.' }, { status: 403 });
     }
+    const userId = user.id;
 
     const client = await clientPromise;
     const db = client.db('job_email_generator');

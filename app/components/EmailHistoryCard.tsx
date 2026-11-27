@@ -36,6 +36,8 @@ interface EmailHistoryCardProps {
   onDelete: (id: string) => void;
   onViewDetails: (email: EmailHistory) => void;
   onStatusChange?: (id: string, status: ApplicationStatus) => void;
+  selected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
 // Deterministic, pleasant avatar color per company name — same company
@@ -66,6 +68,8 @@ export default function EmailHistoryCard({
   onDelete,
   onViewDetails,
   onStatusChange,
+  selected = false,
+  onSelect,
 }: EmailHistoryCardProps) {
   const getStatusColor = getDeliveryStatusClasses;
 
@@ -90,8 +94,17 @@ export default function EmailHistoryCard({
         DELIVERY_ACCENT[email.status] || 'before:bg-gray-300 dark:before:bg-gray-700'
       }`}
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="mb-4 flex items-start justify-between">
         <div className="flex items-start gap-3">
+          {onSelect && (
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => onSelect(email.id)}
+              aria-label={`Select email to ${email.recipientEmail}`}
+              className="mt-3 h-4 w-4 shrink-0 rounded border-gray-300 text-primary focus:ring-primary dark:border-gray-600"
+            />
+          )}
           <div
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-semibold ${avatarClasses(
               email.companyName || ''

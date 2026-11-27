@@ -566,7 +566,7 @@ Three workflows under `.github/workflows/`:
 - ✅ Added independent per-template skill customization, three-column skill management, and reset-to-profile behavior
 - ✅ Removed the template email skill display cap so all selected skills are included
 - ✅ Enlarged the email send preview and made light/dark switching instant
-- ✅ Simplified the résumé attachment note to a bold, black, two-line paragraph
+- ✅ Simplified the resume attachment note to a bold, black, two-line paragraph
 - ✅ Migrated authentication off Firebase to Google OAuth; storage on Azure Cosmos DB for MongoDB
 
 See [GitHub Releases](https://github.com/ChamathDilshanC/Job_Email_Generator---Sender-Gmail-Outlook/releases) for the full version history.

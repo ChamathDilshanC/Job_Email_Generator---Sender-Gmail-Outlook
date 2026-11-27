@@ -20,6 +20,10 @@ Do not include real OAuth tokens, database credentials, resume files, or other p
 - Job-posting URL fetching rejects loopback, private, link-local, and other unsafe destinations before making the request.
 - Tracking pixels return the same 1×1 response even when a tracking ID is unknown, avoiding ID enumeration.
 - Account deletion removes resume profiles, tagged CV files, and email history owned by the account.
+- Resume/profile/CV APIs derive ownership from the verified Google bearer token and reject mismatched client-supplied IDs.
+- DevResume generation requires the authenticated JobMail user to have a one-to-one linked DevResume account; upstream calls use a server-only shared secret.
+- Tailored generation validates UUID request IDs, bounds role/company/job-description input, polls only the matching request, validates PDF content, and caps the returned artifact at 5 MB.
+- Tailored generation runs against an isolated copy of resume data and a short-lived GitHub artifact; it does not commit role-specific data to the canonical resume or expose GitHub credentials to the browser.
 
 ## Deployment hygiene
 

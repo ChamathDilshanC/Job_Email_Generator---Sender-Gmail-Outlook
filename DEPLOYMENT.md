@@ -20,7 +20,7 @@ Vercel automatically creates preview deployments for pull requests and productio
 
 ## Required environment configuration
 
-Required server-side values include `GOOGLE_CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `CRON_SECRET`, `APP_BASE_URL`, `MONGODB_URI`, and `GEMINI_API_KEY` for AI parsing. Google sign-in also needs `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. The skills and DevResume integrations need their corresponding API/base URL and shared-secret values.
+Required server-side values include `GOOGLE_CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`, `CRON_SECRET`, `APP_BASE_URL`, `MONGODB_URI`, and `GEMINI_API_KEY` for AI parsing. Google sign-in also needs `NEXT_PUBLIC_GOOGLE_CLIENT_ID`. The skills and DevResume integrations need their corresponding API/base URL and shared-secret values. For the tailored-CV bridge, configure the matching integration secret in JobMail and DevResume Admin; keep the DevResume GitHub token only in DevResume Admin.
 
 Never commit these values. Configure them in Vercel Project Settings → Environment Variables.
 
@@ -48,6 +48,26 @@ Authorization: Bearer <CRON_SECRET>
 ```
 
 The GitHub repository secret `CRON_SECRET` must match the Vercel environment variable exactly. The GitHub schedule is best-effort and may run a few minutes late.
+
+### Tailored DevResume CV bridge
+
+The **Generate DevResume CV** action in Send Email requires an existing
+one-to-one DevResume connection. JobMail sends the authenticated user's role,
+company, and available job description to DevResume Admin, then polls the
+request until a validated PDF artifact is ready.
+
+- JobMail: `DEVRESUME_RESUME_ENDPOINT`, `JOBMAIL_INTEGRATION_SECRET`, and
+  `DEVRESUME_APP_URL`.
+- DevResume Admin: the same `JOBMAIL_INTEGRATION_SECRET` and a server-only
+  `JOBMAIL_GITHUB_TOKEN` with the minimum permissions needed to dispatch and
+  download the `resume-core` workflow artifact.
+- Resume Core: `RESUME_DATA_PAT` and the existing workflow secrets required by
+  the PDF renderer. The tailored workflow creates a private copy and does not
+  overwrite `resume-data` or the canonical Drive PDF.
+
+The browser never receives the shared secret or GitHub token. See
+[`docs/devresume-tailored-cv.md`](./docs/devresume-tailored-cv.md) for the
+request lifecycle, limits, and rollback considerations.
 
 ### Releases
 

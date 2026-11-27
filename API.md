@@ -1,6 +1,6 @@
 # API Reference
 
-All paths are relative to the deployed application URL. Most application routes receive the signed-in Google user ID (`userId`) from the client and scope database queries to that value. The cron route uses a bearer secret. DevResume connection status uses the server-side signed-in user context.
+All paths are relative to the deployed application URL. User-owned resume and CV routes require the signed-in Google access token and scope database queries to the token's subject; `userId` is retained only as a matching request field for compatibility. The cron route uses a bearer secret. DevResume connection status uses the server-side signed-in user context.
 
 ## Authentication
 
@@ -14,12 +14,12 @@ All paths are relative to the deployed application URL. Most application routes 
 
 | Endpoint | Method | Purpose |
 | --- | --- | --- |
-| `/api/resume` | GET | Load the default profile, a profile by `profileId`, or all profiles with `?list=true`; `userId` is required. |
-| `/api/resume` | POST | Create or update a profile. Body includes `userId`, profile data, optional `profileId`, `profileName`, and `isDefault`. |
-| `/api/resume` | DELETE | Delete one profile with `userId` + `profileId`, or all profiles when no `profileId` is supplied. Tagged CV files are deleted with the profile. |
-| `/api/resume/cv` | GET | Load CV metadata or data for `userId` + `profileId`; use `meta=true` to omit the base64 file data. |
-| `/api/resume/cv` | POST | Store or replace a tagged CV. Body: `userId`, `profileId`, `fileName`, `mimeType`, and base64 `data`. |
-| `/api/resume/cv` | DELETE | Delete a tagged CV for `userId` + `profileId`. |
+| `/api/resume` | GET | Load the default profile, a profile by `profileId`, or all profiles with `?list=true`; requires Google bearer authentication. |
+| `/api/resume` | POST | Create or update an authenticated user's profile. Body includes profile data, optional `profileId`, `profileName`, and `isDefault`. |
+| `/api/resume` | DELETE | Delete one authenticated user's profile with `profileId`, or all profiles when no `profileId` is supplied. Tagged CV files are deleted with the profile. |
+| `/api/resume/cv` | GET | Load CV metadata or data for the authenticated user's `profileId`; use `meta=true` to omit the base64 file data. |
+| `/api/resume/cv` | POST | Store or replace a tagged CV for the authenticated user. Body: `profileId`, `fileName`, `mimeType`, and base64 `data`. |
+| `/api/resume/cv` | DELETE | Delete a tagged CV for the authenticated user's `profileId`. |
 | `/api/resume/parse` | POST | Parse a PDF, DOC, or DOCX resume. Body: `fileName`, `mimeType`, and base64 `data`. Returns `{ success, resumeData }`. |
 
 ## Email generation and delivery
@@ -61,7 +61,9 @@ All paths are relative to the deployed application URL. Most application routes 
 | `/api/integrations/devresume/connect` | POST | Verify a DevResume connection code and create a one-to-one link for the signed-in user. |
 | `/api/integrations/devresume/status?devresumeAccountId=...` | GET | Read the current DevResume connection status. |
 | `/api/integrations/devresume/status?devresumeAccountId=...` | DELETE | Disconnect the linked DevResume account. |
-| `/api/integrations/devresume/resume?userId=...` | GET | Proxy the latest DevResume PDF after server-side integration verification. |
+| `/api/integrations/devresume/resume` | GET | Proxy the latest DevResume PDF for the authenticated, linked JobMail account. |
+| `/api/integrations/devresume/generate` | POST | Start a one-off tailored DevResume PDF generation from `{ targetRole, targetCompany, jobDescription }`. |
+| `/api/integrations/devresume/generate?requestId=...` | GET | Poll a tailored PDF job; returns progress or the validated base64 PDF when ready. |
 | `/api/github/repos?username=...` | GET | Load public GitHub repositories for project import. |
 | `/api/universities/search?name=...&country=...` | GET | Proxy university lookup results. `name` is required; `country` is optional. |
 
@@ -74,4 +76,5 @@ Errors are JSON objects with an `error` string and an HTTP status. Common status
 - AI job descriptions are limited to 30,000 characters by the email-generation route.
 - Cover-letter text is bounded by the route's maximum text size.
 - CV data is stored separately from the resume profile to avoid loading large base64 blobs with normal profile reads.
+- DevResume generation is server-to-server only: the linked account, shared secret, request ID, input lengths, PDF MIME type, and 5MB artifact limit are validated on both sides. Tailored artifacts are short-lived and do not overwrite the canonical DevResume resume.
 - The browser calls the external skills service through `lib/skillsApiClient.ts`; JobMail does not expose a local skills route.

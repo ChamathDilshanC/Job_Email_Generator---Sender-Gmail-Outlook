@@ -378,6 +378,8 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   const [cvSource, setCvSource] = useState<'profile' | 'devresume'>('devresume');
   const [devResumeUpdatedAt, setDevResumeUpdatedAt] = useState<string | null>(null);
   const [isLoadingDevResume, setIsLoadingDevResume] = useState(false);
+  const [isGeneratingDevResume, setIsGeneratingDevResume] = useState(false);
+  const [devResumeProgress, setDevResumeProgress] = useState(0);
   const [isSending, setIsSending] = useState(false);
   const [requireCoverLetter, setRequireCoverLetter] = useState(false);
   const [coverLetterLength, setCoverLetterLength] =
@@ -653,10 +655,13 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   };
 
   const loadDevResume = async () => {
-    if (!user?.uid) return;
+    if (!user?.uid || !accessToken) return;
     setIsLoadingDevResume(true);
     try {
-      const response = await fetch(`/api/integrations/devresume/resume?userId=${encodeURIComponent(user.uid)}`, { cache: 'no-store' });
+      const response = await fetch('/api/integrations/devresume/resume', {
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       const data = await response.json();
       if (!response.ok || !data.resume?.data) throw new Error(data.error || 'DevResume resume is unavailable.');
       setAttachments(previous => ({
@@ -670,6 +675,70 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
       showToast('error', 'Could not load DevResume resume', error instanceof Error ? error.message : undefined);
     } finally {
       setIsLoadingDevResume(false);
+    }
+  };
+
+  const generateDevResume = async () => {
+    if (!accessToken || !formData.position.trim()) {
+      showToast('warning', 'Role Required', 'Enter the target role before generating a tailored DevResume CV.');
+      return;
+    }
+
+    setIsGeneratingDevResume(true);
+    setDevResumeProgress(8);
+    try {
+      const startResponse = await fetch('/api/integrations/devresume/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          targetRole: formData.position,
+          targetCompany: formData.companyName,
+          jobDescription,
+        }),
+      });
+      const start = await startResponse.json().catch(() => ({}));
+      if (!startResponse.ok || typeof start.requestId !== 'string') {
+        throw new Error(start.error || 'Could not start DevResume generation.');
+      }
+
+      setDevResumeProgress(18);
+      const deadline = Date.now() + 90_000;
+      while (Date.now() < deadline) {
+        await new Promise(resolve => window.setTimeout(resolve, 1500));
+        const statusResponse = await fetch(
+          `/api/integrations/devresume/generate?requestId=${encodeURIComponent(start.requestId)}`,
+          { cache: 'no-store', headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const status = await statusResponse.json().catch(() => ({}));
+        if (!statusResponse.ok) throw new Error(status.error || 'DevResume generation status failed.');
+
+        const progress = typeof status.progress === 'number' ? status.progress : 40;
+        setDevResumeProgress(Math.max(18, Math.min(96, progress)));
+        if (status.status === 'ready' && status.resume?.data) {
+          setAttachments(previous => ({
+            ...previous,
+            cv: base64ToFile(status.resume.data, status.resume.fileName, status.resume.mimeType),
+          }));
+          setCvSource('devresume');
+          setIsCvAutoLoaded(false);
+          setDevResumeUpdatedAt(status.resume.lastModified || new Date().toISOString());
+          setDevResumeProgress(100);
+          showToast('success', 'Tailored DevResume CV ready', 'The generated CV is attached to this job email.');
+          return;
+        }
+        if (status.status === 'failed') throw new Error(status.error || 'DevResume could not generate the CV.');
+      }
+
+      throw new Error('DevResume is taking longer than expected. Please try again in a moment.');
+    } catch (error) {
+      setDevResumeProgress(0);
+      showToast('error', 'DevResume generation failed', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setIsGeneratingDevResume(false);
+      window.setTimeout(() => setDevResumeProgress(0), 1200);
     }
   };
 
@@ -1503,7 +1572,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
   };
 
   // Send button should only be enabled when form is valid AND files are uploaded AND resume data exists
-  const canSendEmail = isFormValid && hasAiJobDescription && isFileUploadValid() && !!resumeData;
+  const canSendEmail = isFormValid && hasAiJobDescription && isFileUploadValid() && !!resumeData && !isGeneratingDevResume;
   const favoriteTemplateIds = loadFavoriteTemplateIds(user?.uid);
 
   // Generate email preview
@@ -1714,7 +1783,7 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                 whileTap={{ scale: canSendEmail ? 0.97 : 1 }}
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handleOpenPreview}
-                disabled={isSending || isGeneratingCoverLetter}
+                disabled={isSending || isGeneratingCoverLetter || isGeneratingDevResume}
               >
                 <Send className="h-4 w-4" />
                 {isGeneratingCoverLetter
@@ -2518,6 +2587,38 @@ export default function SendEmail({ onNavigate }: SendEmailProps = {}) {
                   <button type="button" className="font-semibold text-primary hover:underline" onClick={() => void loadDevResume()} disabled={isLoadingDevResume}>
                     {isLoadingDevResume ? 'Loading...' : 'Refresh from Drive'}
                   </button>
+                </div>
+              )}
+              {cvSource === 'devresume' && (
+                <div className="mt-4 rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Tailor this CV to the job</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Uses the company and role above to generate a one-off DevResume PDF for this application.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void generateDevResume()}
+                      disabled={isGeneratingDevResume || !hasCompany || !hasPosition || !accessToken}
+                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isGeneratingDevResume ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      {isGeneratingDevResume ? 'Generating CV…' : 'Generate DevResume CV'}
+                    </button>
+                  </div>
+                  {isGeneratingDevResume && (
+                    <div className="mt-4" aria-live="polite">
+                      <div className="mb-1.5 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+                        <span>{devResumeProgress < 30 ? 'Starting secure generation…' : devResumeProgress < 80 ? 'Rendering your tailored PDF…' : 'Preparing attachment…'}</span>
+                        <span>{devResumeProgress}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-primary/10" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={devResumeProgress}>
+                        <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${devResumeProgress}%` }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

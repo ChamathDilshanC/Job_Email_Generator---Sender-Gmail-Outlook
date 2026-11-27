@@ -66,8 +66,9 @@ Signed-out visitors land on a marketing landing page; signing in switches to the
 
 ## 🔗 DevResume integration
 
-JobMail can connect to DevResume so the latest resume PDF can be selected as
-the CV source for an application. The connection is intentionally explicit:
+JobMail can connect to DevResume so a user can either attach the latest resume
+PDF or generate a one-off, role-targeted CV for the current application. The
+connection is intentionally explicit:
 
 ```mermaid
 sequenceDiagram
@@ -80,12 +81,19 @@ sequenceDiagram
     D-->>J: Return DevResume account id
     J->>DB: Store one-to-one account link
     J-->>D: Latest resume PDF available to JobMail
+    J->>D: Start tailored generation (role/company/job context)
+    D->>D: Dispatch isolated resume workflow
+    D-->>J: Poll progress and return validated PDF artifact
+    J->>J: Attach tailored PDF to this email
     J->>DB: Delete account link when user chooses Disconnect
 ```
 
 Users can disconnect at any time from **Profile → Connect DevResume →
 Disconnect**. Disconnecting removes only the integration link; it does not
-delete either product's resume data.
+delete either product's resume data. In **Send Email**, the **Generate DevResume
+CV** action uses the current **Company Name** and **Position** (plus the job
+description when available), shows live progress, and attaches the generated
+PDF to that email. It does not overwrite the canonical DevResume resume.
 
 ## 🏗 Architecture
 
@@ -288,6 +296,7 @@ erDiagram
 - **Protected routes** — locked nav items and disabled buttons for unauthenticated users
 - **SSRF-guarded job URL scraper** — rejects loopback/private/link-local addresses on every DNS-resolved IP (defends against DNS-rebinding), before fetching a pasted job posting URL
 - **Auto cache clearing** on sign-out; account deletion cascades resume profiles, tagged CV files, and email history
+- **Tailored DevResume CV bridge** — role/company details start an isolated workflow, with live progress and a validated short-lived PDF artifact attached to the current email
 
 ### 📧 Email Management
 
@@ -307,6 +316,7 @@ erDiagram
 - **Schedule for later (Gmail)** — pick a future date/time; a GitHub Actions cron job hits a protected endpoint every 5 minutes and sends due emails even if you're not signed in at that moment
 - **Open tracking (opt-in, on by default)** — a "Track Email Opens" toggle embeds an invisible pixel that records open count and first/last-opened time, for both immediate and scheduled sends. Still user-toggleable per send, since a hidden tracking pixel is a known spam-filter signal some senders prefer to avoid.
 - **Email History with live open-status updates** — stats (sent/pending/failed/companies) plus a small application "pipeline" view (interview scheduled/offered/rejected). While the History page is open, it silently re-checks for new opens every 15 seconds (paused when the tab isn't visible) and updates the "Opened" badge on a card automatically — no manual refresh needed to see when a recruiter opens your email.
+- **One-click tailored DevResume CV** — when DevResume is connected, enter Company Name and Position, click **Generate DevResume CV**, watch the real-time progress slider, and attach the resulting PDF without leaving the email flow
 
 ### 👤 Resume Builder
 
@@ -471,7 +481,8 @@ Defined in `.env.local.example`; copy to `.env.local` and fill in real values. B
 3. **Choose a template**, optionally fill in "Additional Details" for scenario templates (referral, interview, offer response, etc.)
 4. **Customize role-targeted skills** when needed. Template changes are separate from `Your Information`; reset them with **Reset to Profile Skills**.
 5. **Review the email body** — edit it with the rich text editor if you want, or regenerate from the template
-6. **Choose Gmail or Outlook**, and **Send Now** or **Schedule for Later** (Gmail only)
+6. **Optional: generate a tailored DevResume CV** — connect DevResume from Profile, fill Company Name and Position, then click **Generate DevResume CV** in the CV source panel. The progress slider updates while the isolated PDF workflow runs.
+7. **Choose Gmail or Outlook**, and **Send Now** or **Schedule for Later** (Gmail only)
 
 ### Managing Scheduled Emails
 
@@ -524,6 +535,7 @@ Three workflows under `.github/workflows/`:
 | --- | --- |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Components, data flow, email generation, and scheduling architecture |
 | [API.md](./API.md) | Next.js route methods, inputs, outputs, and error conventions |
+| [docs/devresume-tailored-cv.md](./docs/devresume-tailored-cv.md) | Tailored DevResume CV flow, configuration, and security boundaries |
 | [DATABASE.md](./DATABASE.md) | MongoDB collections, indexes, ownership, and migration guidance |
 | [DEPLOYMENT.md](./DEPLOYMENT.md) | Vercel, GitHub Actions, environment setup, and rollback guidance |
 | [DEVELOPMENT.md](./DEVELOPMENT.md) | Local setup and development conventions |
